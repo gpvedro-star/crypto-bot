@@ -1,0 +1,12 @@
+# Netlify configuration for the NUVORA site (lives in the nuvora/ subfolder).
+[build]
+  base    = "nuvora"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The official Next.js runtime is installed automatically by Netlify for Next.js projects.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
