@@ -61,7 +61,7 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
           <div className="flex items-start gap-5 lg:col-span-8">
             <ToolMonogram tool={tool} size={80} />
             <div>
-              <p className="eyebrow text-navy-700">AI Tool · by {tool.maker}</p>
+              <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-600">AI Tool · by {tool.maker}</p>
               <h1 className="headline mt-1 text-[2.6rem] sm:text-[3.4rem]">{tool.name}</h1>
               <p className="deck mt-3 max-w-2xl text-[1.2rem] text-ink-700 sm:text-[1.35rem]">{tool.tagline}</p>
               <p className="mt-3 font-sans text-[0.85rem] text-ink-500">Last reviewed {formatDate(tool.updatedAt)}</p>
@@ -69,11 +69,11 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
           </div>
           <div className="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
             {link && (
-              <a href={link.href} rel={link.rel} target="_blank" className="inline-flex min-h-[48px] items-center gap-2 rounded-[4px] bg-navy-900 px-5 font-sans font-semibold text-white transition-colors hover:bg-navy-800">
+              <a href={link.href} rel={link.rel} target="_blank" className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-navy-900 px-6 font-sans font-semibold text-white transition-colors hover:bg-navy-800">
                 Visit {tool.name} <span aria-hidden="true">↗</span>
               </a>
             )}
-            <Link href="/tools" className="inline-flex min-h-[48px] items-center rounded-[4px] border border-navy-900 px-5 font-sans font-semibold text-navy-900 transition-colors hover:bg-navy-900 hover:text-white">
+            <Link href="/tools" className="inline-flex min-h-[48px] items-center rounded-full border border-line-strong px-6 font-sans font-semibold text-navy-900 transition-colors hover:border-navy-900 hover:bg-navy-900 hover:text-white">
               Compare tools
             </Link>
           </div>
@@ -92,7 +92,7 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
             <List title="What we like" items={tool.pros} tone="pro" />
             <List title="What to know" items={tool.cons} tone="con" />
           </div>
-          <section aria-labelledby="verdict" className="rounded-card bg-navy-900 px-6 py-7 text-white sm:px-8">
+          <section aria-labelledby="verdict" className="rounded-card bg-gradient-to-br from-navy-800 to-navy-950 px-6 py-7 text-white sm:px-8">
             <p className="eyebrow text-sky-300">NUVORA Verdict</p>
             <p id="verdict" className="mt-3 font-serif text-[1.3rem] leading-[1.45]">{tool.verdict}</p>
           </section>

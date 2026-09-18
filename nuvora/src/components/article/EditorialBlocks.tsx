@@ -9,7 +9,7 @@ import { ToolMonogram } from "@/components/cards/ToolMonogram";
 /* ---------- NUVORA EXPLAINS ---------- */
 export function Explains({ term, text }: { term: string; text: string }) {
   return (
-    <aside className="not-prose my-10 rounded-card border-l-4 border-sky-500 bg-sky-50 px-6 py-6 sm:px-8" aria-label={`NUVORA explains: ${term}`}>
+    <aside className="not-prose my-10 rounded-card border border-sky-300/60 bg-sky-50 px-6 py-6 sm:px-8" aria-label={`NUVORA explains: ${term}`}>
       <p className="eyebrow flex items-center gap-2 text-navy-800">
         <Logo variant="mark" height={16} />
         NUVORA Explains
@@ -23,8 +23,8 @@ export function Explains({ term, text }: { term: string; text: string }) {
 /* ---------- WHY THIS MATTERS ---------- */
 export function WhyItMatters({ text }: { text: string }) {
   return (
-    <aside className="not-prose my-10 border-y-2 border-navy-900 py-6" aria-label="Why this matters">
-      <p className="eyebrow text-navy-900">Why This Matters</p>
+    <aside className="not-prose my-10 rounded-card bg-mist px-6 py-6 sm:px-8" aria-label="Why this matters">
+      <p className="eyebrow flex items-center gap-2 text-navy-900"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Why This Matters</p>
       <p className="mt-3 font-serif text-[1.35rem] leading-[1.45] text-navy-900" style={{ fontVariationSettings: '"opsz" 24' }}>{text}</p>
     </aside>
   );
@@ -33,7 +33,7 @@ export function WhyItMatters({ text }: { text: string }) {
 /* ---------- THE BOTTOM LINE ---------- */
 export function BottomLine({ text }: { text: string }) {
   return (
-    <aside className="not-prose my-10 rounded-card bg-navy-900 px-6 py-7 text-white sm:px-8" aria-label="The bottom line">
+    <aside className="not-prose my-10 rounded-card bg-gradient-to-br from-navy-800 to-navy-950 px-6 py-7 text-white sm:px-8" aria-label="The bottom line">
       <p className="eyebrow text-sky-300">The Bottom Line</p>
       <p className="mt-3 font-serif text-[1.4rem] leading-[1.4]" style={{ fontVariationSettings: '"opsz" 24' }}>{text}</p>
     </aside>

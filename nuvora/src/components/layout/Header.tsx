@@ -53,15 +53,15 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 border-b bg-paper/95 backdrop-blur-sm transition-[box-shadow,border-color] duration-300 ${
-          scrolled ? "border-line shadow-[0_1px_0_rgba(11,45,91,0.06),0_8px_24px_-16px_rgba(11,45,91,0.25)]" : "border-transparent"
+        className={`sticky top-0 z-40 border-b bg-white/90 backdrop-blur-md transition-[box-shadow,border-color] duration-300 ${
+          scrolled ? "border-line shadow-[0_8px_30px_-18px_rgba(11,45,91,0.35)]" : "border-line/60"
         }`}
       >
         <div className="container-x flex h-[var(--header-height)] items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded text-navy-900 hover:bg-mist lg:hidden"
+              className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-navy-900 hover:bg-mist lg:hidden"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
@@ -84,8 +84,8 @@ export function Header() {
                   <Link
                     href={item.href}
                     aria-current={isActive(item.href) ? "page" : undefined}
-                    className={`relative inline-flex min-h-[44px] items-center px-3 font-sans text-[0.95rem] font-medium transition-colors after:absolute after:inset-x-3 after:bottom-2 after:h-[2px] after:origin-left after:scale-x-0 after:bg-navy-900 after:transition-transform after:duration-300 after:[transition-timing-function:var(--ease-editorial)] hover:text-navy-900 hover:after:scale-x-100 ${
-                      isActive(item.href) ? "text-navy-900 after:scale-x-100" : "text-ink-700"
+                    className={`inline-flex min-h-[40px] items-center rounded-full px-3.5 font-sans text-[0.93rem] font-medium transition-colors ${
+                      isActive(item.href) ? "bg-navy-900 text-white" : "text-ink-700 hover:bg-mist hover:text-navy-900"
                     }`}
                   >
                     {item.label}
@@ -99,16 +99,16 @@ export function Header() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded text-navy-900 transition-colors hover:bg-mist"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-navy-900 transition-colors hover:bg-mist"
               aria-label="Search NUVORA"
             >
               <SearchIcon />
             </button>
             <Link
               href="/newsletter"
-              className="hidden min-h-[42px] items-center rounded-[4px] bg-navy-900 px-4 font-sans text-[0.9rem] font-semibold text-white transition-colors hover:bg-navy-800 sm:inline-flex"
+              className="hidden min-h-[42px] items-center rounded-full bg-navy-900 px-5 font-sans text-[0.9rem] font-semibold text-white transition-colors hover:bg-navy-800 sm:inline-flex"
             >
-              Newsletter
+              Subscribe
             </Link>
           </div>
         </div>

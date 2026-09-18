@@ -2,25 +2,26 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ArticleWithMeta } from "@/lib/content";
 import { ArticleMeta } from "@/components/ui/ArticleMeta";
-import { CategoryTag } from "@/components/ui/CategoryTag";
+import { categoryMap } from "@/content/categories";
 
-/** Compact story: small thumbnail, headline, meta. For lists and sidebars. */
-export function CompactCard({ article, showImage = true }: { article: ArticleWithMeta; showImage?: boolean }) {
+/** Compact story row: square thumbnail, category, sans headline, meta. */
+export function CompactCard({ article, showImage = true, tone = "light" }: { article: ArticleWithMeta; showImage?: boolean; tone?: "light" | "dark" }) {
+  const dark = tone === "dark";
   return (
-    <article className="group flex gap-4">
+    <article className="group relative flex items-start gap-4">
       {showImage && (
-        <Link href={article.href} className="image-zoom relative block h-[84px] w-[112px] shrink-0 overflow-hidden rounded-image bg-mist" aria-label={article.title} tabIndex={-1}>
-          <Image src={article.featuredImage.src} alt="" fill sizes="112px" className="object-cover" />
-        </Link>
+        <div className="image-zoom relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[10px] bg-mist sm:h-[96px] sm:w-[128px]">
+          <Image src={article.featuredImage.src} alt="" fill sizes="128px" className="object-cover" />
+        </div>
       )}
-      <div className="min-w-0">
-        <CategoryTag category={article.category} />
-        <h3 className="headline mt-1 text-[1.08rem] leading-snug">
-          <Link href={article.href} className="link-underline">
+      <div className="min-w-0 flex-1">
+        <p className={`font-sans text-[0.74rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-sky-600"}`}>{categoryMap[article.category].name}</p>
+        <h3 className={`title mt-1 text-[1.05rem] sm:text-[1.1rem] ${dark ? "text-white" : ""}`}>
+          <Link href={article.href} className="after:absolute after:inset-0">
             {article.title}
           </Link>
         </h3>
-        <ArticleMeta article={article} showAuthor={false} className="mt-1.5 text-[0.8rem]" />
+        <ArticleMeta article={article} tone={tone} showAuthor={false} className="relative z-10 mt-1.5 text-[0.8rem]" />
       </div>
     </article>
   );

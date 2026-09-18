@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000"><defs><filter id="g" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.06"/></feComponentTransfer></filter>
-<linearGradient id="n" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B4C8C"/><stop offset="1" stop-color="#071E3D"/></linearGradient>
-<linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5BA9E6"/><stop offset="1" stop-color="#A7D0F2"/></linearGradient>
-<linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBFAF7"/><stop offset="1" stop-color="#E9EDF2"/></linearGradient>
-</defs><rect width="1600" height="1000" fill="#0B2D5B"/><rect width="1600" height="1000" fill="url(#n)"/><path d="M150 800 L1450 200" stroke="#5BA9E6" stroke-width="14" stroke-linecap="round"/><circle cx="1450" cy="200" r="34" fill="#A7D0F2"/><rect width="1600" height="1000" filter="url(#g)" opacity="0.5"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B4C8C"/><stop offset="1" stop-color="#0B2D5B"/></linearGradient>
+<radialGradient id="glow" cx="55%" cy="60%" r="55%"><stop offset="0" stop-color="#A7D0F2" stop-opacity="0.42"/><stop offset="1" stop-color="#A7D0F2" stop-opacity="0"/></radialGradient>
+<pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="2" fill="#ffffff" opacity="0.14"/></pattern>
+<filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<rect width="1600" height="1000" fill="url(#glow)"/>
+<rect width="1600" height="1000" fill="url(#dots)"/>
+<ellipse cx="1200" cy="480" rx="380" ry="260" fill="#A7D0F2" opacity="0.22" filter="url(#blur)"/>
+<path d="M840 260 L640 540 L790 540 L740 740 L960 440 L810 440 Z" fill="#A7D0F2"/>
+</svg>

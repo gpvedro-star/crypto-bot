@@ -10,22 +10,24 @@ interface ImageCardProps {
   sizes?: string;
 }
 
-/** Image-first standard card for grids and rails. */
+/** Standard image-first card for grids. */
 export function ImageCard({ article, showExcerpt = false, sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" }: ImageCardProps) {
   return (
-    <article className="group flex h-full flex-col">
-      <Link href={article.href} className="block" aria-label={article.title} tabIndex={-1}>
+    <article className="group relative flex h-full flex-col">
+      <div className="relative">
         <ArticleImage image={article.featuredImage} sizes={sizes} />
-      </Link>
-      <div className="flex flex-1 flex-col pt-3">
-        <CategoryTag category={article.category} />
-        <h3 className="headline mt-2 text-[1.2rem] sm:text-[1.3rem]">
-          <Link href={article.href} className="link-underline">
+        <div className="absolute left-3 top-3">
+          <CategoryTag category={article.category} tone="overlay" />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col pt-4">
+        <h3 className="title text-[1.15rem] sm:text-[1.22rem]">
+          <Link href={article.href} className="after:absolute after:inset-0 after:rounded-card">
             {article.title}
           </Link>
         </h3>
-        {showExcerpt && <p className="mt-2 line-clamp-2 text-[0.95rem] leading-relaxed text-ink-700">{article.excerpt}</p>}
-        <ArticleMeta article={article} showAuthor={false} className="mt-auto pt-3" />
+        {showExcerpt && <p className="mt-2 line-clamp-2 text-[0.95rem] leading-relaxed text-ink-500">{article.excerpt}</p>}
+        <ArticleMeta article={article} showAuthor={false} className="relative z-10 mt-auto pt-3" />
       </div>
     </article>
   );

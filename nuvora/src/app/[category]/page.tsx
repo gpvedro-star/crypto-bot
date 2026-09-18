@@ -67,10 +67,13 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
       <JsonLd data={breadcrumbSchema([{ name: "Home", path: "/" }, { name: meta.name, path: `/${category}` }])} />
       <div className="container-x">
         <Breadcrumbs items={[{ name: meta.name }]} />
-        <header className="border-b border-line pb-8 pt-6 sm:pt-10">
-          <p className="eyebrow text-navy-700">{isLatest ? "All stories" : "Section"}</p>
-          <h1 className="headline mt-2 text-[2.6rem] sm:text-[3.6rem]">{meta.name}</h1>
-          <p className="deck mt-3 max-w-2xl text-[1.2rem] text-ink-700 sm:text-[1.35rem]">{meta.tagline}</p>
+        <header className="pb-6 pt-8 sm:pt-12">
+          <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-500">
+            <span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />
+            {isLatest ? "All stories" : "Section"} · {articles.length} {articles.length === 1 ? "story" : "stories"}
+          </p>
+          <h1 className="headline mt-3 text-[2.8rem] sm:text-[4rem]">{meta.name}</h1>
+          <p className="mt-4 max-w-2xl text-[1.2rem] leading-relaxed text-ink-500 sm:text-[1.3rem]">{meta.tagline}</p>
         </header>
       </div>
 
@@ -105,12 +108,14 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
               <FeatureCard article={lead} size="lg" sizes="(min-width: 1024px) 66vw, 100vw" priority />
             </div>
             <aside className="lg:col-span-4">
-              <div className="rule-navy pt-4"><p className="eyebrow text-navy-900">Popular in {meta.name}</p></div>
-              <ol>
+              <div className="rounded-card border border-line bg-white p-6">
+              <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-600"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Popular in {meta.name}</p>
+              <ol className="mt-2">
                 {(popular.length ? popular : rest.slice(0, 5)).map((a, i) => (
                   <TrendingItem key={a.slug} article={a} rank={i + 1} />
                 ))}
               </ol>
+              </div>
             </aside>
           </div>
         </section>

@@ -50,7 +50,7 @@ export function MobileNav({ open, onClose, isActive }: MobileNavProps) {
           <Link
             href="/newsletter"
             tabIndex={open ? 0 : -1}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-[4px] bg-navy-900 font-sans text-[1rem] font-semibold text-white"
+            className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-navy-900 font-sans text-[1rem] font-semibold text-white"
           >
             Join the NUVORA newsletter
           </Link>

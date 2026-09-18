@@ -4,23 +4,19 @@ import type { Guide } from "@/content/types";
 
 export function GuideCard({ guide, index = 0 }: { guide: Guide; index?: number }) {
   return (
-    <article className="group card-lift relative flex h-full flex-col overflow-hidden rounded-card bg-white shadow-card">
-      <Link href={`/articles/${guide.articleSlug}`} className="image-zoom relative block aspect-[4/3] w-full overflow-hidden bg-navy-900" aria-label={guide.title} tabIndex={-1}>
-        <Image src={guide.image.src} alt={guide.image.alt} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
-        <span className="absolute left-4 top-4 rounded-[3px] bg-white/95 px-2.5 py-1 font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-navy-900">
-          {guide.level}
-        </span>
-      </Link>
-      <div className="flex flex-1 flex-col p-5">
-        <p className="eyebrow text-sky-500">Guide {String(index + 1).padStart(2, "0")}</p>
-        <h3 className="headline mt-2 text-[1.35rem]">
+    <article className="group card-lift relative flex h-full min-h-[380px] flex-col justify-end overflow-hidden rounded-card bg-navy-900 text-white shadow-card">
+      <Image src={guide.image.src} alt={guide.image.alt} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-[900ms] [transition-timing-function:var(--ease-editorial)] group-hover:scale-105" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/40 to-transparent" aria-hidden="true" />
+      <div className="relative p-6">
+        <span className="pill bg-white/15 text-sky-300">{guide.level} · Guide {String(index + 1).padStart(2, "0")}</span>
+        <h3 className="headline mt-4 text-[1.5rem] text-white">
           <Link href={`/articles/${guide.articleSlug}`} className="after:absolute after:inset-0">
             {guide.title}
           </Link>
         </h3>
-        <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-700">{guide.description}</p>
-        <span className="mt-auto pt-4 font-sans text-[0.9rem] font-semibold text-navy-800">
-          Start reading <span aria-hidden="true">→</span>
+        <p className="mt-2 text-[0.95rem] leading-relaxed text-white/75">{guide.description}</p>
+        <span className="mt-4 inline-flex items-center gap-1.5 font-sans text-[0.9rem] font-semibold text-sky-300">
+          Start reading <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
         </span>
       </div>
     </article>

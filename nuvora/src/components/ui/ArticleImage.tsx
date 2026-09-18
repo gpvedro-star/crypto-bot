@@ -3,7 +3,6 @@ import type { ImageAsset } from "@/content/types";
 
 interface ArticleImageProps {
   image: ImageAsset;
-  /** Aspect ratio class, e.g. "aspect-[16/10]". */
   ratio?: string;
   sizes: string;
   priority?: boolean;

@@ -1,29 +1,30 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ArticleWithMeta } from "@/lib/content";
-import { CategoryTag } from "@/components/ui/CategoryTag";
+import { categoryMap } from "@/content/categories";
 
-/** Ranked "Most Read" row with a large editorial numeral. */
-export function TrendingItem({ article, rank, tone = "light" }: { article: ArticleWithMeta; rank: number; tone?: "light" | "dark" }) {
+/** Ranked "Most Read" row with a large numeral and thumbnail. */
+export function TrendingItem({ article, rank, tone = "light", showImage = true }: { article: ArticleWithMeta; rank: number; tone?: "light" | "dark"; showImage?: boolean }) {
   const dark = tone === "dark";
   return (
-    <li className={`group flex gap-5 border-t py-6 first:border-t-0 sm:gap-7 ${dark ? "border-white/15" : "border-line"}`}>
-      <span
-        aria-hidden="true"
-        className={`w-12 shrink-0 font-serif text-[2.6rem] font-semibold leading-none tabular sm:w-16 sm:text-[3.2rem] ${dark ? "text-sky-300" : "text-sky-500"}`}
-      >
+    <li className={`group relative flex items-center gap-4 border-t py-5 first:border-t-0 sm:gap-6 ${dark ? "border-white/12" : "border-line"}`}>
+      <span aria-hidden="true" className={`w-9 shrink-0 font-serif text-[2.2rem] font-semibold leading-none tabular sm:w-12 sm:text-[2.6rem] ${dark ? "text-sky-300" : "text-sky-500"}`}>
         {String(rank).padStart(2, "0")}
       </span>
-      <div className="min-w-0 pt-1">
+      {showImage && (
+        <div className="relative hidden h-[72px] w-[96px] shrink-0 overflow-hidden rounded-[10px] bg-mist sm:block">
+          <Image src={article.featuredImage.src} alt="" fill sizes="96px" className="object-cover" />
+        </div>
+      )}
+      <div className="min-w-0">
         <span className="sr-only">Rank {rank}.</span>
-        <CategoryTag category={article.category} tone={tone} />
-        <h3 className={`headline mt-1.5 text-[1.3rem] sm:text-[1.5rem] ${dark ? "text-white" : ""}`}>
-          <Link href={article.href} className="link-underline">
+        <p className={`font-sans text-[0.72rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-sky-600"}`}>{categoryMap[article.category].name}</p>
+        <h3 className={`title mt-1 text-[1.1rem] sm:text-[1.25rem] ${dark ? "text-white" : ""}`}>
+          <Link href={article.href} className="after:absolute after:inset-0">
             {article.title}
           </Link>
         </h3>
-        <p className={`mt-1.5 font-sans text-[0.85rem] ${dark ? "text-white/65" : "text-ink-500"}`}>
-          {article.author.name} · {article.readingTime} min read
-        </p>
+        <p className={`mt-1 font-sans text-[0.82rem] ${dark ? "text-white/60" : "text-ink-500"}`}>{article.author.name} · {article.readingTime} min read</p>
       </div>
     </li>
   );
