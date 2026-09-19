@@ -70,7 +70,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: ${{ steps.site.outputs.url }}
           NETLIFY_SITE_ID: ${{ steps.site.outputs.id }}
-        run: npx --yes netlify-cli@17 deploy --build --prod --message "GitHub ${GITHUB_SHA::7}"
+        run: npx --yes netlify-cli@27 deploy --build --prod --message "GitHub ${GITHUB_SHA::7}"
 
       - name: Summary
         run: |
