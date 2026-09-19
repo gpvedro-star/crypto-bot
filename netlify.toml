@@ -2,7 +2,8 @@
 [build]
   base    = "nuvora"
   command = "npm run build"
-  publish = ".next"
+  # `publish` in netlify.toml is resolved from the repository root, not from `base`.
+  publish = "nuvora/.next"
 
 [build.environment]
   NODE_VERSION = "22"

@@ -4,7 +4,8 @@ name: Deploy NUVORA to Netlify
 # branches, and on demand. Requires the repository secret NETLIFY_AUTH_TOKEN
 # (Netlify → User settings → Applications → Personal access tokens).
 # NETLIFY_SITE_ID is optional: when absent, the workflow finds or creates a
-# Netlify site named "nuvora" in the token's account.
+# Netlify site named "nuvora-news" in the token's account (nuvora.netlify.app
+# is taken by another account, so the CLI deploy created "nuvora-news").
 
 on:
   push:
@@ -46,11 +47,11 @@ jobs:
           auth="Authorization: Bearer $NETLIFY_AUTH_TOKEN"
           site_id="$NETLIFY_SITE_ID"
           if [ -z "$site_id" ]; then
-            site_id=$(curl -sf -H "$auth" "$api/sites?per_page=100" | jq -r '[.[] | select(.name=="nuvora")][0].id // empty')
+            site_id=$(curl -sf -H "$auth" "$api/sites?per_page=100" | jq -r '[.[] | select(.name=="nuvora-news")][0].id // empty')
           fi
           if [ -z "$site_id" ]; then
             slug=$(curl -sf -H "$auth" "$api/accounts" | jq -r '.[0].slug')
-            for name in nuvora "nuvora-${GITHUB_RUN_ID}"; do
+            for name in nuvora-news "nuvora-${GITHUB_RUN_ID}"; do
               site_id=$(curl -s -X POST -H "$auth" -H "Content-Type: application/json" \
                 -d "{\"name\":\"$name\"}" "$api/$slug/sites" | jq -r '.id // empty')
               [ -n "$site_id" ] && break
