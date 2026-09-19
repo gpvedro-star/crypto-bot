@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { rank, type SearchEntry, type SearchResult } from "./search-core";
 
 let cache: Promise<SearchEntry[]> | null = null;
+const EMPTY: SearchResult[] = [];
 
 function loadIndex(): Promise<SearchEntry[]> {
   cache ??= fetch("/search-index.json").then((r) => r.json() as Promise<SearchEntry[]>).catch(() => {
@@ -15,7 +16,7 @@ function loadIndex(): Promise<SearchEntry[]> {
 
 /** Client-side search over the static index: instant, and independent of any server. */
 export function useSearch(query: string, limit = 10): { results: SearchResult[]; loading: boolean } {
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>(EMPTY);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,5 +36,6 @@ export function useSearch(query: string, limit = 10): { results: SearchResult[];
     };
   }, [query, limit]);
 
-  return { results: query.trim().length < 2 ? [] : results, loading };
+  // A stable empty array keeps consumers that compare by identity from re-rendering forever.
+  return { results: query.trim().length < 2 ? EMPTY : results, loading };
 }
