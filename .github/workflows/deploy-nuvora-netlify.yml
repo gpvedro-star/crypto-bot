@@ -1,0 +1,78 @@
+name: Deploy NUVORA to Netlify
+
+# Deploys the nuvora/ Next.js site to Netlify on every push to the site
+# branches, and on demand. Requires the repository secret NETLIFY_AUTH_TOKEN
+# (Netlify → User settings → Applications → Personal access tokens).
+# NETLIFY_SITE_ID is optional: when absent, the workflow finds or creates a
+# Netlify site named "nuvora" in the token's account.
+
+on:
+  push:
+    branches: [main, "claude/nuvora-editorial-site-f53lx0"]
+    paths: ["nuvora/**", "netlify.toml", ".github/workflows/deploy-nuvora-netlify.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: netlify-nuvora
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: nuvora/package-lock.json
+
+      - name: Check credentials
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::error::Missing repository secret NETLIFY_AUTH_TOKEN"; exit 1
+          fi
+
+      - name: Resolve Netlify site
+        id: site
+        run: |
+          set -euo pipefail
+          api="https://api.netlify.com/api/v1"
+          auth="Authorization: Bearer $NETLIFY_AUTH_TOKEN"
+          site_id="$NETLIFY_SITE_ID"
+          if [ -z "$site_id" ]; then
+            site_id=$(curl -sf -H "$auth" "$api/sites?per_page=100" | jq -r '[.[] | select(.name=="nuvora")][0].id // empty')
+          fi
+          if [ -z "$site_id" ]; then
+            slug=$(curl -sf -H "$auth" "$api/accounts" | jq -r '.[0].slug')
+            for name in nuvora "nuvora-${GITHUB_RUN_ID}"; do
+              site_id=$(curl -s -X POST -H "$auth" -H "Content-Type: application/json" \
+                -d "{\"name\":\"$name\"}" "$api/$slug/sites" | jq -r '.id // empty')
+              [ -n "$site_id" ] && break
+            done
+          fi
+          [ -n "$site_id" ] || { echo "::error::Could not resolve or create a Netlify site"; exit 1; }
+          url=$(curl -sf -H "$auth" "$api/sites/$site_id" | jq -r '.ssl_url // .url')
+          echo "id=$site_id" >> "$GITHUB_OUTPUT"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Netlify site: $url ($site_id)"
+
+      - name: Install dependencies
+        working-directory: nuvora
+        run: npm ci
+
+      - name: Build and deploy
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ steps.site.outputs.url }}
+          NETLIFY_SITE_ID: ${{ steps.site.outputs.id }}
+        run: npx --yes netlify-cli@17 deploy --build --prod --message "GitHub ${GITHUB_SHA::7}"
+
+      - name: Summary
+        run: |
+          echo "## NUVORA is live" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.site.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

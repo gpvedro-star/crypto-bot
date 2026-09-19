@@ -7,6 +7,6 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# The official Next.js runtime is installed automatically by Netlify for Next.js projects.
+# The official Next.js runtime (also a devDependency of nuvora/).
 [[plugins]]
   package = "@netlify/plugin-nextjs"
