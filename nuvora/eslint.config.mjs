@@ -5,5 +5,6 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "out/**", "node_modules/**", "next-env.d.ts"]),
+  // `.netlify/` holds the Netlify CLI's local build output, not source.
+  globalIgnores([".next/**", "out/**", ".netlify/**", "node_modules/**", "next-env.d.ts"]),
 ]);

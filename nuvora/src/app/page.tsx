@@ -17,9 +17,11 @@ export const metadata = buildMetadata({
 
 export default function HomePage() {
   const lead = getLeadStory();
+  // The hero rail runs one secondary story plus two shorter items; anything
+  // beyond that stays available to the Latest feed below.
   const topStories = [...getTrending(6), ...getFeaturedArticles(6)]
     .filter((a, i, arr) => a.slug !== lead.slug && arr.findIndex((b) => b.slug === a.slug) === i)
-    .slice(0, 5);
+    .slice(0, 3);
   const usedSlugs = new Set([lead.slug, ...topStories.map((a) => a.slug)]);
   const latest = getLatest(7, [...usedSlugs]);
   const everyday = getArticlesByCategory("everyday-ai");

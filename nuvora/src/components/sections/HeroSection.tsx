@@ -3,8 +3,7 @@ import type { ArticleWithMeta } from "@/lib/content";
 import { ArticleImage } from "@/components/ui/ArticleImage";
 import { ArticleMeta } from "@/components/ui/ArticleMeta";
 import { CategoryTag } from "@/components/ui/CategoryTag";
-import { ImageCard } from "@/components/cards/ImageCard";
-import { Reveal } from "@/components/ui/Reveal";
+import { formatDate, formatShortDate } from "@/lib/dates";
 import { site } from "@/content/site";
 
 interface HeroSectionProps {
@@ -12,79 +11,135 @@ interface HeroSectionProps {
   topStories: ArticleWithMeta[];
 }
 
+/** Thin vertical rule used between byline items. */
+function MetaRule() {
+  return <span aria-hidden="true" className="h-3 w-px shrink-0 bg-line-strong" />;
+}
+
 /**
- * Front page: a navy cover band with the lead story, then a strip of top
- * stories that overlaps the band's bottom edge.
+ * Front page, print register: a single cover feature carrying most of the
+ * visual weight, with a ruled rail of supporting stories beside it on desktop
+ * and stacked beneath it on mobile.
+ *
+ * Deliberately quiet — no reveal animation above the fold (it would delay the
+ * LCP headline) and no breaking/developing flags, which read as sensational on
+ * a lead that is explanatory rather than urgent.
  */
 export function HeroSection({ lead, topStories }: HeroSectionProps) {
-  const developing = topStories.find((a) => a.breaking);
-  const cards = topStories.filter((a) => a !== developing).slice(0, 4);
+  const [secondary, ...rest] = topStories;
+  const minor = rest.slice(0, 2);
 
   return (
-    <section aria-labelledby="lead-story">
-      <div className="bg-navy-900 text-white">
-        <div className="container-x grid gap-10 pb-28 pt-10 sm:pt-14 lg:grid-cols-12 lg:items-center lg:gap-14 lg:pb-36 lg:pt-16">
-          <div className="lg:col-span-6">
-            <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.14em] text-sky-300">
-              <span className="inline-block h-2 w-2 rounded-full bg-sky-300" aria-hidden="true" />
-              {site.tagline}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <CategoryTag category={lead.category} tone="dark" />
-              {lead.breaking && <span className="pill bg-sky-500 text-navy-950">Developing</span>}
-            </div>
-            <h1 id="lead-story" className="headline mt-5 text-[2.5rem] text-white sm:text-[3.4rem] lg:text-[3.9rem]">
-              <Link href={lead.href} className="hover:text-sky-100">
+    <section aria-labelledby="lead-story" className="border-b border-line bg-white">
+      <div className="container-x pb-14 pt-6 sm:pt-8 lg:pb-20">
+        {/* Dateline rule */}
+        <div className="flex items-baseline justify-between gap-4 border-t-2 border-navy-900 pt-3">
+          <p className="eyebrow text-navy-900">The Lead</p>
+          <p className="eyebrow text-ink-400 xl:hidden">{site.tagline}</p>
+        </div>
+
+        <div className="mt-7 grid gap-10 lg:mt-8 lg:grid-cols-12 lg:gap-0">
+          {/* ---- Cover feature ---------------------------------------- */}
+          <article className="lg:col-span-8 lg:pr-8 xl:pr-14">
+            <Link href={lead.href} tabIndex={-1} aria-hidden="true" className="block">
+              <ArticleImage
+                image={lead.featuredImage}
+                ratio="aspect-[3/2] lg:aspect-[2/1] xl:aspect-[2.2/1]"
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                priority
+                rounded={false}
+              />
+            </Link>
+
+            <CategoryTag category={lead.category} variant="text" className="mt-6" />
+
+            <h1 id="lead-story" className="headline mt-3 text-[2.3rem] sm:text-[2.9rem] lg:text-[3rem] xl:text-[3.4rem]">
+              <Link href={lead.href} className="transition-colors hover:text-navy-700">
                 {lead.title}
               </Link>
             </h1>
-            <p className="mt-5 max-w-xl text-[1.15rem] leading-relaxed text-white/80 sm:text-[1.25rem]">{lead.subtitle}</p>
-            <ArticleMeta article={lead} tone="dark" className="mt-5" />
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={lead.href} className="inline-flex min-h-[50px] items-center gap-2 rounded-full bg-white px-6 font-sans text-[0.98rem] font-semibold text-navy-900 transition-colors hover:bg-sky-100">
-                Read the story <span aria-hidden="true">→</span>
-              </Link>
-              <Link href="/latest" className="inline-flex min-h-[50px] items-center rounded-full border border-white/30 px-6 font-sans text-[0.98rem] font-semibold text-white transition-colors hover:bg-white/10">
-                All stories
-              </Link>
-            </div>
-          </div>
-          <div className="lg:col-span-6">
-            <Link href={lead.href} aria-label={lead.title} tabIndex={-1} className="block">
-              <ArticleImage image={lead.featuredImage} ratio="aspect-[16/11]" sizes="(min-width: 1024px) 50vw, 100vw" priority className="shadow-lift ring-1 ring-white/10" />
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      <div className="container-x -mt-20 lg:-mt-24">
-        <div className="rounded-card bg-white p-5 shadow-lift sm:p-7">
-          <div className="flex items-center justify-between">
-            <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-600">Top stories today</p>
-            <Link href="/latest" className="font-sans text-[0.88rem] font-semibold text-navy-800 hover:underline">More →</Link>
-          </div>
-          {developing && (
-            <Link href={developing.href} className="group mt-4 flex flex-col gap-2 rounded-[12px] bg-navy-900 px-5 py-4 text-white transition-colors hover:bg-navy-800 sm:flex-row sm:items-center sm:gap-4">
-              <span className="pill shrink-0 bg-sky-500 text-navy-950">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
-                </span>
-                Developing
+            <p className="deck mt-5 max-w-[46ch] text-[1.12rem] text-ink-700 sm:text-[1.2rem]">{lead.subtitle}</p>
+
+            <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-sans text-[0.9rem] text-ink-500">
+              <span className="text-ink-900">
+                By{" "}
+                <Link href={`/authors/${lead.author.slug}`} className="font-semibold hover:underline">
+                  {lead.author.name}
+                </Link>
+                <span className="hidden text-ink-500 sm:inline">, {lead.author.role}</span>
               </span>
-              <span className="title text-[1.05rem] text-white">{developing.title}</span>
-              <span className="font-sans text-[0.85rem] text-white/60 sm:ml-auto sm:shrink-0">
-                <ArticleMeta article={developing} tone="dark" showAuthor={false} />
-              </span>
+              <MetaRule />
+              {/* Short date on phones keeps the byline to a single line. */}
+              <time dateTime={lead.publishedAt}>
+                <span className="sm:hidden">{formatShortDate(lead.publishedAt)}</span>
+                <span className="hidden sm:inline">{formatDate(lead.publishedAt)}</span>
+              </time>
+              <MetaRule />
+              <span className="tabular">{lead.readingTime} min read</span>
+            </p>
+          </article>
+
+          {/* ---- Supporting rail -------------------------------------- */}
+          <aside aria-labelledby="also-this-week" className="lg:col-span-4 lg:border-l lg:border-line lg:pl-8 xl:pl-14">
+            <h2 id="also-this-week" className="eyebrow border-b border-navy-900 pb-3 text-navy-900">
+              Also this week
+            </h2>
+
+            {secondary && (
+              <article className="border-b border-line py-7">
+                <Link href={secondary.href} tabIndex={-1} aria-hidden="true" className="block">
+                  <ArticleImage
+                    image={secondary.featuredImage}
+                    ratio="aspect-[16/9]"
+                    sizes="(min-width: 1024px) 30vw, 100vw"
+                    rounded={false}
+                  />
+                </Link>
+                <CategoryTag category={secondary.category} variant="text" className="mt-4" />
+                <h3 className="headline mt-2 text-[1.5rem] sm:text-[1.65rem] lg:text-[1.5rem]">
+                  <Link href={secondary.href} className="transition-colors hover:text-navy-700">
+                    {secondary.title}
+                  </Link>
+                </h3>
+                <ArticleMeta article={secondary} showAuthor={false} className="mt-3" />
+              </article>
+            )}
+
+            <ol className="divide-y divide-line">
+              {minor.map((article) => (
+                <li key={article.slug}>
+                  <article className="relative flex items-start gap-4 py-6">
+                    <div className="min-w-0 flex-1">
+                      <CategoryTag category={article.category} variant="text" className="relative z-10" />
+                      <h3 className="title mt-2 text-[1.05rem] sm:text-[1.1rem]">
+                        <Link href={article.href} className="after:absolute after:inset-0 hover:text-navy-700">
+                          {article.title}
+                        </Link>
+                      </h3>
+                      <ArticleMeta article={article} showAuthor={false} className="relative z-10 mt-2" />
+                    </div>
+                    <div className="w-[80px] shrink-0 sm:w-[96px]">
+                      <ArticleImage
+                        image={article.featuredImage}
+                        ratio="aspect-[4/3]"
+                        sizes="96px"
+                        rounded={false}
+                        zoom={false}
+                      />
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ol>
+
+            <Link
+              href="/latest"
+              className="eyebrow flex items-center gap-2 border-t border-line pt-5 text-navy-900 hover:text-navy-700"
+            >
+              More top stories <span aria-hidden="true">→</span>
             </Link>
-          )}
-          <div className="mt-6 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {cards.map((a, i) => (
-              <Reveal key={a.slug} delay={60 + i * 60}>
-                <ImageCard article={a} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" />
-              </Reveal>
-            ))}
-          </div>
+          </aside>
         </div>
       </div>
     </section>
