@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import type { MetadataRoute } from "next";
 import { authors, categories, getAllArticles, tools } from "@/lib/content";
 import { staticPages } from "@/content/pages";

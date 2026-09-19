@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { ImageResponse } from "next/og";
 import { getAllArticles, getArticle } from "@/lib/content";
 import { categoryMap } from "@/content/categories";

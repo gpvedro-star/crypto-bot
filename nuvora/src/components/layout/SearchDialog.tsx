@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { SearchResult } from "@/lib/search";
+import type { SearchResult } from "@/lib/search-core";
+import { useSearch } from "@/lib/use-search";
 
 interface SearchDialogProps {
   open: boolean;
@@ -17,10 +18,8 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
   const [active, setActive] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const { results, loading } = useSearch(query, 8);
 
   useEffect(() => {
     if (!open) return;
@@ -35,28 +34,12 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
     };
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const q = query.trim();
-    if (q.length < 2) return;
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    const t = window.setTimeout(async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}&limit=8`, { signal: controller.signal });
-        const data = (await res.json()) as { results: SearchResult[] };
-        setResults(data.results);
-        setActive(0);
-      } catch {
-        /* aborted or offline */
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }, 120);
-    return () => window.clearTimeout(t);
-  }, [query, open]);
+  // Reset the highlighted row whenever the result set changes (state adjustment during render).
+  const [lastResults, setLastResults] = useState(results);
+  if (results !== lastResults) {
+    setLastResults(results);
+    setActive(0);
+  }
 
   const submit = useCallback(() => {
     const q = query.trim();
@@ -70,7 +53,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
     }
   }, [query, results, active, router, onClose]);
 
-  const visible = query.trim().length < 2 ? [] : results;
+  const visible = results;
 
   if (!open) return null;
 
