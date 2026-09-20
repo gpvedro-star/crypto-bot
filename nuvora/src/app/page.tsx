@@ -1,7 +1,6 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { LatestSection } from "@/components/sections/LatestSection";
 import { MostReadBand } from "@/components/sections/MostReadBand";
-import { NewsletterStrip } from "@/components/sections/NewsletterStrip";
 import { EverydaySection } from "@/components/sections/EverydaySection";
 import { ToolsSection } from "@/components/sections/ToolsSection";
 import { GuidesSection } from "@/components/sections/GuidesSection";
@@ -42,7 +41,6 @@ export default function HomePage() {
       <div className="mt-20 sm:mt-28">
         <MostReadBand articles={mostRead} />
       </div>
-      <NewsletterStrip />
       <div className="mt-20 sm:mt-28">
         <EverydaySection articles={everyday} />
       </div>

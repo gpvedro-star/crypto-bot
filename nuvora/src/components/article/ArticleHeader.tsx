@@ -21,7 +21,7 @@ export function ArticleHeader({ article }: { article: ArticleWithMeta }) {
           {article.breaking && <span className="pill bg-navy-900 text-white">Developing</span>}
         </div>
         <h1 className="headline mt-5 text-[2.3rem] sm:text-[3.2rem] lg:text-[3.8rem]">{article.title}</h1>
-        <p className="mt-5 max-w-3xl text-[1.2rem] leading-relaxed text-ink-500 sm:text-[1.35rem]">{article.subtitle}</p>
+        <p className="deck mt-5 max-w-[46ch] text-[1.2rem] text-ink-700 sm:text-[1.3rem]">{article.subtitle}</p>
 
         <div className="mt-8 flex flex-col gap-4 border-t border-line pt-6 font-sans text-[0.9rem] text-ink-500 sm:flex-row sm:items-center sm:justify-between">
           <Link href={`/authors/${article.author.slug}`} className="flex items-center gap-3">
@@ -43,7 +43,7 @@ export function ArticleHeader({ article }: { article: ArticleWithMeta }) {
                 <dd title={formatDateTime(article.updatedAt)}><TimeAgo iso={article.updatedAt} prefix="Updated " /></dd>
               </div>
             )}
-            <div className="flex gap-1.5 rounded-full bg-mist px-3 py-1">
+            <div className="flex gap-1.5">
               <dt className="sr-only">Reading time</dt>
               <dd className="tabular text-ink-900">{article.readingTime} min read</dd>
             </div>
@@ -52,7 +52,7 @@ export function ArticleHeader({ article }: { article: ArticleWithMeta }) {
       </div>
 
       <figure className="mx-auto mt-10 max-w-6xl">
-        <ArticleImage image={article.featuredImage} ratio="aspect-[16/10] sm:aspect-[2/1]" sizes="(min-width: 1280px) 1152px, 100vw" priority zoom={false} className="rounded-card shadow-card" />
+        <ArticleImage image={article.featuredImage} ratio="aspect-[16/10] sm:aspect-[2/1]" sizes="(min-width: 1280px) 1152px, 100vw" priority zoom={false} rounded={false} />
         {(article.featuredImage.caption || article.featuredImage.credit) && (
           <figcaption className="mx-auto mt-3 max-w-4xl font-sans text-[0.85rem] leading-snug text-ink-500">
             {article.featuredImage.caption} {article.featuredImage.credit && <span className="text-ink-400">{article.featuredImage.credit}</span>}

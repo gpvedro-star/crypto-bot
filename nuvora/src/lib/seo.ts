@@ -82,6 +82,16 @@ export function websiteSchema() {
   };
 }
 
+/** Words in the article's prose blocks. Derived, never estimated. */
+function countWords(article: ArticleWithMeta): number {
+  return article.content.reduce((total, block) => {
+    if (block.type === "paragraph") return total + block.text.trim().split(/\s+/).filter(Boolean).length;
+    if (block.type === "list") return total + block.items.join(" ").trim().split(/\s+/).filter(Boolean).length;
+    if (block.type === "quote") return total + block.text.trim().split(/\s+/).filter(Boolean).length;
+    return total;
+  }, 0);
+}
+
 export function articleSchema(article: ArticleWithMeta) {
   return {
     "@context": "https://schema.org",
@@ -98,7 +108,7 @@ export function articleSchema(article: ArticleWithMeta) {
     publisher: { "@id": `${site.url}/#organization` },
     articleSection: categoryMap[article.category].name,
     keywords: article.tags.join(", "),
-    wordCount: undefined,
+    wordCount: countWords(article),
     isAccessibleForFree: true,
     inLanguage: site.language,
   };

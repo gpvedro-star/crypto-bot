@@ -11,6 +11,7 @@ import { ToolMonogram } from "@/components/cards/ToolMonogram";
 import { ToolCard } from "@/components/cards/ToolCard";
 import { HorizontalCard } from "@/components/cards/HorizontalCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { publishable } from "@/lib/editorial";
 import { Reveal } from "@/components/ui/Reveal";
 import { NewsletterBlock } from "@/components/sections/NewsletterBlock";
 
@@ -92,10 +93,12 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
             <List title="What we like" items={tool.pros} tone="pro" />
             <List title="What to know" items={tool.cons} tone="con" />
           </div>
-          <section aria-labelledby="verdict" className="rounded-card bg-gradient-to-br from-navy-800 to-navy-950 px-6 py-7 text-white sm:px-8">
-            <p className="eyebrow text-sky-300">NUVORA Verdict</p>
-            <p id="verdict" className="mt-3 font-serif text-[1.3rem] leading-[1.45]">{tool.verdict}</p>
-          </section>
+          {publishable(tool.verdict) && (
+            <section aria-labelledby="verdict" className="rounded-[3px] bg-navy-900 px-6 py-7 text-white sm:px-8">
+              <p className="eyebrow text-sky-300">NUVORA Verdict</p>
+              <p id="verdict" className="mt-3 font-serif text-[1.3rem] leading-[1.45]">{tool.verdict}</p>
+            </section>
+          )}
           {stories.length > 0 && (
             <section aria-labelledby="tool-stories">
               <SectionHeading title={`${tool.name} in NUVORA`} kicker="Recent stories & tutorials" />
@@ -116,7 +119,7 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
                 <div key={p.name} className="flex items-baseline justify-between gap-4 py-3">
                   <dt>
                     <span className="block font-sans font-semibold text-ink-900">{p.name}</span>
-                    {p.note && <span className="block font-sans text-[0.82rem] text-ink-500">{p.note}</span>}
+                    {publishable(p.note) && <span className="block font-sans text-[0.82rem] text-ink-500">{p.note}</span>}
                   </dt>
                   <dd className="font-serif text-[1.2rem] font-semibold text-navy-900 tabular">{p.price}</dd>
                 </div>

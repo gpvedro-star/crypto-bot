@@ -39,25 +39,24 @@ export const primaryNav = [
 ] as const;
 
 export const footerNav = {
+  nuvora: [
+    { label: "About NUVORA", href: "/about" },
+    { label: "Contact", href: "/contact" },
+    { label: "Newsletter", href: "/newsletter" },
+  ],
   explore: [
     { label: "Latest", href: "/latest" },
-    { label: "AI Tools", href: "/tools" },
+    { label: "AI News", href: "/news" },
     { label: "Everyday AI", href: "/everyday-ai" },
-    { label: "AI at Work", href: "/ai-at-work" },
+    { label: "AI Tools", href: "/tools" },
     { label: "Guides", href: "/guides" },
-    { label: "News", href: "/news" },
-    { label: "Reviews", href: "/reviews" },
   ],
-  company: [
-    { label: "About NUVORA", href: "/about" },
+  information: [
     { label: "Editorial Standards", href: "/editorial-standards" },
-    { label: "AI Usage Policy", href: "/ai-usage-policy" },
     { label: "Corrections", href: "/corrections" },
-    { label: "Contact", href: "/contact" },
-  ],
-  legal: [
+    { label: "AI Usage Policy", href: "/ai-usage-policy" },
+    { label: "Affiliate Disclosure", href: "/affiliate-disclosure" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Use", href: "/terms" },
-    { label: "Affiliate Disclosure", href: "/affiliate-disclosure" },
   ],
 } as const;

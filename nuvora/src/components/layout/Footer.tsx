@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { footerNav, site } from "@/content/site";
 
 const socials = [
@@ -31,7 +30,7 @@ export function Footer() {
                     href={s.href}
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                     aria-label={`NUVORA on ${s.label}`}
-                    rel="noopener"
+                    target="_blank" rel="noopener noreferrer"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d={s.path} />
@@ -43,18 +42,25 @@ export function Footer() {
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5">
+            <FooterColumn title="NUVORA" items={footerNav.nuvora} />
             <FooterColumn title="Explore" items={footerNav.explore} />
-            <FooterColumn title="Company" items={footerNav.company} />
-            <FooterColumn title="Legal" items={footerNav.legal} />
+            <FooterColumn title="Information" items={footerNav.information} />
           </nav>
 
+          {/* A link, not a fourth signup form: the brief module already sits
+              directly above the footer on the pages that carry it. */}
           <div className="lg:col-span-3">
             <p className="eyebrow text-sky-300">{site.newsletter.name}</p>
             <p className="mt-3 font-serif text-[1.35rem] font-semibold leading-snug">Understand AI. Without the noise.</p>
-            <p className="mt-2 text-[0.95rem] text-white/70">{site.newsletter.cadence}. Free. Unsubscribe any time.</p>
-            <div className="mt-4">
-              <NewsletterForm compact tone="dark" source="footer" />
-            </div>
+            <p className="mt-2 text-[0.95rem] leading-relaxed text-white/70">
+              {site.newsletter.cadence}. Free. Unsubscribe any time.
+            </p>
+            <Link
+              href="/newsletter"
+              className="eyebrow mt-5 inline-flex min-h-[44px] items-center gap-2 text-sky-300 transition-colors hover:text-white"
+            >
+              Subscribe to the brief <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
 

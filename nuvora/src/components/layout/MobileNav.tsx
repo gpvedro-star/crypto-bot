@@ -25,7 +25,7 @@ export function MobileNav({ open, onClose, isActive }: MobileNavProps) {
   return (
     <div
       id="mobile-nav"
-      className={`fixed inset-x-0 top-[var(--header-height)] bottom-0 z-30 bg-paper transition-[opacity,visibility] duration-200 lg:hidden ${
+      className={`fixed inset-x-0 top-[var(--header-height)] bottom-0 z-30 bg-paper transition-opacity duration-200 lg:hidden ${
         open ? "visible opacity-100" : "invisible opacity-0"
       }`}
       aria-hidden={!open}
