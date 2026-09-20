@@ -4,8 +4,10 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
  * POST /api/v1/newsletter { email, source }
- * Validates and hands off to the email provider. The provider integration is
- * behind NEWSLETTER_PROVIDER_URL so the form works in every environment.
+ *
+ * Validates and hands off to the email provider. Until NEWSLETTER_PROVIDER_URL
+ * is configured there is nowhere to store an address, so the endpoint says so
+ * rather than reporting a subscription that did not happen.
  */
 export async function POST(request: Request) {
   let body: { email?: string; source?: string };
@@ -18,7 +20,12 @@ export async function POST(request: Request) {
   if (!EMAIL.test(email) || email.length > 254) return jsonError(422, "Please enter a valid email address.");
 
   const providerUrl = process.env.NEWSLETTER_PROVIDER_URL;
-  if (providerUrl) {
+  if (!providerUrl) {
+    // No list exists yet, so the address cannot be stored. Telling the reader
+    // "You're on the list" here would be a promise the site cannot keep.
+    return jsonError(503, "Newsletter signup isn't available just yet. Please try again soon.");
+  }
+  {
     try {
       const res = await fetch(providerUrl, {
         method: "POST",

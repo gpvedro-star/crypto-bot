@@ -4,6 +4,7 @@ import { getAllArticles, getArticle, getRelated } from "@/lib/content";
 import { categoryMap } from "@/content/categories";
 import { absoluteUrl, articleSchema, breadcrumbSchema, buildMetadata, faqSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/ui/JsonLd";
+import { resolveAffiliate } from "@/lib/affiliates";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { ArticleBody } from "@/components/article/ArticleBody";
 import { KeyTakeaways } from "@/components/article/EditorialBlocks";
@@ -59,6 +60,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
   const related = getRelated(article, 4);
   const url = absoluteUrl(article.href);
   const faq = article.content.find((b) => b.type === "faq");
+  const hasActiveAffiliate = (article.affiliateLinks ?? []).some((id) => resolveAffiliate(id)?.isAffiliate);
   const cat = categoryMap[article.category];
 
   return (
@@ -89,7 +91,10 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
                 {article.keyTakeaways && article.keyTakeaways.length > 0 && <KeyTakeaways items={article.keyTakeaways} />}
                 <ArticleBody blocks={article.content} id="article-content" />
 
-                {article.affiliateLinks && article.affiliateLinks.length > 0 && (
+                {/* Disclose a commission only where a partnership is actually
+                    live. With none active, links are plain links and saying
+                    otherwise would invent a commercial relationship. */}
+                {hasActiveAffiliate && (
                   <p className="mt-10 border-t border-line pt-5 font-sans text-[0.85rem] leading-relaxed text-ink-500">
                     NUVORA may earn a commission when you buy through links on this page. This never affects what we recommend.{" "}
                     <Link href="/affiliate-disclosure" className="underline hover:text-navy-900">How we handle affiliate links.</Link>

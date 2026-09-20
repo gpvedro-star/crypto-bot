@@ -151,8 +151,8 @@ export function ToolsSection({ tools, articles }: { tools: AITool[]; articles: A
       )}
 
       <p className="mt-8 max-w-2xl font-sans text-[0.9rem] leading-relaxed text-ink-500">
-        Tool descriptions are editorial explanations, not endorsements. Prices are checked by the tools desk and change
-        often. Read our{" "}
+        Tool descriptions are editorial explanations, not endorsements. Prices change often — confirm them on the
+        provider&apos;s own site before you pay. Read our{" "}
         <Link href="/affiliate-disclosure" className="underline decoration-line-strong hover:text-navy-900">
           affiliate disclosure
         </Link>

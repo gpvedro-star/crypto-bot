@@ -47,7 +47,7 @@ export function GET() {
     <description>${xml(site.description)}</description>
     <language>${xml(site.language)}</language>
     <lastBuildDate>${new Date(updated).toUTCString()}</lastBuildDate>
-    <copyright>${xml(`© ${new Date().getFullYear()} ${site.publisher.legalName}`)}</copyright>
+    <copyright>${xml(`© ${new Date().getFullYear()} ${site.name}`)}</copyright>
 ${items}
   </channel>
 </rss>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { site } from "@/content/site";
+import { contactEmail, site, socialProfiles } from "@/content/site";
 import { categoryMap } from "@/content/categories";
 import type { ArticleWithMeta } from "./content";
 import type { AITool, FAQItem } from "@/content/types";
@@ -46,21 +46,31 @@ export function buildMetadata({ title, description, path, image, type = "website
 
 /* ---------------- JSON-LD ---------------- */
 
+/**
+ * Publisher identity for search engines.
+ *
+ * Declares only what is verifiable: the name, the site, the slogan, the logo
+ * and the two published policies. No legal entity, founding date, address,
+ * staff or social profile is asserted — fabricated credibility signals are
+ * exactly what structured data must not carry. Optional fields appear only
+ * once the underlying value is actually configured.
+ */
 export function organizationSchema() {
+  const sameAs = socialProfiles.map((p) => p.href);
   return {
     "@context": "https://schema.org",
     "@type": "NewsMediaOrganization",
     "@id": `${site.url}/#organization`,
     name: site.name,
-    alternateName: site.publisher.name,
     url: site.url,
     slogan: site.tagline,
     logo: { "@type": "ImageObject", url: absoluteUrl("/brand/icon.svg"), width: 512, height: 512 },
-    sameAs: Object.values(site.social),
-    foundingDate: String(site.foundingYear),
     ethicsPolicy: absoluteUrl("/editorial-standards"),
     correctionsPolicy: absoluteUrl("/corrections"),
-    contactPoint: { "@type": "ContactPoint", contactType: "editorial", email: site.publisher.email },
+    ...(sameAs.length ? { sameAs } : {}),
+    ...(contactEmail
+      ? { contactPoint: { "@type": "ContactPoint", contactType: "editorial", email: contactEmail } }
+      : {}),
   };
 }
 
