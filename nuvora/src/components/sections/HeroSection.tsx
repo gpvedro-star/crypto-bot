@@ -4,7 +4,6 @@ import { ArticleImage } from "@/components/ui/ArticleImage";
 import { ArticleMeta } from "@/components/ui/ArticleMeta";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { formatDate, formatShortDate } from "@/lib/dates";
-import { site } from "@/content/site";
 
 interface HeroSectionProps {
   lead: ArticleWithMeta;
@@ -32,13 +31,11 @@ export function HeroSection({ lead, topStories }: HeroSectionProps) {
   return (
     <section aria-labelledby="lead-story" className="border-b border-line bg-white">
       <div className="container-x pb-14 pt-6 sm:pt-8 lg:pb-20">
-        {/* Dateline rule */}
-        <div className="flex items-baseline justify-between gap-4 border-t-2 border-navy-900 pt-3">
-          <p className="eyebrow text-navy-900">The Lead</p>
-          <p className="eyebrow text-ink-400 xl:hidden">{site.tagline}</p>
-        </div>
+        {/* Section rule. The slogan lives in the masthead, not here — beside the
+            lead headline it competed with it. */}
+        <p className="eyebrow border-t-2 border-navy-900 pt-2.5 text-navy-900">The Lead</p>
 
-        <div className="mt-7 grid gap-10 lg:mt-8 lg:grid-cols-12 lg:gap-0">
+        <div className="mt-6 grid gap-10 lg:mt-7 lg:grid-cols-12 lg:gap-0">
           {/* ---- Cover feature ---------------------------------------- */}
           <article className="lg:col-span-8 lg:pr-8 xl:pr-14">
             <Link href={lead.href} tabIndex={-1} aria-hidden="true" className="block">
