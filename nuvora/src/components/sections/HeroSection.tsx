@@ -64,7 +64,7 @@ export function HeroSection({ lead, topStories }: HeroSectionProps) {
                 <Link href={`/authors/${lead.author.slug}`} className="font-semibold hover:underline">
                   {lead.author.name}
                 </Link>
-                <span className="hidden text-ink-500 sm:inline">, {lead.author.role}</span>
+                {lead.author.role && <span className="hidden text-ink-500 sm:inline">, {lead.author.role}</span>}
               </span>
               <MetaRule />
               {/* Short date on phones keeps the byline to a single line. */}

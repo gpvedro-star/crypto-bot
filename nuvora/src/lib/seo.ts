@@ -114,7 +114,9 @@ export function articleSchema(article: ArticleWithMeta) {
     image: [absoluteUrl(article.featuredImage.src)],
     datePublished: article.publishedAt,
     dateModified: article.updatedAt,
-    author: { "@type": "Person", name: article.author.name, url: absoluteUrl(`/authors/${article.author.slug}`) },
+    // Demo content is attributed to the publication. Emitting a Person here
+    // would assert a journalist who does not exist.
+    author: { "@type": "Organization", name: site.name, url: site.url },
     publisher: { "@id": `${site.url}/#organization` },
     articleSection: categoryMap[article.category].name,
     keywords: article.tags.join(", "),

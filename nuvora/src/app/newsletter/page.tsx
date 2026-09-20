@@ -12,7 +12,7 @@ export const metadata: Metadata = buildMetadata({
 
 const promises = [
   { title: "Plain English", text: "No jargon, no hype. If we use a technical word, we explain it in the same sentence." },
-  { title: "Only what matters", text: "We read everything so you get the three or four things worth knowing, not thirty." },
+  { title: "Only what matters", text: "The three or four things worth knowing, not thirty." },
   { title: "Practical", text: "Every issue includes at least one thing you can try this week." },
   { title: "Easy to leave", text: "One click to unsubscribe, and we never sell your address." },
 ];

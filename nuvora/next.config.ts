@@ -19,6 +19,15 @@ const nextConfig: NextConfig = {
     // Remote image hosts are added here when the image pipeline goes live.
     remotePatterns: [],
   },
+  /** Retired fictional author routes now point at the publication byline. */
+  async redirects() {
+    if (isStatic) return [];
+    return ["margaret-hale", "daniel-reyes", "priya-natarajan", "thomas-whitfield", "nuvora-staff"].map((slug) => ({
+      source: `/authors/${slug}`,
+      destination: "/authors/nuvora",
+      permanent: true,
+    }));
+  },
   async headers() {
     if (isStatic) return [];
     return [

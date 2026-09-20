@@ -11,7 +11,7 @@ export function AuthorCard({ author }: { author: Author }) {
         <p className="mt-1 font-serif text-[1.35rem] font-semibold text-navy-900">
           <Link href={`/authors/${author.slug}`} className="hover:underline">{author.name}</Link>
         </p>
-        <p className="font-sans text-[0.9rem] text-ink-500">{author.role}</p>
+        {author.role && <p className="font-sans text-[0.9rem] text-ink-500">{author.role}</p>}
         <p className="mt-3 font-sans text-[0.98rem] leading-relaxed text-ink-700">{author.bio}</p>
       </div>
     </aside>

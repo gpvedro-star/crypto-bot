@@ -7,13 +7,13 @@ export const newsArticles: Article[] = [
     slug: "ai-just-changed-again-heres-what-actually-matters",
     title: "AI Just Changed Again. Here's What Actually Matters.",
     subtitle:
-      "A week of major announcements left most people confused. We read everything, so you only need to understand three things.",
+      "A week of major announcements left most people confused. Here are the three things that actually matter.",
     excerpt:
       "Three big AI companies shipped major updates in the same week. Most of it is noise. Here is the small part that will actually touch your life.",
     shortSummary: "Three announcements, one week, and only three things worth understanding.",
     category: "news",
     tags: ["ChatGPT", "Claude", "Gemini", "Explainers"],
-    authorSlug: "margaret-hale",
+    authorSlug: "nuvora",
     status: "published",
     publishedAt: "2026-09-18T06:00:00Z",
     updatedAt: "2026-09-18T10:30:00Z",
@@ -35,7 +35,7 @@ export const newsArticles: Article[] = [
     socialCaptions: {
       instagram: "AI changed again this week. Here's the short version, in plain English. Link in bio.",
       x: "AI just changed again. Here's what actually matters — in three points, no jargon.",
-      facebook: "Confused by this week's AI news? You're not alone. We read everything so you don't have to.",
+      facebook: "Confused by this week's AI news? You're not alone. Here are the three things that actually matter.",
     },
     hashtags: ["#AI", "#AIforNormalPeople", "#NUVORA", "#Technology"],
     seoTitle: "AI Just Changed Again: What Actually Matters This Week",
@@ -54,7 +54,7 @@ export const newsArticles: Article[] = [
       },
       {
         type: "paragraph",
-        text: "So we did what we always do at NUVORA: we read all of it, tried what we could, and asked a simple question about each announcement. Will a normal person notice this? For most of it, the honest answer is no. For three things, the answer is yes.",
+        text: "So each announcement is worth putting to one simple question. Will a normal person notice this? For most of it, the honest answer is no. For three things, the answer is yes.",
       },
       { type: "heading", level: 2, text: "1. The assistants are getting quieter" },
       {
@@ -96,7 +96,6 @@ export const newsArticles: Article[] = [
       {
         type: "quote",
         text: "The people who get the most from AI are not the ones who follow every announcement. They are the ones who use it for one boring thing, every week.",
-        cite: "Margaret Hale, Editor in Chief",
       },
       {
         type: "callout",
@@ -126,7 +125,7 @@ export const newsArticles: Article[] = [
     shortSummary: "ChatGPT's new suggestions fix the blank-box problem.",
     category: "news",
     tags: ["ChatGPT", "OpenAI"],
-    authorSlug: "daniel-reyes",
+    authorSlug: "nuvora",
     status: "published",
     publishedAt: "2026-09-17T12:00:00Z",
     updatedAt: "2026-09-17T18:45:00Z",
@@ -141,7 +140,7 @@ export const newsArticles: Article[] = [
       { type: "paragraph", text: "The new version addresses that directly. When you open ChatGPT, it now shows a handful of starting points based on what you have done before — “draft a reply to this email,” “explain this document,” “plan three dinners.” Choose one and you are working within seconds." },
       { type: "explains", term: "What is a prompt?", text: "A prompt is simply what you type to an AI assistant. It can be a question, an instruction, or a pasted document with a request attached. Good prompts are specific about what you want and who it is for — but you do not need special phrasing." },
       { type: "heading", level: 2, text: "Why this is bigger than it looks" },
-      { type: "paragraph", text: "In our testing with readers new to AI, the difference was immediate. People who were previously hesitant chose a suggestion, saw a useful result, and then asked a follow-up of their own. The suggestions act as training wheels that come off on their own." },
+      { type: "paragraph", text: "For people new to AI, suggested starting points can reduce the friction of facing an empty prompt box. A suggestion gives you something to react to, and a follow-up question usually follows naturally from there. The suggestions act as training wheels that come off on their own." },
       { type: "whyItMatters", text: "The hardest part of AI was never the technology. It was knowing where to begin. A feature that solves that for millions of people matters more than another benchmark score." },
       { type: "toolRecommendation", toolSlug: "chatgpt", note: "The free version includes the new suggestions. There is no need to pay to try them." },
       { type: "bottomLine", text: "If you tried ChatGPT before and drifted away, this is a good reason to open it again." },
@@ -156,7 +155,7 @@ export const newsArticles: Article[] = [
     shortSummary: "What an AI agent is, and what it can and cannot do today.",
     category: "news",
     tags: ["AI Agents", "Explainers", "Safety"],
-    authorSlug: "margaret-hale",
+    authorSlug: "nuvora",
     status: "published",
     publishedAt: "2026-09-15T09:00:00Z",
     updatedAt: "2026-09-16T08:10:00Z",
@@ -186,7 +185,7 @@ export const newsArticles: Article[] = [
     shortSummary: "A developing story: three morning announcements, summarized.",
     category: "news",
     tags: ["Developing", "ChatGPT", "Gemini", "Claude"],
-    authorSlug: "nuvora-staff",
+    authorSlug: "nuvora",
     status: "published",
     publishedAt: "2026-09-18T13:15:00Z",
     updatedAt: "2026-09-18T14:05:00Z",
@@ -195,7 +194,7 @@ export const newsArticles: Article[] = [
     trending: true,
     relatedArticles: ["ai-just-changed-again-heres-what-actually-matters"],
     content: [
-      { type: "paragraph", text: "This is a developing story. Our editors are reading the announcements now and will replace this summary with a full explainer later today." },
+      { type: "paragraph", text: "This is a developing story. This summary will be replaced with a full explainer once the announcements have been reviewed." },
       { type: "list", style: "bullet", items: ["OpenAI announced changes to how ChatGPT suggests tasks.", "Google expanded Gemini features inside Gmail for more users.", "Anthropic published an update to Claude's document handling."] },
       { type: "callout", title: "What we know so far", text: "None of these changes require action from readers. All are arriving in free versions over the coming weeks." },
     ],

@@ -28,7 +28,7 @@ export function ArticleHeader({ article }: { article: ArticleWithMeta }) {
             <Avatar author={article.author} size={44} />
             <span>
               <span className="block font-semibold text-ink-900">{article.author.name}</span>
-              <span className="block text-[0.82rem]">{article.author.role}</span>
+              {article.author.role && <span className="block text-[0.82rem]">{article.author.role}</span>}
             </span>
           </Link>
           <dl className="flex flex-wrap items-center gap-x-5 gap-y-1">

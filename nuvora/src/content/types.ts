@@ -30,7 +30,8 @@ export interface Category {
 export interface Author {
   slug: string;
   name: string;
-  role: string;
+  /** Job title. Omitted for the publication byline, which is not a person. */
+  role?: string;
   bio: string;
   /** Initials used when no portrait is available. */
   initials: string;
