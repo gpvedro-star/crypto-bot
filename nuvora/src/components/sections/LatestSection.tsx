@@ -3,20 +3,17 @@ import type { ArticleWithMeta } from "@/lib/content";
 import { ArticleImage } from "@/components/ui/ArticleImage";
 import { ArticleMeta } from "@/components/ui/ArticleMeta";
 import { CategoryTag } from "@/components/ui/CategoryTag";
-import { NewsletterForm } from "@/components/forms/NewsletterForm";
-import { categoryMap } from "@/content/categories";
-import { site } from "@/content/site";
 
 /**
  * The story feed, composed rather than listed: one section lead, two stories
- * of middle weight, then the rest as a ruled two-column index, with a most-read
- * rail alongside. Three descending weights so the eye is told where to start.
+ * of middle weight, then the rest as a ruled two-column index. Three descending
+ * weights so the eye is told where to start.
  *
  * Built from primitives instead of the shared card components because those are
  * used by the category, author, tool and search pages, which this phase leaves
  * untouched.
  */
-export function LatestSection({ articles, mostRead }: { articles: ArticleWithMeta[]; mostRead: ArticleWithMeta[] }) {
+export function LatestSection({ articles }: { articles: ArticleWithMeta[] }) {
   const [featured, ...rest] = articles;
   const secondary = rest.slice(0, 2);
   const index = rest.slice(2);
@@ -40,25 +37,24 @@ export function LatestSection({ articles, mostRead }: { articles: ArticleWithMet
         </div>
       </header>
 
-      <div className="mt-10 grid gap-12 lg:grid-cols-12 lg:gap-0">
-        {/* ---- Feed ---------------------------------------------------- */}
-        <div className="lg:col-span-8 lg:pr-10 xl:pr-14">
+      <div className="mt-10">
+        <div>
           {/* Section lead */}
           {/* Horizontal, so the section lead does not restate the cover's
               shape directly beneath it. */}
           {featured && (
             <article className="grid gap-5 sm:grid-cols-12 sm:items-center sm:gap-8">
-              <div className="sm:col-span-6">
+              <div className="sm:col-span-6 lg:col-span-5">
                 <Link href={featured.href} tabIndex={-1} aria-hidden="true" className="block">
                   <ArticleImage
                     image={featured.featuredImage}
                     ratio="aspect-[4/3]"
-                    sizes="(min-width: 1024px) 30vw, 100vw"
+                    sizes="(min-width: 1024px) 40vw, 100vw"
                     rounded={false}
                   />
                 </Link>
               </div>
-              <div className="sm:col-span-6">
+              <div className="sm:col-span-6 lg:col-span-7">
                 <CategoryTag category={featured.category} variant="text" />
                 <h3 className="headline mt-2 text-[1.65rem] sm:text-[1.8rem] lg:text-[1.9rem]">
                   <Link href={featured.href} className="transition-colors hover:text-navy-700">
@@ -71,16 +67,17 @@ export function LatestSection({ articles, mostRead }: { articles: ArticleWithMet
             </article>
           )}
 
-          {/* Middle weight */}
+          {/* Middle weight. Two stories in a three-column track at desktop: at
+              half the full-width container their images would match the lead's. */}
           {secondary.length > 0 && (
-            <div className="mt-10 grid gap-x-10 gap-y-9 border-t border-line pt-9 sm:grid-cols-2">
+            <div className="mt-10 grid gap-x-8 gap-y-9 border-t border-line pt-9 sm:grid-cols-2 lg:grid-cols-3">
               {secondary.map((article) => (
                 <article key={article.slug} className="relative">
                   <Link href={article.href} tabIndex={-1} aria-hidden="true" className="block">
                     <ArticleImage
                       image={article.featuredImage}
                       ratio="aspect-[2/1]"
-                      sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw"
+                      sizes="(min-width: 1024px) 31vw, (min-width: 640px) 45vw, 100vw"
                       rounded={false}
                     />
                   </Link>
@@ -133,48 +130,6 @@ export function LatestSection({ articles, mostRead }: { articles: ArticleWithMet
             Load more stories <span aria-hidden="true">→</span>
           </Link>
         </div>
-
-        {/* ---- Most read rail ------------------------------------------ */}
-        <aside className="lg:col-span-4 lg:border-l lg:border-line lg:pl-10 xl:pl-14">
-          <section aria-labelledby="most-read-heading">
-            <h3 id="most-read-heading" className="eyebrow border-b border-navy-900 pb-3 text-navy-900">
-              Most read this week
-            </h3>
-            <ol className="divide-y divide-line">
-              {mostRead.map((article, i) => (
-                <li key={article.slug} className="relative flex items-start gap-4 py-5">
-                  <span
-                    aria-hidden="true"
-                    className="tabular w-7 shrink-0 font-serif text-[1.45rem] font-semibold leading-none text-sky-500"
-                  >
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0">
-                    <span className="sr-only">Rank {i + 1}.</span>
-                    <p className="eyebrow text-navy-700">{categoryMap[article.category].name}</p>
-                    <h4 className="title mt-1.5 text-[1.02rem]">
-                      <Link href={article.href} className="after:absolute after:inset-0 hover:text-navy-700">
-                        {article.title}
-                      </Link>
-                    </h4>
-                    <p className="mt-1 font-sans text-[0.82rem] text-ink-500">
-                      {article.author.name} · <span className="tabular">{article.readingTime} min read</span>
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <div className="mt-10 rounded-[3px] bg-navy-900 p-6 text-white">
-            <p className="eyebrow text-sky-300">{site.newsletter.name}</p>
-            <p className="headline mt-3 text-[1.45rem] text-white">Understand AI. Without the noise.</p>
-            <p className="mt-2 text-[0.95rem] text-white/70">{site.newsletter.cadence}. Free. Unsubscribe any time.</p>
-            <div className="mt-4">
-              <NewsletterForm compact tone="dark" source="home-sidebar" />
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
   );
