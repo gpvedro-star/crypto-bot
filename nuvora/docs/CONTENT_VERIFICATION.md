@@ -49,12 +49,14 @@ verified. **No citations were invented to make these stories look sourced.**
 
 ## Recommended sequence
 
-1. **The three reviews** are the most exposed: they are visibly unfinished *and*
-   claim hands-on testing. Either replace them or set `status` to something
-   other than `"published"` so they leave the public site.
-2. **Class C copy** asserts work NUVORA has not done. It is inside article
-   bodies, so it was left in place rather than rewritten piecemeal — but it
-   should go in the same pass that replaces the demo set.
+1. **The three reviews** — done. Set to `status: "draft"` in the launch audit
+   (2026-09-21): their bodies were visible scaffolding ("Editorial placeholder…",
+   "Verdict placeholder…"). Not deleted; restore by setting `status` back to
+   `"published"` once real reviews are written. `/reviews` shows an empty state
+   until then.
+2. **Class C copy** — done. First-person testing and experience claims were
+   rewritten neutrally (2026-09-20/21), and all bylines moved to "NUVORA". The
+   underlying facts are still unverified: see Class A/B.
 3. **Class A** should be replaced before any launch that invites real readers;
    dated claims about named companies are the ones that get noticed.
 4. Class B and D can migrate as the real workflow produces replacements.

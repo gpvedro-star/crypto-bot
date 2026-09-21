@@ -62,7 +62,7 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
           <div className="flex items-start gap-5 lg:col-span-8">
             <ToolMonogram tool={tool} size={80} />
             <div>
-              <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-600">AI Tool · by {tool.maker}</p>
+              <p className="font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700">AI Tool · by {tool.maker}</p>
               <h1 className="headline mt-1 text-[2.6rem] sm:text-[3.4rem]">{tool.name}</h1>
               <p className="deck mt-3 max-w-2xl text-[1.2rem] text-ink-700 sm:text-[1.35rem]">{tool.tagline}</p>
               <p className="mt-3 font-sans text-[0.85rem] text-ink-500">Last reviewed {formatDate(tool.updatedAt)}</p>

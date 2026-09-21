@@ -33,7 +33,7 @@ export function WhyItMatters({ text }: { text: string }) {
 /* ---------- THE BOTTOM LINE ---------- */
 export function BottomLine({ text }: { text: string }) {
   return (
-    <aside className="not-prose my-10 rounded-card bg-gradient-to-br from-navy-800 to-navy-950 px-6 py-7 text-white sm:px-8" aria-label="The bottom line">
+    <aside className="not-prose my-10 rounded-card bg-navy-900 bg-gradient-to-br from-navy-800 to-navy-950 px-6 py-7 text-white sm:px-8" aria-label="The bottom line">
       <p className="eyebrow text-sky-300">The Bottom Line</p>
       <p className="mt-3 font-serif text-[1.4rem] leading-[1.4]" style={{ fontVariationSettings: '"opsz" 24' }}>{text}</p>
     </aside>

@@ -136,7 +136,7 @@ export const newsArticles: Article[] = [
     relatedArticles: ["ai-just-changed-again-heres-what-actually-matters", "how-to-use-chatgpt-to-organize-your-week", "the-5-ai-tools-worth-knowing-this-week"],
     tools: ["chatgpt"],
     content: [
-      { type: "paragraph", text: "Ask people who tried ChatGPT once and never went back why they stopped, and you hear the same thing. They opened it, saw an empty box, and did not know what to type. They typed something small, got a fine answer, and closed the tab." },
+      { type: "paragraph", text: "A common story for people who tried ChatGPT once and never went back is a simple one. They opened it, saw an empty box, and did not know what to type. They typed something small, got a fine answer, and closed the tab." },
       { type: "paragraph", text: "The new version addresses that directly. When you open ChatGPT, it now shows a handful of starting points based on what you have done before — “draft a reply to this email,” “explain this document,” “plan three dinners.” Choose one and you are working within seconds." },
       { type: "explains", term: "What is a prompt?", text: "A prompt is simply what you type to an AI assistant. It can be a question, an instruction, or a pasted document with a request attached. Good prompts are specific about what you want and who it is for — but you do not need special phrasing." },
       { type: "heading", level: 2, text: "Why this is bigger than it looks" },

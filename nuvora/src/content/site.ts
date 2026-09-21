@@ -31,7 +31,13 @@ export const site = {
   tagline: "AI for Normal People",
   description:
     "NUVORA is an American digital magazine that explains artificial intelligence clearly, calmly, and practically — for people who want to understand it, not build it.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nuvora.com",
+  /**
+   * Canonical origin. Set NEXT_PUBLIC_SITE_URL to the production domain; on
+   * Netlify, URL (the site's primary address) is the fallback. There is no
+   * hard-coded brand domain: nuvora.com is not known to be NUVORA's, and
+   * canonicals pointing at it would hand ranking to whoever owns it.
+   */
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.URL ?? "http://localhost:3000",
   locale: "en_US",
   language: "en-US",
   publisher: {

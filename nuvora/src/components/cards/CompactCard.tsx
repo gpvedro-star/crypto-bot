@@ -15,7 +15,7 @@ export function CompactCard({ article, showImage = true, tone = "light" }: { art
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className={`font-sans text-[0.74rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-sky-600"}`}>{categoryMap[article.category].name}</p>
+        <p className={`font-sans text-[0.74rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-navy-700"}`}>{categoryMap[article.category].name}</p>
         <h3 className={`title mt-1 text-[1.05rem] sm:text-[1.1rem] ${dark ? "text-white" : ""}`}>
           <Link href={article.href} className="after:absolute after:inset-0">
             {article.title}

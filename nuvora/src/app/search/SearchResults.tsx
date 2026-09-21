@@ -18,7 +18,7 @@ function Inner({ articles }: { articles: Record<string, ArticleWithMeta> }) {
   return (
     <>
       <header className="mx-auto max-w-3xl pt-12 text-center sm:pt-16">
-        <p className="flex items-center justify-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-500">
+        <p className="flex items-center justify-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700">
           <span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />
           Search
         </p>

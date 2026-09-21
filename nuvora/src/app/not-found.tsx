@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getLatest } from "@/lib/content";
 import { CompactCard } from "@/components/cards/CompactCard";
 import { Logo } from "@/components/brand/Logo";
+
+/** Without this the 404 inherits the homepage title, and is indistinguishable
+ *  from the front page in a browser tab or a crawler report. */
+export const metadata: Metadata = {
+  title: "Page not found",
+  robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
   const latest = getLatest(4);
@@ -18,7 +26,7 @@ export default function NotFound() {
         </div>
       </div>
       <div className="mx-auto mt-16 max-w-2xl border-t-2 border-navy-900 pt-4">
-        <p className="eyebrow text-navy-900">Latest stories</p>
+        <h2 className="eyebrow text-navy-900">Latest stories</h2>
         <ul className="mt-2 divide-y divide-line">
           {latest.map((a) => (
             <li key={a.slug} className="py-5"><CompactCard article={a} /></li>

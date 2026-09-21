@@ -17,7 +17,7 @@ export function SectionHeading({ title, kicker, description, href, linkLabel = "
     <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
       <div className="max-w-2xl">
         {kicker && (
-          <p className={`mb-3 flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] ${dark ? "text-sky-300" : "text-sky-500"}`}>
+          <p className={`mb-3 flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] ${dark ? "text-sky-300" : "text-navy-700"}`}>
             <span className={`inline-block h-2 w-2 rounded-full ${dark ? "bg-sky-300" : "bg-sky-500"}`} aria-hidden="true" />
             {kicker}
           </p>

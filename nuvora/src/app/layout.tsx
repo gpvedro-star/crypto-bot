@@ -18,7 +18,9 @@ const newsreader = Newsreader({
   variable: "--font-newsreader",
   display: "swap",
   axes: ["opsz"],
-  style: ["normal", "italic"],
+  // Normal only. The italic face was a 147 KB preload on every page and no
+  // element renders italic (blockquote <cite> is set to font-style: normal).
+  style: ["normal"],
 });
 
 export const metadata: Metadata = {

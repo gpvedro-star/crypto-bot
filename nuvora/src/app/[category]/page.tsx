@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { categories, getAllArticles, getArticlesByCategory, getCategory, getMostRead, guides, tools } from "@/lib/content";
@@ -68,7 +69,7 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
       <div className="container-x">
         <Breadcrumbs items={[{ name: meta.name }]} />
         <header className="pb-6 pt-8 sm:pt-12">
-          <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-500">
+          <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700">
             <span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />
             {isLatest ? "All stories" : "Section"} · {articles.length} {articles.length === 1 ? "story" : "stories"}
           </p>
@@ -78,6 +79,18 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
       </div>
 
       <AdSlot name="category-top" className="container-x mt-8" />
+
+      {articles.length === 0 && !showTools && !showGuides && (
+        <div className="container-x mt-4">
+          <p className="border-t border-line pt-8 text-[1.05rem] leading-relaxed text-ink-700">
+            No stories have been published in this section yet.{" "}
+            <Link href="/latest" className="font-semibold text-navy-900 underline decoration-line-strong hover:decoration-navy-900">
+              Read the latest from NUVORA
+            </Link>
+            .
+          </p>
+        </div>
+      )}
 
       {showTools && (
         <section className="container-x mt-12" aria-labelledby="tool-directory">
@@ -109,7 +122,7 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
             </div>
             <aside className="lg:col-span-4">
               <div className="rounded-card border border-line bg-white p-6">
-              <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-sky-600"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Popular in {meta.name}</p>
+              <p className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Popular in {meta.name}</p>
               <ol className="mt-2">
                 {(popular.length ? popular : rest.slice(0, 5)).map((a, i) => (
                   <TrendingItem key={a.slug} article={a} rank={i + 1} />

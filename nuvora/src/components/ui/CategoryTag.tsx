@@ -23,13 +23,19 @@ const textTones = {
   overlay: "text-white hover:text-sky-100",
 };
 
-/** Category label. `pill` on cards, `text` for print-style section labels. */
+/**
+ * Category label. `pill` on cards, `text` for print-style section labels.
+ *
+ * The text variant is 14px of type. A transparent pseudo-element extends its
+ * tap target to 24px (WCAG 2.5.8) without touching layout — padding and margin
+ * would collide with the mt-* classes callers pass in.
+ */
 export function CategoryTag({ category, tone = "light", variant = "pill", asLink = true, className = "" }: CategoryTagProps) {
   const cat = categoryMap[category];
   const cls =
     variant === "pill"
       ? `pill transition-colors ${pillTones[tone]} ${className}`
-      : `eyebrow inline-block transition-colors ${textTones[tone]} ${className}`;
+      : `eyebrow relative inline-block transition-colors before:absolute before:inset-x-0 before:-inset-y-[5px] ${textTones[tone]} ${className}`;
   if (!asLink) return <span className={cls}>{cat.name}</span>;
   return (
     <Link href={`/${cat.slug}`} className={cls}>

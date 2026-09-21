@@ -18,7 +18,7 @@ export function TrendingItem({ article, rank, tone = "light", showImage = true }
       )}
       <div className="min-w-0">
         <span className="sr-only">Rank {rank}.</span>
-        <p className={`font-sans text-[0.72rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-sky-600"}`}>{categoryMap[article.category].name}</p>
+        <p className={`font-sans text-[0.72rem] font-semibold uppercase tracking-[0.1em] ${dark ? "text-sky-300" : "text-navy-700"}`}>{categoryMap[article.category].name}</p>
         <h3 className={`title mt-1 text-[1.1rem] sm:text-[1.25rem] ${dark ? "text-white" : ""}`}>
           <Link href={article.href} className="after:absolute after:inset-0">
             {article.title}

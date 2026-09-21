@@ -55,11 +55,11 @@ export const categories: Category[] = [
     slug: "reviews",
     name: "Reviews",
     label: "Reviews",
-    description: "Hands-on, plain-spoken reviews of AI products and features.",
-    tagline: "We use it so you can decide whether you should.",
+    description: "Plain-spoken assessments of AI products and features.",
+    tagline: "What a product does well, where it falls short, and who it suits.",
     seoTitle: "AI Product Reviews",
     seoDescription:
-      "Honest, hands-on reviews of AI tools, apps and features from the NUVORA editorial team.",
+      "Plain-English assessments of AI tools, apps and features: what they do well, where they fall short, and who they suit.",
   },
 ];
 

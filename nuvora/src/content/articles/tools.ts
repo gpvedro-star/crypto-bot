@@ -71,7 +71,7 @@ export const toolsArticles: Article[] = [
       {
         type: "table",
         table: {
-          caption: "A plain-English comparison. Details are editorial placeholders pending verification.",
+          caption: "A plain-English comparison. Features and prices change often; confirm details with each provider.",
           columns: ["", "Claude", "ChatGPT"],
           rows: [
             ["Tone", "Calm, measured, well organized", "Friendly, conversational"],
