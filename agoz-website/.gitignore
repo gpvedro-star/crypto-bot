@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Vendored photography — regenerate with `npm run photos`
+public/photos/
