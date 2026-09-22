@@ -39,6 +39,14 @@ function start() {
   listening = true
   window.addEventListener('scroll', schedule, { passive: true })
   window.addEventListener('resize', schedule, { passive: true })
+  // Landing on a #hash jumps the page without ever firing a scroll event, so
+  // the arrival has to be measured on its own.
+  window.addEventListener('hashchange', schedule)
+  window.addEventListener('load', schedule)
+  // Fonts and images settle after first paint and move everything; two late
+  // passes cost nothing and stop content from being stranded below the fold.
+  setTimeout(schedule, 120)
+  setTimeout(schedule, 600)
 }
 
 function stop() {
@@ -46,6 +54,8 @@ function stop() {
   listening = false
   window.removeEventListener('scroll', schedule)
   window.removeEventListener('resize', schedule)
+  window.removeEventListener('hashchange', schedule)
+  window.removeEventListener('load', schedule)
 }
 
 export function observeReveal(el: HTMLElement, reveal: () => void) {

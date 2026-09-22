@@ -12,8 +12,11 @@ import { CTA } from './sections/CTA'
 import { Contact } from './sections/Contact'
 import { Footer } from './sections/Footer'
 import { WhatsAppFab } from './components/WhatsAppFab'
+import { useHashLanding } from './hooks/useHashLanding'
 
 export default function App() {
+  useHashLanding()
+
   return (
     <>
       <Header />

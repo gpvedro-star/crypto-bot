@@ -5,3 +5,6 @@ dist
 
 # Vendored photography — regenerate with `npm run photos`
 public/photos/
+
+# Single-file bundle output — regenerate with `npm run singlefile`
+dist-single/

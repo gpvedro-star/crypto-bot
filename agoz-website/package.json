@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "photos": "node scripts/vendor-photos.mjs",
     "logo": "node scripts/build-logo.cjs",
-    "fonts": "node scripts/fetch-fonts.mjs"
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "singlefile": "node scripts/build-singlefile.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
