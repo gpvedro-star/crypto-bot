@@ -37,7 +37,18 @@ const photo = (
   tint: string,
 ): Photo => ({ local: `/photos/${file}.webp`, remote: `${CDN}/${remoteFile}.png`, alt, ratio, tint })
 
-export const src = (p: Photo) => (USE_LOCAL_PHOTOS ? p.local : p.remote)
+/** `/photos/gallery-path.webp` → `gallery-path` */
+const key = (p: Photo) => p.local.slice(8, -5)
+
+declare global {
+  interface Window {
+    /** Set by the single-file bundler, which inlines each photo as a data URI. */
+    __AGOZ_PHOTOS?: Record<string, string>
+  }
+}
+
+export const src = (p: Photo) =>
+  globalThis.window?.__AGOZ_PHOTOS?.[key(p)] ?? (USE_LOCAL_PHOTOS ? p.local : p.remote)
 
 /** Widths emitted by `npm run photos`. */
 export const PHOTO_WIDTHS = [640, 1024, 1600, 2000] as const
@@ -47,7 +58,7 @@ export const PHOTO_WIDTHS = [640, 1024, 1600, 2000] as const
  * originals exist at a single size, so advertising widths for them would lie.
  */
 export const srcSet = (p: Photo) =>
-  USE_LOCAL_PHOTOS
+  USE_LOCAL_PHOTOS && !import.meta.env.VITE_SINGLEFILE
     ? PHOTO_WIDTHS.map((w) => `${p.local.replace(/\.webp$/, `-${w}.webp`)} ${w}w`).join(', ')
     : undefined
 

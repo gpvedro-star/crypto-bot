@@ -11,7 +11,8 @@
     "photos": "node scripts/vendor-photos.mjs",
     "logo": "node scripts/build-logo.cjs",
     "fonts": "node scripts/fetch-fonts.mjs",
-    "singlefile": "node scripts/build-singlefile.mjs"
+    "singlefile": "node scripts/build-singlefile.mjs",
+    "bundle": "npm run photos && npm run singlefile"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
