@@ -1,12 +1,15 @@
 /**
- * Bundles the production build into one self-contained .html file.
+ * Bundles the production build into one .html file.
  *
- *   npm run singlefile   →  dist-single/agoz-website.html
+ *   npm run singlefile          →  everything inlined, works offline (~1.3 MB)
+ *   FONTS=link npm run singlefile  →  fonts pulled from Google (~0.45 MB)
  *
- * CSS, JavaScript, every font face, the logo and the favicon are inlined, so
- * the file opens straight from the filesystem with no server and can be sent
- * to anyone as a single attachment. The photographs still come from their
- * host — run `npm run photos` first if you want those inlined too.
+ * The CSS, JavaScript, logo and favicon are always inlined. The font files are
+ * two thirds of the weight, so FONTS=link trades offline use for a file small
+ * enough to survive preview panes that truncate large attachments.
+ *
+ * The photographs still come from their host — run `npm run photos` first to
+ * fold those in as well.
  */
 import { execSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
