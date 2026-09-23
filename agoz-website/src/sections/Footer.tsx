@@ -1,6 +1,7 @@
 import { Phone } from 'lucide-react'
 import { WhatsAppIcon, FacebookIcon, InstagramIcon } from '../components/BrandIcons'
 import { Logo } from '../components/Logo'
+import { PexelsCredits } from '../components/PexelsCredits'
 import { nav, site } from '../lib/siteConfig'
 
 export function Footer() {
@@ -81,6 +82,8 @@ export function Footer() {
             )}
           </div>
         </div>
+
+        <PexelsCredits />
 
         <div className="mt-14 flex flex-col gap-3 border-t border-cream/12 pt-7 text-[0.82rem] text-cream/55 sm:flex-row sm:items-center sm:justify-between">
           <p>

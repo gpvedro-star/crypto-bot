@@ -12,7 +12,10 @@
     "logo": "node scripts/build-logo.cjs",
     "fonts": "node scripts/fetch-fonts.mjs",
     "singlefile": "node scripts/build-singlefile.mjs",
-    "bundle": "npm run photos && npm run singlefile"
+    "bundle": "npm run photos && npm run singlefile",
+    "pexels:search": "node scripts/pexels.mjs search",
+    "pexels:fetch": "node scripts/pexels.mjs fetch",
+    "pexels:test": "node scripts/pexels.mjs test"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",

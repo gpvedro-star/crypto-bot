@@ -13,6 +13,10 @@ const DRIFT = 0.085
 
 const last = gardenStages.length - 1
 
+/** Responsive candidates for a vendored Pexels still. */
+const pexelsSrcSet = (chapterId: string) =>
+  [640, 1024, 1600, 2000].map((w) => `/photos/${chapterId}-${w}.webp ${w}w`).join(', ')
+
 /**
  * The opening: one garden built chapter by chapter, driven entirely by scroll.
  *
@@ -26,6 +30,7 @@ export function GardenScrollExperience() {
   const layerRefs = useRef<(HTMLDivElement | null)[]>([])
   const frontRefs = useRef<(HTMLDivElement | null)[]>([])
   const textRefs = useRef<(HTMLDivElement | null)[]>([])
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
   const railRef = useRef<HTMLSpanElement>(null)
   const cueRef = useRef<HTMLDivElement>(null)
 
@@ -106,6 +111,20 @@ export function GardenScrollExperience() {
   const idle = useCallback(() => {}, [])
   useScrollProgress(sectionRef, reduced ? idle : onProgress)
 
+  // Only the chapter on screen decodes frames; the rest stay paused at 0.
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return
+      if (i === active && !reduced) {
+        void video.play().catch(() => {
+          /* autoplay can be refused; the poster still carries the frame */
+        })
+      } else {
+        video.pause()
+      }
+    })
+  }, [active, reduced])
+
   // ── Reduced motion: the same story, told as a static composition ──────────
   if (reduced) {
     const finale = gardenStages[last]
@@ -166,19 +185,47 @@ export function GardenScrollExperience() {
             className="absolute inset-0 will-change-[opacity,transform]"
             style={{ opacity: i === 0 ? 1 : 0, backgroundColor: stage.image.tint }}
           >
-            {isAwake(i) && !isPlaceholder(stage.image) && (
-              <img
-                src={src(stage.image)}
-                srcSet={srcSet(stage.image)}
-                sizes="100vw"
-                alt={stage.image.alt}
-                loading={i === 0 ? 'eager' : 'lazy'}
-                fetchPriority={i === 0 ? 'high' : 'low'}
-                decoding="async"
-                className="h-full w-full object-cover"
-                style={{ objectPosition: stage.position }}
-              />
-            )}
+            {isAwake(i) &&
+              (stage.media?.type === 'video' ? (
+                <video
+                  ref={(el) => void (videoRefs.current[i] = el)}
+                  src={stage.media.src}
+                  poster={stage.media.poster ?? undefined}
+                  muted
+                  loop
+                  playsInline
+                  preload={i <= 1 ? 'auto' : 'none'}
+                  aria-label={stage.media.alt || stage.image.alt}
+                  className="h-full w-full object-cover"
+                  style={{ objectPosition: stage.position }}
+                />
+              ) : stage.media ? (
+                <img
+                  src={stage.media.src}
+                  srcSet={pexelsSrcSet(stage.id)}
+                  sizes="100vw"
+                  alt={stage.media.alt || stage.image.alt}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={i === 0 ? 'high' : 'low'}
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                  style={{ objectPosition: stage.position }}
+                />
+              ) : (
+                !isPlaceholder(stage.image) && (
+                  <img
+                    src={src(stage.image)}
+                    srcSet={srcSet(stage.image)}
+                    sizes="100vw"
+                    alt={stage.image.alt}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    fetchPriority={i === 0 ? 'high' : 'low'}
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: stage.position }}
+                  />
+                )
+              ))}
           </div>
         ))}
 

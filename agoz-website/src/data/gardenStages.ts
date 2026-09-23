@@ -1,4 +1,5 @@
 import { beforeAfter, gallery, images, type Photo } from './images'
+import { pexelsAssets, type PexelsAsset } from './pexelsAssets'
 
 /**
  * The opening scroll experience: eight chapters of one garden coming to life.
@@ -31,6 +32,11 @@ export type GardenStage = {
   position?: string
   /** A wipe instead of a crossfade, for the chapters where it suits. */
   reveal?: 'fade' | 'wipe'
+  /**
+   * Set once `npm run pexels:fetch` has retrieved an asset for this chapter.
+   * When present it replaces `image`, and it may be a video.
+   */
+  media?: PexelsAsset
 }
 
 /**
@@ -45,7 +51,7 @@ export const missing = (alt: string, ratio: string, tint: string): Photo => ({
   tint,
 })
 
-export const gardenStages: GardenStage[] = [
+const chapters: GardenStage[] = [
   {
     id: 'empty',
     range: [0, 0.12],
@@ -122,6 +128,15 @@ export const gardenStages: GardenStage[] = [
     position: '50% 58%',
   },
 ]
+
+/**
+ * A retrieved Pexels asset wins over the built-in one, so populating
+ * `pexelsAssets.ts` is all it takes to restage the whole sequence.
+ */
+export const gardenStages: GardenStage[] = chapters.map((stage) => {
+  const media = pexelsAssets[stage.id]
+  return media ? { ...stage, media } : stage
+})
 
 /** True while a stage is still waiting for a real photograph. */
 export const isPlaceholder = (p: Photo) => p.remote === '' && p.local === ''

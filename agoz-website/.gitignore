@@ -8,3 +8,10 @@ public/photos/
 
 # Single-file bundle output — regenerate with `npm run singlefile`
 dist-single/
+
+# Secrets — never committed
+.env
+.env.local
+
+# Pexels working files
+pexels.shortlist.json
