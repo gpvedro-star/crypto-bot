@@ -1,5 +1,5 @@
 import { Header } from './sections/Header'
-import { Hero } from './sections/Hero'
+import { GardenScrollExperience } from './sections/GardenScrollExperience'
 import { About } from './sections/About'
 import { Services } from './sections/Services'
 import { Interlude } from './sections/Interlude'
@@ -21,7 +21,7 @@ export default function App() {
     <>
       <Header />
       <main id="main">
-        <Hero />
+        <GardenScrollExperience />
         <About />
         <Services />
         <Interlude />

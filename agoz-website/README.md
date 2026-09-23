@@ -78,6 +78,44 @@ npm run photos
 
 ---
 
+## סקשן הפתיחה — רצף בניית הגינה
+
+הסקשן הראשון של האתר הוא חוויית גלילה: שמונה פרקים שבהם גינה נבנית
+משטח ריק ועד גינה גמורה. הגלילה היא השליטה — אין כפתורים, אין קרוסלה.
+
+**איפה זה גר**
+- [`src/data/gardenStages.ts`](src/data/gardenStages.ts) — כל הפרקים: טקסט, תמונה, טווח גלילה
+- [`src/sections/GardenScrollExperience.tsx`](src/sections/GardenScrollExperience.tsx) — הרכיב
+- [`src/hooks/useScrollProgress.ts`](src/hooks/useScrollProgress.ts) — מנוע ההתקדמות
+
+**איך זה עובד**
+הסקשן גבוה 520vh במובייל ו-600vh בדסקטופ, ובתוכו במה `sticky` שנשארת
+במסך. כל פרק הוא שכבה באותה מסגרת; מיקום הגלילה קובע לכל שכבה שקיפות,
+קנה מידה ותזוזה. הערכים נכתבים ישירות ל-DOM בתוך לולאת `requestAnimationFrame`
+— React מרנדר מחדש רק כשהפרק הפעיל מתחלף, כלומר שמונה פעמים בכל הסקשן.
+הלולאה רצה רק כשהסקשן קרוב למסך.
+
+**להחליף נכסים** (תמונות Pexels, או תצלומים אמיתיים שלכם)
+עורכים רק את שדות `image` ו-`foreground` ב-`gardenStages.ts`. אף שורת קוד
+ברכיב לא צריכה להשתנות. כל רשומה מקבלת אובייקט עם `alt`, `ratio` ו-`tint`
+(הגוון שנצבע מתחת בזמן הטעינה). לפרק שעדיין אין לו תמונה יש עוזר `missing()`
+שמסמן אותו כ-placeholder והרכיב פשוט לא מצייר שכבה ריקה.
+
+`range` הוא חלון הגלילה של הפרק ב-0–1. הטווחים חייבים להיות רציפים ולכסות
+0 עד 1; שכנים מתמזגים זה לתוך זה סביב הגבול.
+
+**מה נבדק**
+גלילה איטית, גלילה מהירה, קפיצה לקצוות, גלילה אחורה, שינוי גודל חלון
+באמצע הרצף ומעבר לסקשן הבא. ב-60 דגימות לאורך הרצף סכום השקיפויות היה
+1.0 בדיוק — אף פעם לא חור בין פרקים ואף פעם לא שתי תמונות שמתחרות.
+ב-`prefers-reduced-motion` הסקשן מתקצר לגרסה סטטית רגילה עם אותה כותרת,
+רשימת הפרקים וכפתורי הפעולה.
+
+> ⚠️ תמונות הרצף ממחישות את התהליך ואת שפת העיצוב. הן אינן תיעוד של
+> פרויקטים שבוצעו ואין להציג אותן ככאלה.
+
+---
+
 ## מערכת העיצוב
 
 כל הצבעים הם משתני CSS בראש [`src/styles/index.css`](src/styles/index.css),
@@ -109,11 +147,12 @@ npm run photos
 ```
 src/
   components/   Photo, Button, Logo, SectionHeading, Reveal, BrandIcons, WhatsAppFab
-  sections/     Header, Hero, About, Services, Interlude, Portfolio, BeforeAfter,
-                Process, WhyUs, Testimonials, CTA, Contact, Footer
-  data/         images, services, process, whyUs, testimonials — כל התוכן
+  sections/     GardenScrollExperience (הפתיחה), About, Services, Interlude,
+                Portfolio, BeforeAfter, Process, WhyUs, Testimonials, CTA,
+                Contact, Header, Footer
+  data/         images, gardenStages, services, process, whyUs, testimonials
   lib/          siteConfig (פרטי העסק), revealScheduler
-  hooks/        useReveal
+  hooks/        useReveal, useScrollProgress, useHashLanding
   styles/       index.css (טוקנים), fonts.css (נוצר אוטומטית)
 scripts/        build-logo, fetch-fonts, vendor-photos, make-qa-stands
 ```

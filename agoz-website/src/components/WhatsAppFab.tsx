@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { WhatsAppIcon } from './BrandIcons'
 import { site } from '../lib/siteConfig'
 
+/** Sections the floating button keeps out of. */
+const QUIET_ZONES = ['top', 'contact']
+
 /**
  * Persistent WhatsApp affordance. It appears once the hero is behind the
  * viewer so it never competes with the opening frame, and sits clear of the
@@ -13,12 +16,14 @@ export function WhatsAppFab() {
   useEffect(() => {
     const onScroll = () => {
       const pastHero = window.scrollY > window.innerHeight * 0.75
-      // Stand down over the contact section — it offers WhatsApp already, and
-      // the button would otherwise sit on top of the form on a phone.
-      const contact = document.getElementById('contact')
-      const box = contact?.getBoundingClientRect()
-      const atContact = !!box && box.top < window.innerHeight * 0.85 && box.bottom > 0
-      setShow(pastHero && !atContact)
+      // Stand down over these: the opening sequence must stay uncluttered, and
+      // the contact section already offers WhatsApp — on a phone the button
+      // would otherwise sit on top of the copy and the form.
+      const quiet = QUIET_ZONES.some((id) => {
+        const box = document.getElementById(id)?.getBoundingClientRect()
+        return !!box && box.top < window.innerHeight * 0.85 && box.bottom > 0
+      })
+      setShow(pastHero && !quiet)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
