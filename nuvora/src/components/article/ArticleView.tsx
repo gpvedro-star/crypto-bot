@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { ArticleWithMeta } from "@/lib/content";
 import { absoluteUrl } from "@/lib/seo";
 import { resolveAffiliate } from "@/lib/affiliates";
+import { articleOutline } from "@/lib/article-outline";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { ArticleBody } from "@/components/article/ArticleBody";
+import { ContentsDisclosure, ContentsRail } from "@/components/article/ArticleContents";
 import { KeyTakeaways } from "@/components/article/EditorialBlocks";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { ShareBar } from "@/components/article/ShareBar";
@@ -22,102 +24,129 @@ interface ArticleViewProps {
   preview?: boolean;
 }
 
+/** A contents list earns its place only in an article with real sections. */
+const MIN_SECTIONS_FOR_CONTENTS = 4;
+
+function sourceHost(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The article template. One template for every article, whatever its source —
  * repository content, a published editorial record, or a draft under preview.
  */
 export function ArticleView({ article, related, preview = false }: ArticleViewProps) {
+  // Share links only ever carry the canonical public URL, and only for a
+  // published piece: never a preview URL, never a token.
+  const canShare = !preview && article.status === "published";
   const url = absoluteUrl(article.href);
+  const shareImage = article.featuredImage.placeholder ? undefined : absoluteUrl(article.featuredImage.src);
   const hasActiveAffiliate = (article.affiliateLinks ?? []).some((id) => resolveAffiliate(id)?.isAffiliate);
+  const outline = articleOutline(article.content);
+  const showContents = outline.length >= MIN_SECTIONS_FOR_CONTENTS;
 
   return (
     <>
       <ReadingProgress targetId="article-content" />
       <article>
-        <ArticleHeader article={article} />
+        <ArticleHeader
+          article={article}
+          share={canShare ? <ShareBar url={url} title={article.title} image={shareImage} /> : undefined}
+        />
 
-        <div className="container-x mt-10 sm:mt-14">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-12">
-            {/* Left rail: share (sticky on desktop) */}
-            <aside className="hidden lg:col-span-2 lg:block">
-              {!preview && (
-                <div className="sticky top-[calc(var(--header-height)+2rem)]">
-                  <ShareBar url={url} title={article.title} image={absoluteUrl(article.featuredImage.src)} orientation="column" />
-                </div>
+        <div className="container-x">
+          <div className="article-grid mx-auto mt-10 max-w-[1200px] sm:mt-14">
+            <div className="article-grid-main">
+              {article.keyTakeaways && article.keyTakeaways.length > 0 && <KeyTakeaways items={article.keyTakeaways} />}
+              {showContents && <ContentsDisclosure outline={outline} />}
+
+              <ArticleBody blocks={article.content} id="article-content" />
+
+              {/* Disclose a commission only where a partnership is actually
+                  live. With none active, links are plain links and saying
+                  otherwise would invent a commercial relationship. */}
+              {hasActiveAffiliate && (
+                <p className="mt-12 border-t border-line pt-5 font-sans text-[0.85rem] leading-relaxed text-ink-500">
+                  NUVORA may earn a commission when you buy through links on this page. This never affects what we recommend.{" "}
+                  <Link href="/affiliate-disclosure" className="underline hover:text-navy-900">How we handle affiliate links.</Link>
+                </p>
               )}
-            </aside>
 
-            {/* Body */}
-            <div className="lg:col-span-8">
-              <div className="mx-auto max-w-[720px]">
-                {article.keyTakeaways && article.keyTakeaways.length > 0 && <KeyTakeaways items={article.keyTakeaways} />}
-                <ArticleBody blocks={article.content} id="article-content" />
-
-                {/* Disclose a commission only where a partnership is actually
-                    live. With none active, links are plain links and saying
-                    otherwise would invent a commercial relationship. */}
-                {hasActiveAffiliate && (
-                  <p className="mt-10 border-t border-line pt-5 font-sans text-[0.85rem] leading-relaxed text-ink-500">
-                    NUVORA may earn a commission when you buy through links on this page. This never affects what we recommend.{" "}
-                    <Link href="/affiliate-disclosure" className="underline hover:text-navy-900">How we handle affiliate links.</Link>
-                  </p>
-                )}
-
-                {article.sources && article.sources.length > 0 && (
-                  <section className="mt-10 border-t border-line pt-6" aria-labelledby="article-sources">
-                    <h2 id="article-sources" className="eyebrow text-navy-900">
-                      Sources
-                    </h2>
-                    <ol className="mt-4 space-y-2.5">
-                      {article.sources.map((s, i) => (
-                        <li key={`${s.url}-${i}`} className="font-sans text-[0.9rem] leading-relaxed text-ink-700">
-                          <a
-                            href={s.url}
-                            rel="nofollow noopener noreferrer"
-                            target="_blank"
-                            className="underline decoration-line underline-offset-2 hover:text-navy-900"
-                          >
-                            {s.title}
-                          </a>
-                          {s.publisher && <span className="text-ink-500"> — {s.publisher}</span>}
+              {article.sources && article.sources.length > 0 && (
+                <section className="mt-14 border-t-2 border-navy-900 pt-5" aria-labelledby="article-sources">
+                  <h2 id="article-sources" className="font-serif text-[1.35rem] font-semibold text-navy-900">
+                    Sources
+                  </h2>
+                  <ol className="mt-5 space-y-4">
+                    {article.sources.map((s, i) => {
+                      const host = sourceHost(s.url);
+                      return (
+                        <li key={`${s.url}-${i}`} className="grid grid-cols-[1.6rem_minmax(0,1fr)] font-sans text-[0.95rem] leading-snug">
+                          <span className="tabular text-ink-500">{i + 1}.</span>
+                          <span>
+                            <a
+                              href={s.url}
+                              rel="nofollow noopener noreferrer"
+                              target="_blank"
+                              className="block min-h-[24px] py-px font-medium text-navy-900 underline decoration-line underline-offset-[3px] transition-colors hover:decoration-navy-900"
+                            >
+                              {s.title}
+                            </a>
+                            <span className="mt-0.5 block text-[0.85rem] text-ink-500">
+                              {[s.publisher, host].filter(Boolean).join(" · ")}
+                            </span>
+                          </span>
                         </li>
-                      ))}
-                    </ol>
-                  </section>
-                )}
+                      );
+                    })}
+                  </ol>
+                </section>
+              )}
 
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
-                  <ul className="flex flex-wrap gap-2" aria-label="Topics">
+              {article.tags.length > 0 && (
+                <div className="mt-10 flex flex-wrap items-baseline gap-x-4 gap-y-1 font-sans text-[0.9rem]">
+                  <span className="eyebrow text-ink-500">Topics</span>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Topics">
                     {article.tags.map((t) => (
                       <li key={t}>
-                        <Link href={`/search?q=${encodeURIComponent(t)}`} className="inline-flex min-h-[36px] items-center rounded-full border border-line px-3.5 font-sans text-[0.85rem] text-ink-700 transition-colors hover:border-navy-900 hover:text-navy-900">
+                        <Link
+                          href={`/search?q=${encodeURIComponent(t)}`}
+                          className="inline-flex min-h-[32px] items-center text-navy-800 underline decoration-line underline-offset-[3px] hover:decoration-navy-800"
+                        >
                           {t}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                  {!preview && (
-                    <div className="lg:hidden">
-                      <ShareBar url={url} title={article.title} image={absoluteUrl(article.featuredImage.src)} />
-                    </div>
-                  )}
                 </div>
+              )}
 
-                <div className="mt-10">
-                  <AuthorCard author={article.author} />
+              {canShare && (
+                <div className="mt-8 flex items-center gap-4">
+                  <span className="eyebrow text-ink-500">Share</span>
+                  <ShareBar url={url} title={article.title} image={shareImage} />
                 </div>
+              )}
 
-                <p className="mt-6 font-sans text-[0.85rem] text-ink-500">
-                  See something wrong? Read our <Link href="/corrections" className="underline hover:text-navy-900">corrections policy</Link> or{" "}
-                  <Link href="/contact" className="underline hover:text-navy-900">contact the editors</Link>.
-                </p>
+              <div className="mt-10">
+                <AuthorCard author={article.author} />
               </div>
+
+              <p className="mt-6 font-sans text-[0.85rem] text-ink-500">
+                See something wrong? Read our <Link href="/corrections" className="underline hover:text-navy-900">corrections policy</Link> or{" "}
+                <Link href="/contact" className="underline hover:text-navy-900">contact the editors</Link>.
+              </p>
             </div>
 
-            {/* Right rail: reserved for future sidebar advertising */}
-            <aside className="hidden lg:col-span-2 lg:block" aria-hidden="true">
+            {/* Margin rail from 1280px: contents, then reserved ad space. */}
+            <aside className="article-grid-rail" aria-label="Article navigation">
               <div className="sticky top-[calc(var(--header-height)+2rem)]">
-                <AdSlot name="article-sidebar" />
+                {showContents && <ContentsRail outline={outline} />}
+                <AdSlot name="article-sidebar" className="mt-10" />
               </div>
             </aside>
           </div>

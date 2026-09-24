@@ -1,12 +1,10 @@
 import type { ContentBlock } from "@/content/types";
+import { headingIds } from "@/lib/article-outline";
 import { BottomLine, Callout, ComparisonTable, Explains, FAQ, Figure, Gallery, KeyTakeaways, ToolRecommendation, WhyItMatters } from "./EditorialBlocks";
-
-function slugify(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
 
 /** Renders the typed content blocks of an article in order. */
 export function ArticleBody({ blocks, id }: { blocks: ContentBlock[]; id?: string }) {
+  const ids = headingIds(blocks);
   return (
     <div id={id} className="article-body">
       {blocks.map((block, i) => {
@@ -14,7 +12,7 @@ export function ArticleBody({ blocks, id }: { blocks: ContentBlock[]; id?: strin
           case "paragraph":
             return <p key={i}>{block.text}</p>;
           case "heading": {
-            const hid = block.id ?? slugify(block.text);
+            const hid = ids.get(i)!;
             return block.level === 2 ? <h2 key={i} id={hid}>{block.text}</h2> : <h3 key={i} id={hid}>{block.text}</h3>;
           }
           case "quote":

@@ -59,7 +59,42 @@ const FALLBACK_IMAGE: ImageAsset = {
   alt: "",
   width: 1600,
   height: 1000,
+  // Cards still need something in the frame; the article opening does not,
+  // and shows no hero rather than presenting fallback art as a photograph.
+  placeholder: true,
 };
+
+/** Record lifecycle onto the site's article status. Anything short of published is a draft. */
+function siteStatus(record: EditorialRecord): Article["status"] {
+  if (record.publish_status === "published") return "published";
+  if (record.publish_status === "scheduled") return "scheduled";
+  return "draft";
+}
+
+/**
+ * Focal point from the image asset, as "x% y%". Accepts 0–1 fractions or
+ * percentages under `focal_point`/`focalPoint`/`focal`, as {x, y} or "x y".
+ */
+function focalFrom(input: unknown): string | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const a = input as Record<string, unknown>;
+  const raw = a.focal_point ?? a.focalPoint ?? a.focal;
+  let x: number | undefined;
+  let y: number | undefined;
+  if (raw && typeof raw === "object") {
+    x = Number((raw as Record<string, unknown>).x);
+    y = Number((raw as Record<string, unknown>).y);
+  } else if (typeof raw === "string") {
+    const m = /^\s*(-?[\d.]+)%?\s*[ ,]\s*(-?[\d.]+)%?\s*$/.exec(raw);
+    if (m) {
+      x = Number(m[1]);
+      y = Number(m[2]);
+    }
+  }
+  if (x === undefined || y === undefined || !Number.isFinite(x) || !Number.isFinite(y)) return undefined;
+  const pct = (v: number) => Math.min(100, Math.max(0, v <= 1 ? v * 100 : v));
+  return `${pct(x).toFixed(0)}% ${pct(y).toFixed(0)}%`;
+}
 
 function shorten(text: string, max: number): string {
   if (text.length <= max) return text;
@@ -96,8 +131,14 @@ export function recordToArticle(record: EditorialRecord): Article {
   const summary = safeText(record.summary, 1200);
   const content = toContentBlocks(record.article_body);
 
-  const assets = (Array.isArray(record.image_assets) ? record.image_assets : [])
-    .map((a) => toImageAsset(a, title))
+  const rawAssets = Array.isArray(record.image_assets) ? record.image_assets : [];
+  const assets = rawAssets
+    .map((a) => {
+      const image = toImageAsset(a, title);
+      if (!image) return null;
+      const focal = focalFrom(a);
+      return focal ? { ...image, focal } : image;
+    })
     .filter((a): a is ImageAsset => Boolean(a));
   const featuredImage = assets[0] ?? FALLBACK_IMAGE;
 
@@ -125,7 +166,9 @@ export function recordToArticle(record: EditorialRecord): Article {
     category: resolveCategory(record.category),
     tags: keywords,
     authorSlug: BRAND_BYLINE_SLUG,
-    status: "published",
+    // Public routes only ever receive published records (see isRenderable);
+    // the preview needs the real state so it never shows a draft as published.
+    status: siteStatus(record),
     publishedAt,
     updatedAt: isoOr(record.updated_at, publishedAt),
     featuredImage,

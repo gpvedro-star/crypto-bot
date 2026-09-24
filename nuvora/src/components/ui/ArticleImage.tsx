@@ -28,6 +28,7 @@ export function ArticleImage({ image, ratio = "aspect-[16/10]", sizes, priority,
         placeholder={image.blurDataURL ? "blur" : "empty"}
         blurDataURL={image.blurDataURL}
         className="object-cover"
+        style={image.focal ? { objectPosition: image.focal } : undefined}
       />
     </div>
   );

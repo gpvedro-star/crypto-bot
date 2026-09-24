@@ -48,6 +48,10 @@ export interface ImageAsset {
   credit?: string;
   /** Tiny inline placeholder while the full image loads. */
   blurDataURL?: string;
+  /** CSS object-position keeping the subject in frame when cropped, e.g. "50% 30%". */
+  focal?: string;
+  /** True for fallback art standing in for a missing photograph. */
+  placeholder?: boolean;
 }
 
 export interface FAQItem {

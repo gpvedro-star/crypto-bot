@@ -41,20 +41,24 @@ export function BottomLine({ text }: { text: string }) {
 }
 
 /* ---------- KEY TAKEAWAYS ---------- */
+/**
+ * "At a glance": the article's own key takeaways, once, as ruled type rather
+ * than a card. Every article uses the same treatment.
+ */
 export function KeyTakeaways({ items }: { items: string[] }) {
   return (
-    <aside className="not-prose my-8 rounded-card border border-line bg-white p-6 sm:p-7" aria-label="Key takeaways">
-      <p className="eyebrow text-navy-800">Key Takeaways</p>
-      <ol className="mt-4 space-y-3">
+    <aside className="not-prose mb-10 border-y border-line py-6" aria-label="At a glance">
+      <h2 className="eyebrow text-navy-900">At a glance</h2>
+      <ul className="mt-4 space-y-3">
         {items.map((item, i) => (
-          <li key={i} className="flex gap-4 font-sans text-[1.02rem] leading-relaxed text-ink-900">
-            <span className="mt-0.5 shrink-0 font-serif text-[1.1rem] font-semibold text-sky-500 tabular" aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span>{item}</span>
+          <li
+            key={i}
+            className="relative pl-5 font-sans text-[1.02rem] leading-[1.55] text-ink-900 before:absolute before:left-0 before:top-[0.6em] before:h-[6px] before:w-[6px] before:rounded-full before:bg-navy-700 sm:text-[1.05rem]"
+          >
+            {item}
           </li>
         ))}
-      </ol>
+      </ul>
     </aside>
   );
 }

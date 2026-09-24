@@ -1,9 +1,8 @@
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { authors, getAuthor } from "@/content/authors";
-import { categoryMap } from "@/content/categories";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import type { ArticleWithMeta } from "@/lib/content";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
@@ -51,9 +50,16 @@ export default async function PreviewArticlePage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const raw = query.token;
   const token = Array.isArray(raw) ? raw[0] : raw;
-  const tokenOk = await authorized(token);
-  // Never logs the token itself, only whether one was supplied and matched.
-  console.log("[preview] auth", { id, tokenSupplied: Boolean(token), authorized: tokenOk });
+  if (token) {
+    // A page that reads its query string gets the full URL embedded in its
+    // server-rendered payload. Rather than render with the token in it, hand
+    // it to /preview/enter, which sets the session cookie and returns here on
+    // a clean URL. An invalid token gets the same 404 either way.
+    redirect(`/preview/enter?token=${encodeURIComponent(token)}&id=${encodeURIComponent(id)}`);
+  }
+  const tokenOk = await authorized(undefined);
+  // Never logs the token itself, only whether the session was authorised.
+  console.log("[preview] auth", { id, authorized: tokenOk });
   if (!tokenOk) notFound();
 
   const store = getEditorialStore();
@@ -73,33 +79,29 @@ export default async function PreviewArticlePage({
 
   return (
     <>
-      <div className="border-b border-line bg-navy-900 text-paper">
-        <div className="container-x flex flex-wrap items-center gap-x-6 gap-y-2 py-3 font-sans text-[0.82rem]">
-          <span className="font-semibold uppercase tracking-[0.14em]">Draft preview</span>
-          <span className="text-sky-200">
-            {status} · {record.content_id}
-          </span>
-          <span className="text-sky-200">
+      {/* Quiet, unmistakable: one line, above the template, never inside it. */}
+      <div className="border-b border-sky-200 bg-sky-50">
+        <div className="container-x flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5 font-sans text-[0.82rem] text-navy-900">
+          <span className="font-semibold uppercase tracking-[0.12em]">Draft preview</span>
+          <span className="text-ink-700">
             {live ? (
               <>
-                Live at{" "}
+                Published —{" "}
                 <Link href={article.href} className="underline">
-                  {article.href}
+                  view live page
                 </Link>
               </>
             ) : (
-              "Not published — this page is visible only with a preview token."
+              <>
+                {record.publish_status === "draft" ? "" : `${status.replace("_", " ")} · `}
+                Not visible to readers
+              </>
             )}
           </span>
+          <span className="tabular text-ink-500 sm:ml-auto">{record.content_id}</span>
         </div>
       </div>
       <ArticleView article={article} related={[]} preview />
-      <div className="container-x pb-20">
-        <p className="mx-auto max-w-[720px] border-t border-line pt-6 font-sans text-[0.85rem] text-ink-500">
-          Section: {categoryMap[article.category].name} · {article.content.length} blocks ·{" "}
-          {article.readingTime} min read · last updated {new Date(article.updatedAt).toUTCString()}
-        </p>
-      </div>
     </>
   );
 }

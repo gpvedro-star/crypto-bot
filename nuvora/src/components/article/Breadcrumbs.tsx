@@ -10,13 +10,13 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
     <nav aria-label="Breadcrumb" className="pt-5 font-sans text-[0.82rem] text-ink-500">
       <ol className="flex flex-wrap items-center gap-x-2">
         <li>
-          <Link href="/" className="hover:text-navy-900 hover:underline">Home</Link>
+          <Link href="/" className="relative before:absolute before:inset-x-0 before:-inset-y-[5px] hover:text-navy-900 hover:underline">Home</Link>
         </li>
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-x-2">
             <span aria-hidden="true" className="text-line-strong">/</span>
             {item.href ? (
-              <Link href={item.href} className="hover:text-navy-900 hover:underline">{item.name}</Link>
+              <Link href={item.href} className="relative before:absolute before:inset-x-0 before:-inset-y-[5px] hover:text-navy-900 hover:underline">{item.name}</Link>
             ) : (
               <span className="line-clamp-1 max-w-[50vw] text-ink-700" aria-current="page">{item.name}</span>
             )}
