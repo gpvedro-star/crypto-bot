@@ -37,4 +37,11 @@ export function serializeArticleFull(a: ArticleWithMeta) {
   };
 }
 
-export const publicCache = { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" };
+/**
+ * Shared cache header for the public read API. Sixty seconds matches the
+ * revalidation window the pages use, so an automation client never sees
+ * content much older than a reader does. A CDN copy is not dropped by
+ * on-demand revalidation, so this window is the real worst case for the JSON
+ * API after a publish; pages update on the next request.
+ */
+export const publicCache = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
