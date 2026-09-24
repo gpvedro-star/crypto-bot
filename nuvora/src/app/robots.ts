@@ -6,7 +6,7 @@ import { site } from "@/content/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/search"] }],
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/search", "/preview"] }],
     sitemap: absoluteUrl("/sitemap.xml"),
     host: site.url,
   };

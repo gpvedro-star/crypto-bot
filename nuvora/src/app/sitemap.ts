@@ -1,12 +1,14 @@
-export const dynamic = "force-static";
-
 import type { MetadataRoute } from "next";
-import { authors, categories, getAllArticles, tools } from "@/lib/content";
+import { authors, categories, tools } from "@/lib/content";
+import { getLiveArticles } from "@/lib/live-content";
 import { staticPages } from "@/content/pages";
 import { absoluteUrl } from "@/lib/seo";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const articles = getAllArticles();
+export const revalidate = 60;
+
+/** Published articles only — drafts are filtered out before they reach here. */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const articles = await getLiveArticles();
   const newest = articles[0]?.updatedAt ?? new Date().toISOString();
   return [
     { url: absoluteUrl("/"), lastModified: newest, changeFrequency: "hourly", priority: 1 },

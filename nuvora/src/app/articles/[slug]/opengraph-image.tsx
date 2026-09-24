@@ -1,20 +1,22 @@
-export const dynamic = "force-static";
-
 import { ImageResponse } from "next/og";
-import { getAllArticles, getArticle } from "@/lib/content";
+import { getAllArticles } from "@/lib/content";
+import { getLiveArticle } from "@/lib/live-content";
 import { categoryMap } from "@/content/categories";
 
 export const alt = "NUVORA story";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+export const revalidate = 60;
+
+/** Repository articles are prerendered; published records render on demand. */
 export function generateStaticParams() {
   return getAllArticles().map((a) => ({ slug: a.slug }));
 }
 
 export default async function ArticleOpenGraphImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = getArticle(slug);
+  const article = await getLiveArticle(slug);
   const title = article?.title ?? "NUVORA";
   const category = article ? categoryMap[article.category].name : "";
   const author = article?.author.name ?? "";

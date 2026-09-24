@@ -2,6 +2,7 @@ import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { PUBLISH_STATUSES, type PublishStatus } from "@/lib/editorial/contract";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { draftResponse } from "@/lib/editorial/response";
+import { revalidateForRecord } from "@/lib/editorial/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const updated = await store.setStatus(id, requested as PublishStatus);
     if (!updated) return jsonError(404, "No draft with that id.");
-    return Response.json(draftResponse(updated, false));
+    // Publishing and unpublishing both change what the public pages should
+    // show, so both drop the cached renders straight away.
+    const revalidated = revalidateForRecord(updated);
+    return Response.json({ ...draftResponse(updated, false), revalidated });
   } catch (error) {
     console.error("[editorial] status change failed", { id, error: String(error) });
     return jsonError(500, "Could not update the draft in storage.");

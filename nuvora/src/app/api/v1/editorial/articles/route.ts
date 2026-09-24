@@ -2,6 +2,7 @@ import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { DRAFT_FIRST, MAX_PAYLOAD_BYTES, validateSubmission, wireStatus } from "@/lib/editorial/contract";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { draftResponse } from "@/lib/editorial/response";
+import { revalidateForRecord } from "@/lib/editorial/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,8 @@ export async function POST(request: Request) {
     const existing = await store.get(parsed.value.content_id);
     const record = await store.create(parsed.value);
     const requested = parsed.value.publish_status;
+    // An edit to an already-published record should reach readers too.
+    if (record.publish_status === "published") revalidateForRecord(record);
 
     return Response.json(
       {
@@ -115,6 +118,7 @@ export async function PATCH(request: Request) {
     }
     const updated = await store.update(id, patch);
     if (!updated) return jsonError(404, "No draft with that id.");
+    if (updated.publish_status === "published") revalidateForRecord(updated);
     return Response.json(draftResponse(updated, false));
   } catch (error) {
     console.error("[editorial] update failed", { id, error: String(error) });

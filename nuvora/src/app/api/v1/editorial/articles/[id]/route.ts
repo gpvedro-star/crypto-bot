@@ -1,6 +1,7 @@
 import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { draftResponse } from "@/lib/editorial/response";
+import { revalidateForRecord } from "@/lib/editorial/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -29,5 +30,33 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error("[editorial] read failed", { id, error: String(error) });
     return jsonError(500, "Could not read the draft from storage.");
+  }
+}
+
+/**
+ * DELETE /api/v1/editorial/articles/{id}
+ *
+ * Removes a record and releases its slug. Used to clear test submissions;
+ * deleting a published record also takes it off the public site immediately.
+ */
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = authenticateEditorialRequest(request);
+  if (!auth.ok) return jsonError(auth.status, auth.message);
+
+  const { id } = await params;
+  const store = getEditorialStore();
+  if (!store) {
+    return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend() });
+  }
+
+  try {
+    const existing = await store.get(id);
+    if (!existing) return jsonError(404, "No draft with that id.");
+    await store.remove(id);
+    const revalidated = revalidateForRecord(existing);
+    return Response.json({ success: true, deleted: true, content_id: id, slug: existing.slug, revalidated });
+  } catch (error) {
+    console.error("[editorial] delete failed", { id, error: String(error) });
+    return jsonError(500, "Could not delete the record from storage.");
   }
 }

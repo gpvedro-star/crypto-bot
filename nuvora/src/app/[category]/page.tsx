@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { categories, getAllArticles, getArticlesByCategory, getCategory, getMostRead, getPublishedGuides, tools } from "@/lib/content";
+import { categories, getCategory, tools } from "@/lib/content";
+import { getLiveArticles, getLiveByCategory, getLiveGuides, getLiveMostRead } from "@/lib/live-content";
 import type { ArticleWithMeta } from "@/lib/content";
 import type { CategorySlug } from "@/content/types";
 import { buildMetadata, breadcrumbSchema } from "@/lib/seo";
@@ -33,36 +34,41 @@ const LATEST = {
   seoDescription: "The newest stories from NUVORA, the magazine that explains artificial intelligence for normal people.",
 };
 
-function resolve(slug: string) {
-  if (slug === "latest") return { meta: LATEST, articles: getAllArticles(), isLatest: true };
+async function resolve(slug: string) {
+  if (slug === "latest") return { meta: LATEST, articles: await getLiveArticles(), isLatest: true };
   const cat = getCategory(slug);
   if (!cat) return null;
-  return { meta: cat, articles: getArticlesByCategory(cat.slug as CategorySlug), isLatest: false };
+  return { meta: cat, articles: await getLiveByCategory(cat.slug as CategorySlug), isLatest: false };
 }
 
 export function generateStaticParams(): Params[] {
   return [{ category: "latest" }, ...categories.map((c) => ({ category: c.slug }))];
 }
 
-export const dynamicParams = false;
+// `resolve`/`getAuthor` already 404s anything unknown, and a prerendered
+// route with dynamicParams:false cannot be revalidated at runtime.
+export const dynamicParams = true;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { category } = await params;
-  const r = resolve(category);
+  const r = await resolve(category);
   if (!r) return {};
   return buildMetadata({ title: r.meta.seoTitle, description: r.meta.seoDescription, path: `/${category}` });
 }
 
 export default async function CategoryPage({ params }: { params: Promise<Params> }) {
   const { category } = await params;
-  const r = resolve(category);
+  const r = await resolve(category);
   if (!r) notFound();
   const { meta, articles, isLatest } = r;
   const [lead, ...rest] = articles;
-  const popular = getMostRead(8).filter((a) => isLatest || a.category === category).slice(0, 5);
+  const popular = (await getLiveMostRead(8)).filter((a) => isLatest || a.category === category).slice(0, 5);
   const showTools = category === "tools";
-  const guides = getPublishedGuides();
+  const guides = await getLiveGuides();
   const showGuides = category === "guides" && guides.length > 0;
+  const all = await getLiveArticles();
+  const counts = Object.fromEntries(categories.map((c) => [c.slug, all.filter((a) => a.category === c.slug).length]));
 
   return (
     <>
@@ -162,7 +168,7 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
           <SectionHeading title="Browse by Section" kicker="Sections" />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((c) => (
-              <CategoryCard key={c.slug} category={c} count={getArticlesByCategory(c.slug).length} />
+              <CategoryCard key={c.slug} category={c} count={counts[c.slug] ?? 0} />
             ))}
           </div>
         </section>

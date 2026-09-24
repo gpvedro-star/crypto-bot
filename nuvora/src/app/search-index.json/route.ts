@@ -1,8 +1,10 @@
-import { getSearchIndex } from "@/lib/search";
+import { getLiveSearchIndex } from "@/lib/search";
 
-/** Static search index consumed by the browser (works on static hosting too). */
-export const dynamic = "force-static";
+/** Search index consumed by the browser. Rebuilt when editorial content changes. */
+export const revalidate = 60;
 
-export function GET() {
-  return Response.json(getSearchIndex(), { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=3600" } });
+export async function GET() {
+  return Response.json(await getLiveSearchIndex(), {
+    headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=3600" },
+  });
 }

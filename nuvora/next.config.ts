@@ -7,6 +7,16 @@ import type { NextConfig } from "next";
  */
 const isStatic = process.env.NUVORA_STATIC === "1";
 
+/**
+ * Hosts allowed to serve editorial images, from NUVORA_IMAGE_HOSTS. Kept in an
+ * env var so a new image provider does not need a code change, and empty by
+ * default so next/image is never asked to fetch an arbitrary origin.
+ */
+const imageHosts = (process.env.NUVORA_IMAGE_HOSTS ?? "")
+  .split(",")
+  .map((h) => h.trim())
+  .filter(Boolean);
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -16,8 +26,7 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [96, 160, 240, 320, 480, 640],
-    // Remote image hosts are added here when the image pipeline goes live.
-    remotePatterns: [],
+    remotePatterns: imageHosts.map((hostname) => ({ protocol: "https" as const, hostname })),
   },
   /** Retired fictional author routes now point at the publication byline. */
   async redirects() {
@@ -31,6 +40,15 @@ const nextConfig: NextConfig = {
   async headers() {
     if (isStatic) return [];
     return [
+      {
+        // Draft previews must never be indexed, whatever links to them.
+        source: "/preview/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Cache-Control", value: "no-store" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [

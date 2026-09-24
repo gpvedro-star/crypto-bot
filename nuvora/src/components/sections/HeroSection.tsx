@@ -27,6 +27,10 @@ function MetaRule() {
 export function HeroSection({ lead, topStories }: HeroSectionProps) {
   const [secondary, ...rest] = topStories;
   const minor = rest.slice(0, 2);
+  // With a single published story there is nothing to put beside the lead, and
+  // a rail heading over an empty column reads as a fault. The cover feature
+  // takes the full width instead.
+  const hasRail = topStories.length > 0;
 
   return (
     <section aria-labelledby="lead-story" className="border-b border-line bg-white">
@@ -37,7 +41,7 @@ export function HeroSection({ lead, topStories }: HeroSectionProps) {
 
         <div className="mt-6 grid gap-10 lg:mt-7 lg:grid-cols-12 lg:gap-0">
           {/* ---- Cover feature ---------------------------------------- */}
-          <article className="lg:col-span-8 lg:pr-8 xl:pr-14">
+          <article className={hasRail ? "lg:col-span-8 lg:pr-8 xl:pr-14" : "lg:col-span-12"}>
             <Link href={lead.href} tabIndex={-1} aria-hidden="true" className="block">
               <ArticleImage
                 image={lead.featuredImage}
@@ -78,6 +82,7 @@ export function HeroSection({ lead, topStories }: HeroSectionProps) {
           </article>
 
           {/* ---- Supporting rail -------------------------------------- */}
+          {hasRail && (
           <aside aria-labelledby="also-this-week" className="lg:col-span-4 lg:border-l lg:border-line lg:pl-8 xl:pl-14">
             <h2 id="also-this-week" className="eyebrow border-b border-navy-900 pb-3 text-navy-900">
               Also this week
@@ -137,6 +142,7 @@ export function HeroSection({ lead, topStories }: HeroSectionProps) {
               More top stories <span aria-hidden="true">→</span>
             </Link>
           </aside>
+          )}
         </div>
       </div>
     </section>

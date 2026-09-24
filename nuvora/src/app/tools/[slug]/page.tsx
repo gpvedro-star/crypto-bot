@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getArticlesByTool, getTool, tools } from "@/lib/content";
+import { getTool, tools } from "@/lib/content";
+import { getLiveByTool } from "@/lib/live-content";
 import { resolveAffiliate } from "@/lib/affiliates";
 import { buildMetadata, breadcrumbSchema, toolSchema } from "@/lib/seo";
 import { formatDate } from "@/lib/dates";
@@ -50,7 +51,7 @@ export default async function ToolPage({ params }: { params: Promise<Params> }) 
   const tool = getTool(slug);
   if (!tool) notFound();
   const link = resolveAffiliate(tool.affiliateId, tool.officialUrl);
-  const stories = getArticlesByTool(slug);
+  const stories = await getLiveByTool(slug);
   const others = tools.filter((t) => t.slug !== slug).slice(0, 3);
 
   return (

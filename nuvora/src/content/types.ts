@@ -129,6 +129,8 @@ export interface Article {
   affiliateLinks?: string[];
   /** Tools this article discusses (slugs from content/tools.ts). */
   tools?: string[];
+  /** External references supplied with the piece, listed under the body. */
+  sources?: { title: string; url: string; publisher?: string }[];
 }
 
 export interface ToolPricingTier {

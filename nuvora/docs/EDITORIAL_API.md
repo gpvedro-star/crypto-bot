@@ -146,6 +146,62 @@ live once published.
 
 Netlify supplies Blobs credentials and `CONTEXT` automatically.
 
+## From record to website
+
+A record reaches readers only through `POST /{content_id}/publish`. Once its
+`publish_status` is `PUBLISHED`:
+
+- `/articles/{slug}` renders it through the same article template the
+  repository's own articles use. There is no second template.
+- It appears on the front page, in `/latest`, in its section, in search, in
+  `sitemap.xml`, in `feed.xml` and in the public read API.
+- None of that needs a rebuild. Pages revalidate every 60 seconds, and the
+  publish call additionally clears the cached renders straight away, so a
+  publication is normally visible within a second or two.
+- Setting the status back to `DRAFT`, `IN_REVIEW` or `SCHEDULED`, or deleting
+  the record, removes it from every one of those surfaces just as quickly.
+
+Anything below `PUBLISHED` is invisible to the public site: drafts are filtered
+out in `lib/live-content.ts`, which is the only path from the store to a page.
+
+### Rendering rules
+
+`article_body` is converted to the site's typed content blocks by
+`lib/editorial/body.ts`. It is a whitelist, and the site never renders
+submitted HTML:
+
+- Text is stripped of tags; markdown emphasis and `[text](url)` links are
+  flattened to their visible text. Nothing is passed to
+  `dangerouslySetInnerHTML`.
+- Unrecognised block types degrade to paragraphs. `toolRecommendation` is
+  deliberately not accepted — a tool recommendation is an editorial judgement,
+  not something a submission can assert.
+- A plain-string `article_body` is parsed as markdown-lite: `##` headings,
+  `-`/`1.` lists, `>` quotes, `---` rules, blank-line paragraphs.
+- Image URLs must be same-origin paths or https URLs on `NUVORA_IMAGE_HOSTS`.
+  Anything else is dropped and the story falls back to placeholder art.
+- `sources` are rendered as a reference list; http(s) only.
+- The byline is always the publication. A submission's `author` field is kept
+  in the record but never presented as a person.
+- `featured`, `trending` and `popular` are never set from a submission, so a
+  record cannot put itself in "Most read" — the site has no readership data.
+
+### Draft preview
+
+`GET /preview/articles/{content_id}?token=…` renders any record, at any status,
+through the same template, for review. `NUVORA_PREVIEW_TOKEN` gates it; without
+a valid token the route 404s rather than 401s, so it cannot be used to discover
+which records exist. It is `noindex, nofollow`, disallowed in `robots.txt`, and
+never in the sitemap, RSS or search index.
+
+`GET /preview/enter?token=…&id=…` exchanges the token for an HttpOnly cookie
+and redirects, which keeps the credential out of the address bar.
+
+### `DELETE /api/v1/editorial/articles/{content_id}`
+
+Removes a record and releases its slug. Deleting a published record takes it
+off the site immediately.
+
 ## Multi-project
 
 `project` is carried on every record and the contract is independent of the

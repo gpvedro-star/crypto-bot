@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { authors, getArticlesByAuthor, getAuthor } from "@/lib/content";
+import { authors, getAuthor } from "@/lib/content";
+import { getLiveByAuthor } from "@/lib/live-content";
 import { buildMetadata, breadcrumbSchema, absoluteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Breadcrumbs } from "@/components/article/Breadcrumbs";
@@ -15,7 +16,10 @@ interface Params { slug: string }
 export function generateStaticParams(): Params[] {
   return authors.map((a) => ({ slug: a.slug }));
 }
-export const dynamicParams = false;
+// `resolve`/`getAuthor` already 404s anything unknown, and a prerendered
+// route with dynamicParams:false cannot be revalidated at runtime.
+export const dynamicParams = true;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
@@ -31,7 +35,7 @@ export default async function AuthorPage({ params }: { params: Promise<Params> }
   const { slug } = await params;
   const author = getAuthor(slug);
   if (!author) notFound();
-  const stories = getArticlesByAuthor(slug);
+  const stories = await getLiveByAuthor(slug);
   return (
     <>
       <JsonLd data={[

@@ -1,6 +1,4 @@
-export const dynamic = "force-static";
-
-import { getAllArticles } from "@/lib/content";
+import { getLiveArticles } from "@/lib/live-content";
 import { categoryMap } from "@/content/categories";
 import { absoluteUrl } from "@/lib/seo";
 import { site } from "@/content/site";
@@ -19,8 +17,10 @@ function xml(value: string): string {
  * RSS 2.0 feed. `layout.tsx` has always advertised /feed.xml in
  * `alternates.types`; this makes that link resolve.
  */
-export function GET() {
-  const articles = getAllArticles().slice(0, 30);
+export const revalidate = 60;
+
+export async function GET() {
+  const articles = (await getLiveArticles()).slice(0, 30);
   const updated = articles[0]?.updatedAt ?? new Date().toISOString();
 
   const items = articles

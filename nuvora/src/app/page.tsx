@@ -7,16 +7,16 @@ import { ToolsSection } from "@/components/sections/ToolsSection";
 import { GuidesSection } from "@/components/sections/GuidesSection";
 import { NewsletterBlock } from "@/components/sections/NewsletterBlock";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { tools } from "@/lib/content";
 import {
-  getArticlesByCategory,
-  getFeaturedArticles,
-  getLatest,
-  getLeadStory,
-  getMostRead,
-  getPublishedGuides,
-  getTrending,
-  tools,
-} from "@/lib/content";
+  getLiveByCategory,
+  getLiveFeatured,
+  getLiveGuides,
+  getLiveLatest,
+  getLiveLead,
+  getLiveMostRead,
+  getLiveTrending,
+} from "@/lib/live-content";
 import { buildMetadata } from "@/lib/seo";
 import { site } from "@/content/site";
 
@@ -34,21 +34,23 @@ export const metadata = buildMetadata({
  * stories at all — an empty feed states that plainly rather than rendering
  * section furniture with nothing under it.
  */
-export default function HomePage() {
-  const lead = getLeadStory();
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const lead = await getLiveLead();
   const topStories = lead
-    ? [...getTrending(6), ...getFeaturedArticles(6)]
+    ? [...(await getLiveTrending(6)), ...(await getLiveFeatured(6))]
         .filter((a, i, arr) => a.slug !== lead.slug && arr.findIndex((b) => b.slug === a.slug) === i)
         .slice(0, 3)
     : [];
   const usedSlugs = new Set(lead ? [lead.slug, ...topStories.map((a) => a.slug)] : []);
-  const latest = getLatest(7, [...usedSlugs]);
-  const everyday = getArticlesByCategory("everyday-ai");
-  const toolStories = getArticlesByCategory("tools");
-  const mostRead = getMostRead(5);
+  const latest = await getLiveLatest(7, [...usedSlugs]);
+  const everyday = await getLiveByCategory("everyday-ai");
+  const toolStories = await getLiveByCategory("tools");
+  const mostRead = await getLiveMostRead(5);
   const featuredTools = tools.filter((t) => t.featured);
   // A guide is only a way in if the piece it points at is published.
-  const guides = getPublishedGuides();
+  const guides = await getLiveGuides();
 
   return (
     <>

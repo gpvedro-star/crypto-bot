@@ -28,3 +28,22 @@ export function authenticateEditorialRequest(request: Request): AuthResult {
 export function jsonError(status: number, message: string, extra?: Record<string, unknown>) {
   return Response.json({ error: { status, message, ...extra } }, { status });
 }
+
+/** Constant-time comparison for short secrets. */
+export function secretMatches(candidate: string | undefined, expected: string | undefined): boolean {
+  if (!candidate || !expected) return false;
+  const a = Buffer.from(candidate);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * Draft preview credential. Separate from the write API key so a preview link
+ * can be handed to a reviewer without granting publishing rights, and absent
+ * by default — with no token configured, preview is off.
+ */
+export function previewTokenValid(candidate: string | undefined): boolean {
+  return secretMatches(candidate, process.env.NUVORA_PREVIEW_TOKEN);
+}
+
+export const PREVIEW_COOKIE = "nuvora_preview";

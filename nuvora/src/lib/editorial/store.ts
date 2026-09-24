@@ -26,6 +26,10 @@ export interface EditorialStore {
   setStatus(id: string, status: PublishStatus): Promise<EditorialRecord | null>;
   /** content_id currently holding this slug, if any. */
   ownerOfSlug(slug: string): Promise<string | null>;
+  /** Every stored record. Callers filter by publish_status. */
+  list(): Promise<EditorialRecord[]>;
+  /** Removes a record and its slug claim. */
+  remove(id: string): Promise<boolean>;
 }
 
 export const STORE_NAME = "nuvora-editorial";
@@ -115,10 +119,26 @@ class BlobsEditorialStore implements EditorialStore {
       ...existing,
       publish_status: status,
       updated_at: new Date().toISOString(),
-      published_at: status === "published" ? new Date().toISOString() : existing.published_at,
+      published_at: status === "published" ? (existing.published_at ?? new Date().toISOString()) : existing.published_at,
     };
     await this.store.setJSON(recordKey(id), next);
     return next;
+  }
+
+  async list(): Promise<EditorialRecord[]> {
+    const { blobs } = await this.store.list({ prefix: "record/" });
+    const records = await Promise.all(
+      blobs.map((b) => this.store.get(b.key, { type: "json" }) as Promise<EditorialRecord | null>),
+    );
+    return records.filter((r): r is EditorialRecord => Boolean(r));
+  }
+
+  async remove(id: string): Promise<boolean> {
+    const existing = await this.get(id);
+    if (!existing) return false;
+    await this.store.delete(recordKey(id));
+    await this.store.delete(slugKey(existing.slug));
+    return true;
   }
 }
 
@@ -155,7 +175,7 @@ class LocalEditorialStore implements EditorialStore {
     await fs.writeFile(this.file(key), JSON.stringify(value, null, 2), "utf8");
   }
 
-  private async remove(key: string) {
+  private async remove_(key: string) {
     const { fs } = await this.fs();
     await fs.rm(this.file(key), { force: true });
   }
@@ -176,7 +196,7 @@ class LocalEditorialStore implements EditorialStore {
       record.created_at = existing.created_at;
       record.publish_status = existing.publish_status;
       record.published_at = existing.published_at;
-      if (existing.slug !== record.slug) await this.remove(slugKey(existing.slug));
+      if (existing.slug !== record.slug) await this.remove_(slugKey(existing.slug));
     }
     await this.write(recordKey(record.id), record);
     await this.write(slugKey(record.slug), { content_id: record.id });
@@ -198,7 +218,7 @@ class LocalEditorialStore implements EditorialStore {
     if (patch.slug && patch.slug !== existing.slug) {
       next.slug = patch.slug;
       next.url = recordUrl(patch.slug);
-      await this.remove(slugKey(existing.slug));
+      await this.remove_(slugKey(existing.slug));
       await this.write(slugKey(patch.slug), { content_id: id });
     }
     await this.write(recordKey(id), next);
@@ -212,10 +232,30 @@ class LocalEditorialStore implements EditorialStore {
       ...existing,
       publish_status: status,
       updated_at: new Date().toISOString(),
-      published_at: status === "published" ? new Date().toISOString() : existing.published_at,
+      published_at: status === "published" ? (existing.published_at ?? new Date().toISOString()) : existing.published_at,
     };
     await this.write(recordKey(id), next);
     return next;
+  }
+
+  async list(): Promise<EditorialRecord[]> {
+    const { fs } = await this.fs();
+    const names = await fs.readdir(this.dir).catch(() => [] as string[]);
+    const out: EditorialRecord[] = [];
+    for (const n of names) {
+      if (!n.startsWith("record__")) continue;
+      const r = await this.read<EditorialRecord>(n.replace("record__", "record/").replace(/\.json$/, ""));
+      if (r) out.push(r);
+    }
+    return out;
+  }
+
+  async remove(id: string): Promise<boolean> {
+    const existing = await this.get(id);
+    if (!existing) return false;
+    await this.remove_(recordKey(id));
+    await this.remove_(slugKey(existing.slug));
+    return true;
   }
 }
 
