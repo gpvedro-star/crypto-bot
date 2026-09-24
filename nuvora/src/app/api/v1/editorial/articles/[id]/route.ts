@@ -1,11 +1,15 @@
 import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
-import { getEditorialStore, recordUrl } from "@/lib/editorial/store";
+import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
+import { draftResponse } from "@/lib/editorial/response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/v1/editorial/articles/{id}
  *
- * Lets a publishing agent read back the record it created — its id, current
- * publish_status and the URL the article will occupy once published.
+ * Reads a draft back by its content_id: current publish_status, slug and the
+ * URL it will occupy once published. `full=1` returns the stored record so
+ * the desk can review the submitted copy.
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = authenticateEditorialRequest(request);
@@ -14,13 +18,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const store = getEditorialStore();
   if (!store) {
-    return jsonError(501, "Draft persistence is not enabled on this deployment.", {
-      id,
-      url_pattern: recordUrl("{slug}"),
-    });
+    return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend() });
   }
 
-  const record = await store.get(id);
-  if (!record) return jsonError(404, "No draft with that id.");
-  return Response.json({ data: record });
+  try {
+    const record = await store.get(id);
+    if (!record) return jsonError(404, "No draft with that id.");
+    const full = new URL(request.url).searchParams.get("full") === "1";
+    return Response.json({ ...draftResponse(record, false), ...(full ? { record } : {}) });
+  } catch (error) {
+    console.error("[editorial] read failed", { id, error: String(error) });
+    return jsonError(500, "Could not read the draft from storage.");
+  }
 }

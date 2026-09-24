@@ -1,6 +1,9 @@
 import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { PUBLISH_STATUSES, type PublishStatus } from "@/lib/editorial/contract";
-import { getEditorialStore } from "@/lib/editorial/store";
+import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
+import { draftResponse } from "@/lib/editorial/response";
+
+export const dynamic = "force-dynamic";
 
 /**
  * POST /api/v1/editorial/articles/{id}/publish
@@ -28,21 +31,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return jsonError(400, "Invalid JSON body.");
   }
 
-  const requested = (body as Record<string, unknown>)?.publish_status ?? "published";
+  const raw = (body as Record<string, unknown>)?.publish_status ?? "published";
+  const requested = typeof raw === "string" ? raw.trim().toLowerCase() : "";
   if (!ALLOWED.includes(requested as PublishStatus)) {
-    return jsonError(422, "Invalid publish_status.", { allowed: ALLOWED });
+    return jsonError(400, "Invalid publish_status.", { allowed: ALLOWED.map((s) => s.toUpperCase()) });
   }
 
   const store = getEditorialStore();
   if (!store) {
-    return jsonError(501, "Publishing is not enabled on this deployment.", {
-      id,
-      requested_status: requested,
-      by: auth.actor,
-    });
+    return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend() });
   }
 
-  const updated = await store.setStatus(id, requested as PublishStatus);
-  if (!updated) return jsonError(404, "No draft with that id.");
-  return Response.json({ data: updated });
+  try {
+    const updated = await store.setStatus(id, requested as PublishStatus);
+    if (!updated) return jsonError(404, "No draft with that id.");
+    return Response.json(draftResponse(updated, false));
+  } catch (error) {
+    console.error("[editorial] status change failed", { id, error: String(error) });
+    return jsonError(500, "Could not update the draft in storage.");
+  }
 }
