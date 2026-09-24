@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { categories, getAllArticles, getArticlesByCategory, getCategory, getMostRead, guides, tools } from "@/lib/content";
+import { categories, getAllArticles, getArticlesByCategory, getCategory, getMostRead, getPublishedGuides, tools } from "@/lib/content";
 import type { ArticleWithMeta } from "@/lib/content";
 import type { CategorySlug } from "@/content/types";
 import { buildMetadata, breadcrumbSchema } from "@/lib/seo";
@@ -61,7 +61,8 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
   const [lead, ...rest] = articles;
   const popular = getMostRead(8).filter((a) => isLatest || a.category === category).slice(0, 5);
   const showTools = category === "tools";
-  const showGuides = category === "guides";
+  const guides = getPublishedGuides();
+  const showGuides = category === "guides" && guides.length > 0;
 
   return (
     <>
@@ -84,8 +85,12 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
         <div className="container-x mt-4">
           <p className="border-t border-line pt-8 text-[1.05rem] leading-relaxed text-ink-700">
             No stories have been published in this section yet.{" "}
-            <Link href="/latest" className="font-semibold text-navy-900 underline decoration-line-strong hover:decoration-navy-900">
-              Read the latest from NUVORA
+            {/* On /latest itself that link would point back at this page. */}
+            <Link
+              href={isLatest ? "/tools" : "/latest"}
+              className="font-semibold text-navy-900 underline decoration-line-strong hover:decoration-navy-900"
+            >
+              {isLatest ? "Browse the tools desk" : "Read the latest from NUVORA"}
             </Link>
             .
           </p>

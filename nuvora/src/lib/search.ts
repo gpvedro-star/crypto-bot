@@ -1,4 +1,4 @@
-import { getAllArticles, tools, guides } from "./content";
+import { getAllArticles, tools, getPublishedGuides } from "./content";
 import { normalize, rank, type SearchEntry, type SearchResult } from "./search-core";
 
 export type { SearchResult, SearchResultType } from "./search-core";
@@ -25,7 +25,9 @@ export function getSearchIndex(): SearchEntry[] {
     t: normalize(t.name),
     h: normalize([t.name, t.maker, t.tagline, t.description, t.bestUses.join(" ")].join(" ")),
   }));
-  const guideEntries: SearchEntry[] = guides.map((g) => ({
+  // A guide whose article is unpublished would be a search result leading to a
+  // 404, so only guides with a live target are indexed.
+  const guideEntries: SearchEntry[] = getPublishedGuides().map((g) => ({
     type: "guide",
     title: g.title,
     description: g.description,

@@ -25,6 +25,7 @@ export default function NotFound() {
           <Link href="/search" className="inline-flex min-h-[46px] items-center rounded-[4px] border border-navy-900 px-5 font-sans font-semibold text-navy-900 hover:bg-navy-900 hover:text-white">Search NUVORA</Link>
         </div>
       </div>
+      {latest.length > 0 && (
       <div className="mx-auto mt-16 max-w-2xl border-t-2 border-navy-900 pt-4">
         <h2 className="eyebrow text-navy-900">Latest stories</h2>
         <ul className="mt-2 divide-y divide-line">
@@ -33,6 +34,7 @@ export default function NotFound() {
           ))}
         </ul>
       </div>
+      )}
     </div>
   );
 }

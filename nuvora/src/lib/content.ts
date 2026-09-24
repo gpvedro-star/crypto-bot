@@ -62,7 +62,8 @@ export function getFeaturedArticles(limit = 5): ArticleWithMeta[] {
   return published.filter((a) => a.featured).slice(0, limit);
 }
 
-export function getLeadStory(): ArticleWithMeta {
+/** The front-page lead, or undefined when nothing is published yet. */
+export function getLeadStory(): ArticleWithMeta | undefined {
   return published.find((a) => a.featured) ?? published[0];
 }
 
@@ -94,3 +95,8 @@ export function getRelated(article: Article, limit = 4): ArticleWithMeta[] {
 }
 
 export { categories, getCategory, authors, getAuthor, tools, getTool, guides };
+
+/** Guides whose target article is actually published. */
+export function getPublishedGuides() {
+  return guides.filter((g) => Boolean(getArticle(g.articleSlug)));
+}

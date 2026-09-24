@@ -49,6 +49,7 @@ export default async function AuthorPage({ params }: { params: Promise<Params> }
           </div>
         </header>
       </div>
+      {stories.length > 0 && (
       <section className="container-x mt-12" aria-labelledby="author-stories">
         <SectionHeading title={`Stories by ${author.name}`} kicker={`${stories.length} ${stories.length === 1 ? "story" : "stories"}`} />
         <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-12">
@@ -57,6 +58,7 @@ export default async function AuthorPage({ params }: { params: Promise<Params> }
           ))}
         </div>
       </section>
+      )}
       <div className="mt-20"><NewsletterBlock source={`author-${slug}`} /></div>
     </>
   );

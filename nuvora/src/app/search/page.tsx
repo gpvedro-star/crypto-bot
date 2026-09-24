@@ -14,12 +14,14 @@ export default function SearchPage() {
     <div className="container-x">
       <SearchResults articles={articleMap} />
       <div className="mt-16 grid gap-14 lg:grid-cols-12" data-search-browse>
+        {getMostRead(5).length > 0 && (
         <section className="lg:col-span-7" aria-labelledby="popular-searches">
           <div className="rounded-card border border-line bg-white p-6">
             <h2 id="popular-searches" className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Most read this week</h2>
             <ol className="mt-2">{getMostRead(5).map((a, i) => <TrendingItem key={a.slug} article={a} rank={i + 1} showImage={false} />)}</ol>
           </div>
         </section>
+        )}
         <section className="lg:col-span-5" aria-labelledby="browse">
           <h2 id="browse" className="flex items-center gap-2 font-sans text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-navy-700"><span className="inline-block h-2 w-2 rounded-full bg-sky-500" aria-hidden="true" />Browse by section</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
