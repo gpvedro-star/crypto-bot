@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { draftResponse } from "@/lib/editorial/response";
@@ -13,23 +14,29 @@ export const dynamic = "force-dynamic";
  * the desk can review the submitted copy.
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const requestId = randomUUID();
   const auth = authenticateEditorialRequest(request);
   if (!auth.ok) return jsonError(auth.status, auth.message);
 
   const { id } = await params;
   const store = getEditorialStore();
   if (!store) {
-    return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend() });
+    console.log("[editorial] read: no store configured", { requestId, id, backend: storeBackend() });
+    return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend(), request_id: requestId });
   }
 
   try {
     const record = await store.get(id);
-    if (!record) return jsonError(404, "No draft with that id.");
+    console.log("[editorial] read", { requestId, id, backend: storeBackend(), found: Boolean(record) });
+    if (!record) return jsonError(404, "No draft with that id.", { request_id: requestId });
     const full = new URL(request.url).searchParams.get("full") === "1";
-    return Response.json({ ...draftResponse(record, false), ...(full ? { record } : {}) });
+    return Response.json(
+      { ...draftResponse(record, false), ...(full ? { record } : {}) },
+      { headers: { "X-Request-Id": requestId } },
+    );
   } catch (error) {
-    console.error("[editorial] read failed", { id, error: String(error) });
-    return jsonError(500, "Could not read the draft from storage.");
+    console.error("[editorial] read failed", { requestId, id, backend: storeBackend(), error: String(error) });
+    return jsonError(500, "Could not read the draft from storage.", { request_id: requestId });
   }
 }
 

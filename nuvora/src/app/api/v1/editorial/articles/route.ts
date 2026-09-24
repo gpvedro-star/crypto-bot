@@ -1,8 +1,31 @@
+import { randomUUID } from "node:crypto";
 import { authenticateEditorialRequest, jsonError } from "@/lib/api-auth";
 import { DRAFT_FIRST, MAX_PAYLOAD_BYTES, validateSubmission, wireStatus } from "@/lib/editorial/contract";
 import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { draftResponse } from "@/lib/editorial/response";
 import { revalidateForRecord } from "@/lib/editorial/revalidate";
+
+/**
+ * A write is not "succeeded" until it reads back. Blobs' own promise
+ * resolving is not proof of a durable write — this closes that gap by
+ * re-reading the record before the caller is told it exists, so a storage
+ * fault becomes a 500 the caller can see and retry, never a false 201/200.
+ * Logged fields never include the token, headers, cookies or article body.
+ */
+async function verifyWritten(
+  store: ReturnType<typeof getEditorialStore>,
+  id: string,
+  requestId: string,
+  stage: "create" | "update",
+) {
+  const verify = await store!.get(id);
+  const ok = Boolean(verify);
+  console.log("[editorial] write verification", { requestId, stage, content_id: id, backend: storeBackend(), verified: ok });
+  if (!ok) {
+    throw new Error(`Write to storage did not persist for content_id ${id} (backend: ${storeBackend()}).`);
+  }
+  return verify!;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +60,7 @@ async function readJson(request: Request): Promise<{ ok: true; body: unknown } |
 }
 
 export async function POST(request: Request) {
+  const requestId = randomUUID();
   const auth = authenticateEditorialRequest(request);
   if (!auth.ok) return jsonError(auth.status, auth.message);
 
@@ -63,6 +87,8 @@ export async function POST(request: Request) {
 
     const existing = await store.get(parsed.value.content_id);
     const record = await store.create(parsed.value);
+    // Do not trust the write until it reads back.
+    await verifyWritten(store, record.id, requestId, "create");
     const requested = parsed.value.publish_status;
     // An edit to an already-published record should reach readers too.
     if (record.publish_status === "published") revalidateForRecord(record);
@@ -77,15 +103,16 @@ export async function POST(request: Request) {
             }
           : {}),
       },
-      { status: existing ? 200 : 201 },
+      { status: existing ? 200 : 201, headers: { "X-Request-Id": requestId } },
     );
   } catch (error) {
-    console.error("[editorial] create failed", { content_id: parsed.value.content_id, error: String(error) });
-    return jsonError(500, "Could not write the draft to storage.");
+    console.error("[editorial] create failed", { requestId, content_id: parsed.value.content_id, backend: storeBackend(), error: String(error) });
+    return jsonError(500, "Could not write the draft to storage.", { request_id: requestId });
   }
 }
 
 export async function PATCH(request: Request) {
+  const requestId = randomUUID();
   const auth = authenticateEditorialRequest(request);
   if (!auth.ok) return jsonError(auth.status, auth.message);
 
@@ -118,10 +145,11 @@ export async function PATCH(request: Request) {
     }
     const updated = await store.update(id, patch);
     if (!updated) return jsonError(404, "No draft with that id.");
+    await verifyWritten(store, id, requestId, "update");
     if (updated.publish_status === "published") revalidateForRecord(updated);
-    return Response.json(draftResponse(updated, false));
+    return Response.json(draftResponse(updated, false), { headers: { "X-Request-Id": requestId } });
   } catch (error) {
-    console.error("[editorial] update failed", { id, error: String(error) });
-    return jsonError(500, "Could not write the draft to storage.");
+    console.error("[editorial] update failed", { requestId, id, backend: storeBackend(), error: String(error) });
+    return jsonError(500, "Could not write the draft to storage.", { request_id: requestId });
   }
 }

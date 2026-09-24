@@ -6,7 +6,7 @@ import { authors, getAuthor } from "@/content/authors";
 import { categoryMap } from "@/content/categories";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import type { ArticleWithMeta } from "@/lib/content";
-import { getEditorialStore } from "@/lib/editorial/store";
+import { getEditorialStore, storeBackend } from "@/lib/editorial/store";
 import { recordToArticle } from "@/lib/editorial/publish-map";
 import { PREVIEW_COOKIE, previewTokenValid } from "@/lib/api-auth";
 import { ArticleView } from "@/components/article/ArticleView";
@@ -51,10 +51,14 @@ export default async function PreviewArticlePage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const raw = query.token;
   const token = Array.isArray(raw) ? raw[0] : raw;
-  if (!(await authorized(token))) notFound();
+  const tokenOk = await authorized(token);
+  // Never logs the token itself, only whether one was supplied and matched.
+  console.log("[preview] auth", { id, tokenSupplied: Boolean(token), authorized: tokenOk });
+  if (!tokenOk) notFound();
 
   const store = getEditorialStore();
   const record = store ? await store.get(id) : null;
+  console.log("[preview] lookup", { id, backend: storeBackend(), found: Boolean(record) });
   if (!record) notFound();
 
   const base = recordToArticle(record);
