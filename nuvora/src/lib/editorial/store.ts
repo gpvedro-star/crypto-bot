@@ -18,6 +18,11 @@ import { site } from "@/content/site";
  *                           updates in place instead of duplicating.
  *   slug/<slug>           → the content_id that owns that slug, so two
  *                           different records cannot claim the same URL.
+ *   index/published       → the ids the public site may render. Blobs `list`
+ *                           is eventually consistent, so the site would
+ *                           otherwise sometimes miss a story it had just
+ *                           published; this index is written on every status
+ *                           change and read back with strong consistency.
  */
 export interface EditorialStore {
   create(input: EditorialSubmission): Promise<EditorialRecord>;
@@ -28,6 +33,8 @@ export interface EditorialStore {
   ownerOfSlug(slug: string): Promise<string | null>;
   /** Every stored record. Callers filter by publish_status. */
   list(): Promise<EditorialRecord[]>;
+  /** Published records, read through the published index (see below). */
+  listPublished(): Promise<EditorialRecord[]>;
   /** Removes a record and its slug claim. */
   remove(id: string): Promise<boolean>;
 }
@@ -60,6 +67,7 @@ export function toDraftRecord(input: EditorialSubmission): EditorialRecord {
 
 const recordKey = (id: string) => `record/${id}`;
 const slugKey = (slug: string) => `slug/${slug}`;
+const PUBLISHED_INDEX = "index/published";
 
 class BlobsEditorialStore implements EditorialStore {
   constructor(private readonly store: Store) {}
@@ -122,6 +130,7 @@ class BlobsEditorialStore implements EditorialStore {
       published_at: status === "published" ? (existing.published_at ?? new Date().toISOString()) : existing.published_at,
     };
     await this.store.setJSON(recordKey(id), next);
+    await this.setIndexed(id, status === "published");
     return next;
   }
 
@@ -133,11 +142,39 @@ class BlobsEditorialStore implements EditorialStore {
     return records.filter((r): r is EditorialRecord => Boolean(r));
   }
 
+  /** The published index, rebuilt from a full listing the first time it is missing. */
+  private async publishedIds(): Promise<string[]> {
+    const stored = (await this.store.get(PUBLISHED_INDEX, { type: "json" })) as { ids?: unknown } | null;
+    if (stored && Array.isArray(stored.ids)) {
+      return stored.ids.filter((id): id is string => typeof id === "string");
+    }
+    const ids = (await this.list()).filter((r) => r.publish_status === "published").map((r) => r.id);
+    await this.store.setJSON(PUBLISHED_INDEX, { ids });
+    return ids;
+  }
+
+  private async setIndexed(id: string, published: boolean): Promise<void> {
+    const ids = await this.publishedIds();
+    const has = ids.includes(id);
+    if (published === has) return;
+    const next = published ? [...ids, id] : ids.filter((i) => i !== id);
+    await this.store.setJSON(PUBLISHED_INDEX, { ids: next });
+  }
+
+  async listPublished(): Promise<EditorialRecord[]> {
+    const ids = await this.publishedIds();
+    const records = await Promise.all(ids.map((id) => this.get(id)));
+    // A record can leave `published` between the index write and this read;
+    // the record itself, read with strong consistency, is the authority.
+    return records.filter((r): r is EditorialRecord => Boolean(r) && r!.publish_status === "published");
+  }
+
   async remove(id: string): Promise<boolean> {
     const existing = await this.get(id);
     if (!existing) return false;
     await this.store.delete(recordKey(id));
     await this.store.delete(slugKey(existing.slug));
+    await this.setIndexed(id, false);
     return true;
   }
 }
@@ -248,6 +285,10 @@ class LocalEditorialStore implements EditorialStore {
       if (r) out.push(r);
     }
     return out;
+  }
+
+  async listPublished(): Promise<EditorialRecord[]> {
+    return (await this.list()).filter((r) => r.publish_status === "published");
   }
 
   async remove(id: string): Promise<boolean> {

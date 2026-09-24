@@ -16,9 +16,10 @@ import { isRenderable, recordToArticle } from "./editorial/publish-map";
  * in-review and scheduled records are filtered out at the source, so there is
  * no public route — page, feed, sitemap, search or API — that can surface one.
  *
- * Reads are deduplicated per request and pages cache their render (see each
- * route's `revalidate`), so a page view costs at most one Blobs list per
- * revalidation window rather than one per visitor.
+ * Reads go through the store's published index and are deduplicated per render
+ * pass; pages cache their render (see each route's `revalidate`), so a page
+ * view costs a handful of Blobs reads per revalidation window rather than one
+ * set per visitor.
  */
 
 function decorate(article: Article): ArticleWithMeta {
@@ -39,7 +40,7 @@ async function publishedRecords(): Promise<EditorialRecord[]> {
   const store = getEditorialStore();
   if (!store) return [];
   try {
-    const all = await store.list();
+    const all = await store.listPublished();
     return all.filter(isRenderable);
   } catch (error) {
     console.error("[live-content] could not read editorial store", error);
