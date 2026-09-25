@@ -61,6 +61,21 @@ export function safeImageUrl(value: unknown): string | null {
   return allowedImageHosts().includes(url.hostname.toLowerCase()) ? url.toString() : null;
 }
 
+/**
+ * Prompt text keeps its line breaks, since a reader copies it verbatim, but
+ * is otherwise cleaned exactly like body text.
+ */
+function safePromptText(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value
+    .split(/\r?\n/)
+    .map((line) => safeText(line, 4000))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 4000);
+}
+
 /** A link URL safe to put in an href: http(s) or same-origin only. */
 export function safeLinkUrl(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -174,10 +189,42 @@ function normalizeBlock(input: unknown): ContentBlock | null {
       return { type: "table", table };
     }
 
+    case "prompt": {
+      const title = safeText(b.title, 200);
+      const promptText = safePromptText(b.text ?? b.prompt ?? b.content);
+      if (!promptText) return null;
+      const n = Number(b.number);
+      return { type: "prompt", title: title || "Prompt", text: promptText, ...(Number.isInteger(n) && n > 0 && n < 100 ? { number: n } : {}) };
+    }
+
+    case "example": {
+      const label = safeText(b.label, 200);
+      const side = (v: unknown) => {
+        const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+        return { title: safeText(o.title, 120), items: strings(o.items, 20) };
+      };
+      const before = side(b.before);
+      const after = side(b.after);
+      if (!label || !before.items.length || !after.items.length) return null;
+      const note = safeText(b.note, 400);
+      return {
+        type: "example",
+        label,
+        before: { title: before.title || "Before", items: before.items },
+        after: { title: after.title || "After", items: after.items },
+        ...(note ? { note } : {}),
+      };
+    }
+
     case "callout":
     case "note": {
       if (!text) return null;
       const title = safeText(b.title, 200);
+      // A callout titled "Prompt 2: …" is a copyable prompt.
+      const asPrompt = /^prompt\s+(\d{1,2})\s*[:.–—-]\s*(.+)$/i.exec(title);
+      if (asPrompt) {
+        return { type: "prompt", title: asPrompt[2].trim(), text: safePromptText(b.text) || text, number: Number(asPrompt[1]) };
+      }
       return {
         type: "callout",
         text,

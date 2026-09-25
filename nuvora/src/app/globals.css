@@ -215,21 +215,20 @@
 /* ------------------------------------------------------------------
    Article body typography
    ------------------------------------------------------------------ */
-/* One composition for every article: the opening, the hero and the reading
-   column share a left edge. Below 1024px it is a single column. From 1024px
-   the reading column is 720px and the headline block runs on past it; from
-   1280px the right-hand space carries the contents rail. */
+/* One composition for every article, inside a 1200px frame: the opening, the
+   "At a glance" strip and the reading column share one left edge. Below
+   1024px it is a single column. From 1024px the reading column is 720px; from
+   1280px the space to its right carries the contents rail. */
 .article-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
 .article-grid-full, .article-grid-wide, .article-grid-main { grid-column: 1 / -1; min-width: 0; }
 .article-grid-rail { display: none; }
 @media (min-width: 1024px) {
-  .article-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr); }
-  .article-grid-wide { grid-column: 2 / -1; max-width: 920px; }
-  .article-grid-main { grid-column: 2; }
+  .article-grid { grid-template-columns: minmax(0, 720px) minmax(0, 1fr); }
+  .article-grid-wide { max-width: 920px; }
+  .article-grid-main { grid-column: 1; }
 }
 @media (min-width: 1280px) {
-  .article-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 2fr); }
-  .article-grid-rail { display: block; grid-column: 3; padding-left: 3.5rem; min-width: 0; }
+  .article-grid-rail { display: block; grid-column: 2; padding-left: 4rem; min-width: 0; }
 }
 
 .article-body {

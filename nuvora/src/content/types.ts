@@ -81,6 +81,13 @@ export type ContentBlock =
   | { type: "keyTakeaways"; items: string[] }
   | { type: "faq"; items: FAQItem[] }
   | { type: "toolRecommendation"; toolSlug: string; note: string }
+  /** A prompt the reader can copy. `text` is copied verbatim, placeholders included. */
+  | { type: "prompt"; title: string; text: string; number?: number }
+  /**
+   * A before/after illustration, e.g. a task list becoming a weekly outline.
+   * Always rendered with its label, so it can't pass for real product output.
+   */
+  | { type: "example"; label: string; before: { title: string; items: string[] }; after: { title: string; items: string[] }; note?: string }
   | { type: "divider" };
 
 export interface SocialCaptions {

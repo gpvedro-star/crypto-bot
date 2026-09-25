@@ -1,5 +1,7 @@
 import type { ContentBlock } from "@/content/types";
 import { headingIds } from "@/lib/article-outline";
+import { PromptCard } from "./PromptCard";
+import { ExampleTransform } from "./ExampleTransform";
 import { BottomLine, Callout, ComparisonTable, Explains, FAQ, Figure, Gallery, KeyTakeaways, ToolRecommendation, WhyItMatters } from "./EditorialBlocks";
 
 /** Renders the typed content blocks of an article in order. */
@@ -48,6 +50,10 @@ export function ArticleBody({ blocks, id }: { blocks: ContentBlock[]; id?: strin
             return <FAQ key={i} items={block.items} />;
           case "toolRecommendation":
             return <ToolRecommendation key={i} toolSlug={block.toolSlug} note={block.note} />;
+          case "prompt":
+            return <PromptCard key={i} title={block.title} text={block.text} number={block.number} />;
+          case "example":
+            return <ExampleTransform key={i} label={block.label} before={block.before} after={block.after} note={block.note} />;
           case "divider":
             return <hr key={i} className="my-12 border-line" />;
           default:

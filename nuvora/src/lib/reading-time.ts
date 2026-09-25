@@ -25,6 +25,10 @@ function blockText(block: ContentBlock): string {
       return block.table.rows.flat().join(" ");
     case "toolRecommendation":
       return block.note;
+    case "prompt":
+      return `${block.title} ${block.text}`;
+    case "example":
+      return [block.label, block.before.title, ...block.before.items, block.after.title, ...block.after.items, block.note ?? ""].join(" ");
     default:
       return "";
   }

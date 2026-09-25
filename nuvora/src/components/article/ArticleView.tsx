@@ -6,7 +6,7 @@ import { articleOutline } from "@/lib/article-outline";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { ArticleBody } from "@/components/article/ArticleBody";
 import { ContentsDisclosure, ContentsRail } from "@/components/article/ArticleContents";
-import { KeyTakeaways } from "@/components/article/EditorialBlocks";
+import { AtAGlance } from "@/components/article/AtAGlance";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { ShareBar } from "@/components/article/ShareBar";
 import { AuthorCard } from "@/components/article/AuthorCard";
@@ -46,8 +46,10 @@ export function ArticleView({ article, related, preview = false }: ArticleViewPr
   const url = absoluteUrl(article.href);
   const shareImage = article.featuredImage.placeholder ? undefined : absoluteUrl(article.featuredImage.src);
   const hasActiveAffiliate = (article.affiliateLinks ?? []).some((id) => resolveAffiliate(id)?.isAffiliate);
-  const outline = articleOutline(article.content);
-  const showContents = outline.length >= MIN_SECTIONS_FOR_CONTENTS;
+  const sections = articleOutline(article.content);
+  const hasSources = Boolean(article.sources && article.sources.length > 0);
+  const showContents = sections.length >= MIN_SECTIONS_FOR_CONTENTS;
+  const outline = hasSources ? [...sections, { id: "article-sources", text: "Sources", level: 2 as const }] : sections;
 
   return (
     <>
@@ -58,10 +60,17 @@ export function ArticleView({ article, related, preview = false }: ArticleViewPr
           share={canShare ? <ShareBar url={url} title={article.title} image={shareImage} /> : undefined}
         />
 
+        {article.keyTakeaways && article.keyTakeaways.length > 0 && (
+          <div className="container-x mt-10 sm:mt-12">
+            <div className="mx-auto max-w-[1200px]">
+              <AtAGlance items={article.keyTakeaways} />
+            </div>
+          </div>
+        )}
+
         <div className="container-x">
           <div className="article-grid mx-auto mt-10 max-w-[1200px] sm:mt-14">
             <div className="article-grid-main">
-              {article.keyTakeaways && article.keyTakeaways.length > 0 && <KeyTakeaways items={article.keyTakeaways} />}
               {showContents && <ContentsDisclosure outline={outline} />}
 
               <ArticleBody blocks={article.content} id="article-content" />
@@ -78,7 +87,7 @@ export function ArticleView({ article, related, preview = false }: ArticleViewPr
 
               {article.sources && article.sources.length > 0 && (
                 <section className="mt-14 border-t-2 border-navy-900 pt-5" aria-labelledby="article-sources">
-                  <h2 id="article-sources" className="font-serif text-[1.35rem] font-semibold text-navy-900">
+                  <h2 id="article-sources" className="scroll-mt-[calc(var(--header-height)+1.5rem)] font-serif text-[1.35rem] font-semibold text-navy-900">
                     Sources
                   </h2>
                   <ol className="mt-5 space-y-4">
@@ -144,7 +153,7 @@ export function ArticleView({ article, related, preview = false }: ArticleViewPr
 
             {/* Margin rail from 1280px: contents, then reserved ad space. */}
             <aside className="article-grid-rail" aria-label="Article navigation">
-              <div className="sticky top-[calc(var(--header-height)+2rem)]">
+              <div className="sticky top-[calc(var(--header-height)+2rem)] ml-auto max-w-[19rem]">
                 {showContents && <ContentsRail outline={outline} />}
                 <AdSlot name="article-sidebar" className="mt-10" />
               </div>

@@ -39,13 +39,14 @@ export function ContentsRail({ outline }: { outline: OutlineEntry[] }) {
     <nav aria-label="In this article" className="border-t-2 border-navy-900 pt-3">
       <p className="eyebrow text-navy-900">In this article</p>
       <ol className="mt-3 space-y-0.5 border-l border-line">
-        {outline.map((entry) => (
+        {outline.map((entry, i) => (
           <li key={entry.id}>
             <a
               href={`#${entry.id}`}
-              className="-ml-px block border-l border-transparent py-1.5 pl-4 font-sans text-[0.88rem] leading-snug text-ink-500 transition-colors hover:border-navy-900 hover:text-navy-900 focus-visible:border-navy-900 focus-visible:text-navy-900"
+              className="-ml-px flex gap-2.5 border-l border-transparent py-1.5 pl-4 font-sans text-[0.9rem] leading-snug text-ink-700 transition-colors hover:border-navy-900 hover:text-navy-900 focus-visible:border-navy-900 focus-visible:text-navy-900"
             >
-              {entry.text}
+              <span aria-hidden="true" className="tabular text-ink-500">{i + 1}.</span>
+              <span>{entry.text}</span>
             </a>
           </li>
         ))}
