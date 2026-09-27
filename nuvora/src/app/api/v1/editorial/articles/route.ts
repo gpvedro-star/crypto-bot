@@ -72,6 +72,29 @@ export async function POST(request: Request) {
   const parsed = validateSubmission(parsedBody.body);
   if (!parsed.ok) return jsonError(400, "Submission failed validation.", { errors: parsed.errors });
 
+  // Fact-check results come only from the fact-check or admin credential.
+  // For the draft key they are stripped — along with per-claim verdicts and
+  // any publication date — and because a submission replaces the record,
+  // re-submitting content also clears any earlier fact check: a PASS never
+  // carries over to text it did not check.
+  const submission = parsed.value;
+  if (auth.role === "draft") {
+    delete submission.fact_check_status;
+    delete submission.fact_check_issues_count;
+    delete submission.fact_check_completed_at;
+    delete submission.needs_human_review;
+    delete submission.published_at;
+    if (Array.isArray(submission.verified_facts)) {
+      submission.verified_facts = submission.verified_facts.map(({ status: _status, ...fact }) => {
+        void _status;
+        return fact;
+      });
+    }
+  }
+  // Provenance comes from the credential, never the payload.
+  (submission as typeof submission & { submitted_via: "automation" | "admin" }).submitted_via =
+    auth.role === "draft" ? "automation" : "admin";
+
   const store = getEditorialStore();
   if (!store) {
     return jsonError(503, "Editorial storage is not configured on this deployment.", { backend: storeBackend() });
@@ -79,15 +102,15 @@ export async function POST(request: Request) {
 
   try {
     // Two different records must not claim the same public URL.
-    const slugOwner = await store.ownerOfSlug(parsed.value.slug);
-    if (slugOwner && slugOwner !== parsed.value.content_id) {
+    const slugOwner = await store.ownerOfSlug(submission.slug);
+    if (slugOwner && slugOwner !== submission.content_id) {
       return jsonError(409, "That slug already belongs to another draft.", {
-        slug: parsed.value.slug,
+        slug: submission.slug,
         owned_by_content_id: slugOwner,
       });
     }
 
-    const existing = await store.get(parsed.value.content_id);
+    const existing = await store.get(submission.content_id);
     // The draft key can only replace a record that is still a draft. Once the
     // desk moves it on (in review, scheduled, published), it is out of reach.
     if (auth.role === "draft" && existing && existing.publish_status !== "draft") {
@@ -97,10 +120,10 @@ export async function POST(request: Request) {
         request_id: requestId,
       });
     }
-    const record = await store.create(parsed.value);
+    const record = await store.create(submission);
     // Do not trust the write until it reads back.
     await verifyWritten(store, record.id, requestId, "create");
-    const requested = parsed.value.publish_status;
+    const requested = submission.publish_status;
     // An edit to an already-published record should reach readers too.
     if (record.publish_status === "published") revalidateForRecord(record);
 

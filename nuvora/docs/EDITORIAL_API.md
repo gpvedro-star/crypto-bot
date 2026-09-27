@@ -55,15 +55,47 @@ browser, never returned in a response, and never logged.
 | Credential | Who holds it | Can do |
 |---|---|---|
 | `NUVORA_EDITORIAL_API_KEY` | Owner / desk | Everything below |
-| `NUVORA_GROK_DRAFT_KEY` | The Grok bot | `POST /articles` (create, or re-submit the same `content_id` while it is still DRAFT) and `GET /articles/{id}` for drafts |
+| `NUVORA_GROK_DRAFT_KEY` | Website Publisher (Grok) | `POST /articles` (create, or re-submit the same `content_id` while it is still DRAFT) and `GET /articles/{id}` for drafts |
+| `NUVORA_FACTCHECK_KEY` | Fact Check Agent | `POST /articles/{id}/fact-check` on a DRAFT — the five fact-check fields only |
 
-The draft key gets **403** from publish, delete, PATCH, media, schedule and
-analytics, and from any record that is no longer DRAFT. A `publish_status` in
-its payload is ignored — records it creates are always DRAFT. Routes are
-admin-only unless they opt in, so new routes stay closed to the draft key by
-default. The two values must differ; if they match, the API refuses to run.
+Neither restricted key can publish, delete, PATCH, or reach media, schedule or
+analytics (403). The draft key cannot set fact-check fields: they are stripped
+from its submissions, and because a submission replaces the record, any
+re-submission clears an earlier fact check. Routes are admin-only unless they
+opt in. All three values must differ; if any two match, the API refuses to run.
 
-`npm run test:editorial-auth` exercises all of this against a running server.
+### Automatic publication
+
+There is no publish command for either bot. When the fact-check key records
+`fact_check_status: "PASS"`, the server runs a deterministic gate
+(`src/lib/editorial/publish-gates.ts`) and publishes only if every check holds:
+
+- the record is DRAFT and was submitted with the draft key (drafts written or
+  edited with the admin key are never auto-published);
+- `project` is AI and `content_id` is valid;
+- `final_headline`, `summary`, `article_body` (renderable), `category` (a known
+  section), `slug`, `seo_title`, `seo_description` and at least one usable
+  source (title plus http(s) URL) are present;
+- the slug is valid, owned by this record, and not a repository article;
+- nothing is marked BLOCKED or needs human review;
+- `fact_check_status` is PASS, `fact_check_issues_count` is exactly 0, and no
+  verified fact is CONFLICTING or OUTDATED.
+
+A failed gate leaves the record DRAFT and returns
+`auto_publish: { published: false, reason, detail }` with one of:
+`NOT_DRAFT`, `NOT_AUTOMATION_SUBMISSION`, `INVALID_PROJECT`,
+`INVALID_CONTENT_ID`, `MISSING_REQUIRED_FIELD`, `UNRENDERABLE_BODY`,
+`INVALID_CATEGORY`, `INVALID_SLUG`, `DUPLICATE_SLUG`, `NO_SOURCES`,
+`ARTICLE_BLOCKED`, `FACT_CHECK_MISSING`, `FACT_CHECK_NOT_PASSED`,
+`UNRESOLVED_FACT_CHECK_ISSUES`, `NEEDS_HUMAN_REVIEW`. A result other than PASS
+is recorded but never triggers publication. A second PASS on a published
+record returns 409 `NOT_DRAFT` and changes nothing.
+
+Once published, a record is out of reach of both bot keys: corrections go
+through the admin key.
+
+`npm run test:editorial-auth` and `npm run test:auto-publish` exercise all of
+this against a running server.
 
 ## Endpoints
 

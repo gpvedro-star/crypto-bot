@@ -47,6 +47,12 @@ function slugifyLoose(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Strict form for the publication gate: no fallback, the section must be recognised. */
+export function isKnownCategory(value: unknown): boolean {
+  const key = slugifyLoose(typeof value === "string" ? value : "");
+  return CATEGORY_SLUGS.has(key) || key in CATEGORY_ALIASES;
+}
+
 /** Never throws: an unrecognised section falls back to News rather than 404ing. */
 export function resolveCategory(value: unknown): CategorySlug {
   const key = slugifyLoose(typeof value === "string" ? value : "");

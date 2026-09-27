@@ -51,7 +51,33 @@ export interface EditorialVerifiedFact {
   claim: string;
   source: string;
   verifiedAt?: string;
+  /** The fact-check verdict for this claim, when the workflow records one. */
+  status?: VerifiedFactStatus;
 }
+
+/**
+ * Fact-check verdicts produced by the editorial workflow. The server never
+ * re-checks facts; it only refuses to auto-publish unless the recorded result
+ * is a clean PASS. Anything else keeps the article in DRAFT.
+ */
+export const FACT_CHECK_STATUSES = ["PASS", "BLOCKED", "PARTIAL", "CONFLICTING", "OUTDATED"] as const;
+export type FactCheckStatus = (typeof FACT_CHECK_STATUSES)[number];
+
+export const VERIFIED_FACT_STATUSES = ["VERIFIED", "PARTIAL", "CONFLICTING", "OUTDATED"] as const;
+export type VerifiedFactStatus = (typeof VERIFIED_FACT_STATUSES)[number];
+
+/** The only fields the fact-check credential may write. */
+export const FACT_CHECK_FIELDS = [
+  "fact_check_status",
+  "fact_check_issues_count",
+  "fact_check_completed_at",
+  "verified_facts",
+  "needs_human_review",
+] as const;
+export type FactCheckField = (typeof FACT_CHECK_FIELDS)[number];
+
+/** Who submitted a record. Set by the server from the credential, never from the payload. */
+export type SubmittedVia = "automation" | "admin";
 
 export interface EditorialSubmission {
   content_id: string;
@@ -82,6 +108,14 @@ export interface EditorialSubmission {
   created_at?: string;
   updated_at?: string;
   published_at?: string;
+  /** Overall fact-check result from the workflow's Fact Check Agent. */
+  fact_check_status?: FactCheckStatus;
+  /** Unresolved fact-check issues. Auto-publish requires exactly 0. */
+  fact_check_issues_count?: number;
+  /** When the fact check finished (ISO 8601). */
+  fact_check_completed_at?: string;
+  /** Set by the workflow when a person must look before publication. */
+  needs_human_review?: boolean;
   /** Accepted but never honoured on create — see DRAFT_FIRST below. */
   publish_status?: PublishStatus;
 }
@@ -93,6 +127,8 @@ export interface EditorialRecord extends Omit<EditorialSubmission, "publish_stat
   created_at: string;
   updated_at: string;
   published_at?: string;
+  /** Server-set provenance: only automation-submitted records can be auto-published. */
+  submitted_via?: SubmittedVia;
   /** Where the article will live once published. */
   url: string;
 }
@@ -248,6 +284,54 @@ export function validateSubmission(
     errors.push({ field: "social_content", message: "Must be an object keyed by platform." });
   }
 
+  // Server-owned: never accepted from a payload.
+  delete b.submitted_via;
+
+  let factCheckStatus: FactCheckStatus | undefined;
+  if (b.fact_check_status !== undefined && b.fact_check_status !== null) {
+    const v = isNonEmptyString(b.fact_check_status) ? b.fact_check_status.trim().toUpperCase().replace(/[\s-]+/g, "_") : "";
+    if (!FACT_CHECK_STATUSES.includes(v as FactCheckStatus)) {
+      errors.push({ field: "fact_check_status", message: `Must be one of: ${FACT_CHECK_STATUSES.join(", ")}.` });
+    } else {
+      factCheckStatus = v as FactCheckStatus;
+    }
+  }
+  if (
+    b.fact_check_issues_count !== undefined &&
+    b.fact_check_issues_count !== null &&
+    !(Number.isInteger(b.fact_check_issues_count) && (b.fact_check_issues_count as number) >= 0)
+  ) {
+    errors.push({ field: "fact_check_issues_count", message: "Must be a whole number, 0 or more." });
+  }
+  if (
+    b.fact_check_completed_at !== undefined &&
+    b.fact_check_completed_at !== null &&
+    !(isNonEmptyString(b.fact_check_completed_at) && !Number.isNaN(Date.parse(b.fact_check_completed_at)))
+  ) {
+    errors.push({ field: "fact_check_completed_at", message: "Must be an ISO 8601 date-time." });
+  }
+  if (b.needs_human_review !== undefined && b.needs_human_review !== null && typeof b.needs_human_review !== "boolean") {
+    errors.push({ field: "needs_human_review", message: "Must be true or false." });
+  }
+  if (b.verified_facts !== undefined) {
+    if (!Array.isArray(b.verified_facts)) {
+      errors.push({ field: "verified_facts", message: "Must be an array." });
+    } else {
+      b.verified_facts = b.verified_facts.map((f, i) => {
+        const fact = (f && typeof f === "object" ? { ...(f as Record<string, unknown>) } : {}) as Record<string, unknown>;
+        if (fact.status !== undefined && fact.status !== null) {
+          const v = isNonEmptyString(fact.status) ? fact.status.trim().toUpperCase() : "";
+          if (!VERIFIED_FACT_STATUSES.includes(v as VerifiedFactStatus)) {
+            errors.push({ field: `verified_facts[${i}].status`, message: `Must be one of: ${VERIFIED_FACT_STATUSES.join(", ")}.` });
+          } else {
+            fact.status = v;
+          }
+        }
+        return fact;
+      });
+    }
+  }
+
   const publishStatus = isNonEmptyString(b.publish_status) ? b.publish_status.trim().toLowerCase() : undefined;
   if (publishStatus !== undefined && !PUBLISH_STATUSES.includes(publishStatus as PublishStatus)) {
     errors.push({ field: "publish_status", message: `Must be one of: ${PUBLISH_STATUSES.join(", ")}.` });
@@ -267,6 +351,92 @@ export function validateSubmission(
       // The publication byline. The site has no per-person author records.
       author: isNonEmptyString(b.author) ? b.author.trim() : "NUVORA",
       publish_status: publishStatus as PublishStatus | undefined,
+      ...(factCheckStatus ? { fact_check_status: factCheckStatus } : {}),
     },
   };
+}
+
+/**
+ * A fact-check update. Only the five fact-check fields are accepted; any other
+ * key fails the whole request, so the credential cannot touch article content
+ * even by accident.
+ */
+export type FactCheckUpdate = Partial<Pick<EditorialSubmission, FactCheckField>>;
+
+export function validateFactCheckUpdate(
+  body: unknown,
+): { ok: true; value: FactCheckUpdate } | { ok: false; errors: ValidationFailure[] } {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return { ok: false, errors: [{ field: "body", message: "Expected a JSON object." }] };
+  }
+  const b = body as Record<string, unknown>;
+  const errors: ValidationFailure[] = [];
+
+  const unknownKeys = Object.keys(b).filter((k) => !FACT_CHECK_FIELDS.includes(k as FactCheckField));
+  for (const k of unknownKeys) errors.push({ field: k, message: "Not a fact-check field; this credential cannot change it." });
+
+  const value: FactCheckUpdate = {};
+  if (b.fact_check_status === undefined) {
+    errors.push({ field: "fact_check_status", message: `Required. One of: ${FACT_CHECK_STATUSES.join(", ")}.` });
+  } else {
+    const v = isNonEmptyString(b.fact_check_status) ? b.fact_check_status.trim().toUpperCase() : "";
+    if (!FACT_CHECK_STATUSES.includes(v as FactCheckStatus)) {
+      errors.push({ field: "fact_check_status", message: `Must be one of: ${FACT_CHECK_STATUSES.join(", ")}.` });
+    } else value.fact_check_status = v as FactCheckStatus;
+  }
+
+  if (b.fact_check_issues_count === undefined) {
+    errors.push({ field: "fact_check_issues_count", message: "Required. A whole number, 0 or more." });
+  } else if (!(Number.isInteger(b.fact_check_issues_count) && (b.fact_check_issues_count as number) >= 0)) {
+    errors.push({ field: "fact_check_issues_count", message: "Must be a whole number, 0 or more." });
+  } else value.fact_check_issues_count = b.fact_check_issues_count as number;
+
+  if (b.fact_check_completed_at !== undefined) {
+    if (!(isNonEmptyString(b.fact_check_completed_at) && !Number.isNaN(Date.parse(b.fact_check_completed_at)))) {
+      errors.push({ field: "fact_check_completed_at", message: "Must be an ISO 8601 date-time." });
+    } else value.fact_check_completed_at = new Date(Date.parse(b.fact_check_completed_at)).toISOString();
+  }
+
+  if (b.needs_human_review !== undefined) {
+    if (typeof b.needs_human_review !== "boolean") errors.push({ field: "needs_human_review", message: "Must be true or false." });
+    else value.needs_human_review = b.needs_human_review;
+  }
+
+  if (b.verified_facts !== undefined) {
+    if (!Array.isArray(b.verified_facts)) {
+      errors.push({ field: "verified_facts", message: "Must be an array." });
+    } else {
+      value.verified_facts = b.verified_facts.map((f, i) => {
+        const fact = (f && typeof f === "object" ? f : {}) as Record<string, unknown>;
+        if (!isNonEmptyString(fact.claim) || !isNonEmptyString(fact.source)) {
+          errors.push({ field: `verified_facts[${i}]`, message: "Each fact needs a claim and a source." });
+        }
+        let status: VerifiedFactStatus | undefined;
+        if (fact.status !== undefined) {
+          const v = isNonEmptyString(fact.status) ? fact.status.trim().toUpperCase() : "";
+          if (!VERIFIED_FACT_STATUSES.includes(v as VerifiedFactStatus)) {
+            errors.push({ field: `verified_facts[${i}].status`, message: `Must be one of: ${VERIFIED_FACT_STATUSES.join(", ")}.` });
+          } else status = v as VerifiedFactStatus;
+        }
+        return {
+          claim: String(fact.claim ?? ""),
+          source: String(fact.source ?? ""),
+          ...(isNonEmptyString(fact.verifiedAt) ? { verifiedAt: fact.verifiedAt } : {}),
+          ...(status ? { status } : {}),
+        };
+      });
+    }
+  }
+
+  findMarkup(b, "", errors);
+  return errors.length ? { ok: false, errors } : { ok: true, value };
+}
+
+/** Exposed for the auto-publish gates, which re-check stored values independently. */
+export function isValidContentId(id: string): boolean {
+  return CONTENT_ID_RE.test(id);
+}
+
+export function isValidSlug(slug: string): boolean {
+  return SLUG_RE.test(slug);
 }

@@ -3,19 +3,23 @@ import { timingSafeEqual } from "node:crypto";
 /**
  * Editorial API authentication.
  *
- * Two bearer credentials, both compared in constant time:
+ * Three bearer credentials, all compared in constant time:
  *
  *   NUVORA_EDITORIAL_API_KEY  owner/admin — every editorial action.
  *   NUVORA_GROK_DRAFT_KEY     the Grok bot — submit and re-submit DRAFTs, and
  *                             read a draft back. Nothing else.
+ *   NUVORA_FACTCHECK_KEY      the Fact Check Agent — record fact-check results
+ *                             on an existing DRAFT. Nothing else.
  *
- * Admin-only is the default: a route accepts the draft key only when it
- * passes `{ allowDraftKey: true }`, so any route added later is closed to it
- * unless someone opens it deliberately. A draft-key request to any other
- * route gets 403. With neither key set the API is off (503); there is no
- * default credential.
+ * Neither restricted key can publish. Publication of a fact-checked draft is
+ * decided by the server's own gate (lib/editorial/publish-gates.ts).
+ *
+ * Admin-only is the default: a route accepts a restricted key only when it
+ * opts in, so any route added later is closed to them unless someone opens it
+ * deliberately. A restricted key on any other route gets 403. With no key set
+ * the API is off (503); there is no default credential.
  */
-export type EditorialRole = "admin" | "draft";
+export type EditorialRole = "admin" | "draft" | "factcheck";
 
 export type AuthResult =
   | { ok: true; actor: string; role: EditorialRole }
@@ -30,27 +34,35 @@ function matches(token: string, expected: string | undefined): boolean {
 
 export function authenticateEditorialRequest(
   request: Request,
-  options: { allowDraftKey?: boolean } = {},
+  options: { allowDraftKey?: boolean; allowFactCheckKey?: boolean } = {},
 ): AuthResult {
   const adminKey = process.env.NUVORA_EDITORIAL_API_KEY;
   const draftKey = process.env.NUVORA_GROK_DRAFT_KEY;
-  if (!adminKey && !draftKey) {
+  const factKey = process.env.NUVORA_FACTCHECK_KEY;
+  if (!adminKey && !draftKey && !factKey) {
     return { ok: false, status: 503, message: "Editorial API is not enabled on this deployment." };
   }
-  // One value in both variables would make every draft-key request an admin
-  // request. Refuse to run in that state rather than guess.
-  if (adminKey && draftKey && matches(adminKey, draftKey)) {
-    console.error("[editorial] NUVORA_GROK_DRAFT_KEY must differ from NUVORA_EDITORIAL_API_KEY");
-    return { ok: false, status: 503, message: "Editorial API is misconfigured on this deployment." };
+  // Two credentials sharing a value would let the weaker one act as the
+  // stronger. Refuse to run in that state rather than guess.
+  const configured = [adminKey, draftKey, factKey].filter((k): k is string => Boolean(k));
+  for (let i = 0; i < configured.length; i++) {
+    for (let j = i + 1; j < configured.length; j++) {
+      if (matches(configured[i], configured[j])) {
+        console.error("[editorial] editorial credentials must all differ from each other");
+        return { ok: false, status: 503, message: "Editorial API is misconfigured on this deployment." };
+      }
+    }
   }
+
   const header = request.headers.get("authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
   if (!token) return { ok: false, status: 401, message: "Missing bearer token." };
 
-  // Evaluate both comparisons so the response time does not reveal which
+  // Evaluate every comparison so response time does not reveal which
   // credential a token was closer to.
   const isAdmin = matches(token, adminKey);
   const isDraft = matches(token, draftKey);
+  const isFact = matches(token, factKey);
   const actor = request.headers.get("x-nuvora-agent") ?? "api-client";
 
   if (isAdmin) return { ok: true, actor, role: "admin" };
@@ -59,6 +71,12 @@ export function authenticateEditorialRequest(
       return { ok: false, status: 403, message: "This credential can only submit and read drafts." };
     }
     return { ok: true, actor, role: "draft" };
+  }
+  if (isFact) {
+    if (!options.allowFactCheckKey) {
+      return { ok: false, status: 403, message: "This credential can only record fact-check results." };
+    }
+    return { ok: true, actor, role: "factcheck" };
   }
   return { ok: false, status: 401, message: "Invalid credentials." };
 }

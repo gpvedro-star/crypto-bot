@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "build:static": "bash scripts/build-static.sh",
-    "test:editorial-auth": "node --test scripts/test-editorial-auth.mjs"
+    "test:editorial-auth": "node --test scripts/test-editorial-auth.mjs",
+    "test:auto-publish": "node --test scripts/test-auto-publish.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",
