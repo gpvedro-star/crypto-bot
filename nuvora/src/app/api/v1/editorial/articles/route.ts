@@ -61,7 +61,9 @@ async function readJson(request: Request): Promise<{ ok: true; body: unknown } |
 
 export async function POST(request: Request) {
   const requestId = randomUUID();
-  const auth = authenticateEditorialRequest(request);
+  // The Grok draft key may submit and re-submit drafts here; PATCH and every
+  // other editorial route stay admin-only.
+  const auth = authenticateEditorialRequest(request, { allowDraftKey: true });
   if (!auth.ok) return jsonError(auth.status, auth.message);
 
   const parsedBody = await readJson(request);
@@ -86,6 +88,15 @@ export async function POST(request: Request) {
     }
 
     const existing = await store.get(parsed.value.content_id);
+    // The draft key can only replace a record that is still a draft. Once the
+    // desk moves it on (in review, scheduled, published), it is out of reach.
+    if (auth.role === "draft" && existing && existing.publish_status !== "draft") {
+      return jsonError(403, "This record is no longer a draft and cannot be changed with this credential.", {
+        content_id: existing.content_id,
+        publish_status: existing.publish_status.toUpperCase(),
+        request_id: requestId,
+      });
+    }
     const record = await store.create(parsed.value);
     // Do not trust the write until it reads back.
     await verifyWritten(store, record.id, requestId, "create");

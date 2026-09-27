@@ -50,6 +50,21 @@ Server-side only. **When the key is unset the API is disabled entirely (503)** �
 there is no default credential and no fallback. The key is never exposed to the
 browser, never returned in a response, and never logged.
 
+### Credentials
+
+| Credential | Who holds it | Can do |
+|---|---|---|
+| `NUVORA_EDITORIAL_API_KEY` | Owner / desk | Everything below |
+| `NUVORA_GROK_DRAFT_KEY` | The Grok bot | `POST /articles` (create, or re-submit the same `content_id` while it is still DRAFT) and `GET /articles/{id}` for drafts |
+
+The draft key gets **403** from publish, delete, PATCH, media, schedule and
+analytics, and from any record that is no longer DRAFT. A `publish_status` in
+its payload is ignored — records it creates are always DRAFT. Routes are
+admin-only unless they opt in, so new routes stay closed to the draft key by
+default. The two values must differ; if they match, the API refuses to run.
+
+`npm run test:editorial-auth` exercises all of this against a running server.
+
 ## Endpoints
 
 ### `POST /api/v1/editorial/articles` — create or update a draft

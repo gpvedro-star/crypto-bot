@@ -2,14 +2,15 @@
   "name": "nuvora",
   "version": "0.1.0",
   "private": true,
-  "description": "NUVORA — AI for Normal People. Premium editorial website.",
+  "description": "NUVORA \u2014 AI for Normal People. Premium editorial website.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "build:static": "bash scripts/build-static.sh"
+    "build:static": "bash scripts/build-static.sh",
+    "test:editorial-auth": "node --test scripts/test-editorial-auth.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",

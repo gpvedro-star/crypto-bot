@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const requestId = randomUUID();
-  const auth = authenticateEditorialRequest(request);
+  const auth = authenticateEditorialRequest(request, { allowDraftKey: true });
   if (!auth.ok) return jsonError(auth.status, auth.message);
 
   const { id } = await params;
@@ -29,6 +29,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const record = await store.get(id);
     console.log("[editorial] read", { requestId, id, backend: storeBackend(), found: Boolean(record) });
     if (!record) return jsonError(404, "No draft with that id.", { request_id: requestId });
+    if (auth.role === "draft" && record.publish_status !== "draft") {
+      return jsonError(403, "This credential can only read drafts.", { request_id: requestId });
+    }
     const full = new URL(request.url).searchParams.get("full") === "1";
     return Response.json(
       { ...draftResponse(record, false), ...(full ? { record } : {}) },
