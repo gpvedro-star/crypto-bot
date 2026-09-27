@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Update the domain once the site has one
+Sitemap: https://www.example.co.il/sitemap.xml

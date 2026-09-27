@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>OG image</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bellefair&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500&display=swap">
+<style>
+  body { margin: 0; }
+  .og { position: relative; width: 1200px; height: 630px; overflow: hidden; background: #f1f3f3; font-family: 'IBM Plex Sans Hebrew', sans-serif; color: #141216; }
+  .og canvas.big { position: absolute; left: 60px; top: 45px; width: 540px; height: 540px; filter: drop-shadow(0 30px 40px rgba(80, 80, 30, .25)); }
+  .ring { position: absolute; left: 30px; top: 15px; width: 600px; height: 600px; border-radius: 50%; border: 1px solid #d8dbdc; }
+  .text { position: absolute; right: 70px; top: 120px; width: 480px; text-align: right; }
+  .brand { font-family: 'Bellefair', serif; font-size: 46px; direction: ltr; text-align: right; }
+  .brand small { font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: .34em; color: #5e5a66; margin-left: 10px; }
+  h1 { font-family: 'Bellefair', serif; font-weight: 400; font-size: 88px; line-height: 1.02; margin: 26px 0 22px; }
+  p { font-size: 24px; color: #34313a; margin: 0; }
+  .dots { display: flex; gap: 10px; justify-content: flex-start; margin-top: 34px; }
+  .dots canvas { width: 40px; height: 40px; }
+  .icon { width: 512px; height: 512px; display: grid; place-items: center; background: #141216; }
+  .icon canvas { width: 440px; height: 440px; }
+</style>
+</head>
+<body>
+<div class="og" id="og">
+  <div class="ring"></div>
+  <canvas class="big" id="big"></canvas>
+  <div class="text">
+    <div class="brand">Nolela<small>LINE</small></div>
+    <h1>העיניים שלך.<br>הצבע שלנו.</h1>
+    <p>עדשות מגע צבעוניות שנתיות · משלוח חינם</p>
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+<div class="icon" id="icon"><canvas id="iconIris"></canvas></div>
+<script src="../assets/js/products.js"></script>
+<script src="../assets/js/iris.js"></script>
+<script>
+  var L = NOLELA_CATALOG.lenses, by = {};
+  L.forEach(function (l) { by[l.id] = l; });
+  NolelaIris.paint(document.getElementById('big'), by['green-honey'], { eye: 'dark', size: 1080 });
+  NolelaIris.paint(document.getElementById('iconIris'), by['green-honey'], { eye: 'dark', size: 880 });
+  ['honey', 'pearl-grey', 'grey-green', 'olive', 'ocean', 'ice-blue', 'turquoise'].forEach(function (id) {
+    var c = document.createElement('canvas');
+    document.getElementById('dots').appendChild(c);
+    NolelaIris.paint(c, by[id], { eye: 'dark', size: 80, gloss: 0.7 });
+  });
+  document.title = 'ready';
+</script>
+</body>
+</html>
