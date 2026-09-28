@@ -1,0 +1,33 @@
+{
+  "name": "dynatech-ai-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous multi-agent website creation studio.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "studio": "tsx src/cli/run.ts",
+    "first-test": "tsx src/cli/run.ts --first-test",
+    "regen": "tsx src/cli/regen.ts",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "next": "^16.3.6",
+    "pngjs": "^7.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pngjs": "^6.0.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "playwright-core": "1.56.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

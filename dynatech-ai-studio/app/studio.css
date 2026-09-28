@@ -1,0 +1,47 @@
+:root { --bg: #0e1116; --panel: #161b22; --line: #262d38; --ink: #e8ebf0; --muted: #9aa4b2; --accent: #4da3ff; --on-accent: #06121f; --ok: #4cc38a; --warn: #e5b04a; --bad: #ef6b6b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent); }
+.wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 96px; display: grid; gap: 20px; }
+.wrap.wide { max-width: 1200px; }
+.kicker { letter-spacing: .2em; font-size: 12px; color: var(--accent); margin: 0 0 8px; font-weight: 600; }
+h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.1; margin: 0 0 8px; letter-spacing: -.02em; }
+h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+h3 { font-size: 14px; margin: 16px 0 6px; }
+.sub, .opt { color: var(--muted); font-size: 14px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+.form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
+input:not([type=radio]), textarea { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 12px; font: inherit; min-height: 44px; width: 100%; }
+input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.modes { border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 8px; }
+.modes legend { font-size: 13px; font-weight: 600; padding: 0 6px; }
+.radio { display: flex; gap: 8px; align-items: baseline; font-weight: 400; }
+button { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 10px 16px; font: inherit; cursor: pointer; min-height: 44px; }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+button:disabled { opacity: .6; cursor: progress; }
+.err { color: var(--bad); margin: 0; }
+.providers, .list, .stages, .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-right: 10px; }
+.dot.on { background: var(--ok); }
+.list li { display: flex; justify-content: space-between; align-items: center; }
+.pill { font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); text-transform: capitalize; }
+.pill.completed { color: var(--ok); border-color: var(--ok); } .pill.running, .pill.awaiting_approval { color: var(--warn); border-color: var(--warn); }
+.pill.failed, .pill.needs_human_approval { color: var(--bad); border-color: var(--bad); }
+.grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .grid { grid-template-columns: 380px 1fr; } }
+.stage { width: 100%; display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; text-align: left; }
+.stage.sel { border-color: var(--accent); }
+.stage .label { display: grid; } .stage small { color: var(--muted); font-size: 12px; }
+.stage.done .icon { color: var(--ok); } .stage.running .icon { color: var(--warn); } .stage.failed .icon { color: var(--bad); } .stage.awaiting_approval .icon { color: var(--warn); }
+.tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; }
+.out pre { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow: auto; max-height: 420px; font-size: 12px; }
+.out summary { cursor: pointer; margin: 8px 0; font-weight: 600; }
+.shots { display: flex; gap: 16px; flex-wrap: wrap; } .shots img { max-width: 100%; max-height: 420px; border: 1px solid var(--line); }
+.log { max-height: 320px; overflow: auto; font-size: 13px; } .log .warn { color: var(--warn); } .log .error { color: var(--bad); }
+.approve { border-color: var(--warn); } .approve textarea { margin: 10px 0; }
+.row { display: flex; gap: 10px; } .back { font-size: 14px; }
+code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+.grid > * { min-width: 0; }
+label .opt { font-weight: 400; }
+input:not([type=radio]) { font-weight: 400; }
