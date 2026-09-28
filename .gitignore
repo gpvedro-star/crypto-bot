@@ -26,7 +26,7 @@ coverage/
 next-env.d.ts
 
 # ── DynaTech AI Studio generated projects (memory, sites, QA screenshots) ──
-projects/
+/projects/
 
 # ── Python (legacy crypto bot) ──
 __pycache__/
