@@ -1,4 +1,5 @@
-import { getDeployStore, getStore, type Store } from "@netlify/blobs";
+import type { Store } from "@netlify/blobs";
+import { openScopedBlobStore, resolveBlobScope } from "./blob-scope";
 import type { EditorialRecord, EditorialSubmission, PublishStatus } from "./contract";
 import { DRAFT_FIRST } from "./contract";
 import { site } from "@/content/site";
@@ -300,30 +301,33 @@ class LocalEditorialStore implements EditorialStore {
   }
 }
 
-let cached: EditorialStore | null | undefined;
+const blobStores = new WeakMap<Store, BlobsEditorialStore>();
+let localStore: LocalEditorialStore | null = null;
 
 /**
- * The configured store. Netlify supplies Blobs credentials through platform
- * context — nothing is hard-coded and no site ID or token lives in the repo.
+ * The configured store, resolved per request through blob-scope.ts: the
+ * site-wide store in production, an isolated deploy store in previews, the
+ * filesystem only under plain `next dev`. Null — fail closed — when running
+ * on Netlify and the scope or store can't be established. Netlify supplies
+ * Blobs credentials through platform context; nothing is hard-coded.
  */
 export function getEditorialStore(): EditorialStore | null {
-  if (cached !== undefined) return cached;
-  const isProduction = process.env.CONTEXT === "production";
-  try {
-    const store = isProduction
-      ? getStore({ name: STORE_NAME, consistency: "strong" })
-      : getDeployStore({ name: `${STORE_NAME}-preview`, consistency: "strong" });
-    cached = new BlobsEditorialStore(store);
-  } catch {
-    // No Blobs context: local `next dev`. Never the case on Netlify.
-    cached = process.env.NETLIFY ? null : new LocalEditorialStore();
+  const { scope, store } = openScopedBlobStore(STORE_NAME);
+  if (store) {
+    let wrapped = blobStores.get(store);
+    if (!wrapped) {
+      wrapped = new BlobsEditorialStore(store);
+      blobStores.set(store, wrapped);
+    }
+    return wrapped;
   }
-  return cached;
+  if (scope === "local") return (localStore ??= new LocalEditorialStore());
+  return null;
 }
 
 /** Which backend answered, for the API's diagnostics. */
-export function storeBackend(): "netlify-blobs" | "local-dev" | "none" {
+export function storeBackend(): string {
   const store = getEditorialStore();
-  if (!store) return "none";
-  return store instanceof BlobsEditorialStore ? "netlify-blobs" : "local-dev";
+  if (!store) return `none (${resolveBlobScope()})`;
+  return store instanceof BlobsEditorialStore ? `netlify-blobs (${resolveBlobScope()})` : "local-dev";
 }

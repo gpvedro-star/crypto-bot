@@ -1,4 +1,5 @@
-import { getDeployStore, getStore, type Store } from "@netlify/blobs";
+import type { Store } from "@netlify/blobs";
+import { openScopedBlobStore } from "./blob-scope";
 
 /**
  * Persistent storage for article hero images, on Netlify Blobs. The photo is
@@ -88,20 +89,22 @@ class LocalImageStore implements ImageStore {
   }
 }
 
-let cached: ImageStore | null | undefined;
+const blobStores = new WeakMap<Store, BlobsImageStore>();
+let localStore: LocalImageStore | null = null;
 
+/** Same resolver as the record store (blob-scope.ts): global in production, never a silent fallback. */
 export function getImageStore(): ImageStore | null {
-  if (cached !== undefined) return cached;
-  const isProduction = process.env.CONTEXT === "production";
-  try {
-    const store = isProduction
-      ? getStore({ name: IMAGE_STORE_NAME, consistency: "strong" })
-      : getDeployStore({ name: `${IMAGE_STORE_NAME}-preview`, consistency: "strong" });
-    cached = new BlobsImageStore(store);
-  } catch {
-    cached = process.env.NETLIFY ? null : new LocalImageStore();
+  const { scope, store } = openScopedBlobStore(IMAGE_STORE_NAME);
+  if (store) {
+    let wrapped = blobStores.get(store);
+    if (!wrapped) {
+      wrapped = new BlobsImageStore(store);
+      blobStores.set(store, wrapped);
+    }
+    return wrapped;
   }
-  return cached;
+  if (scope === "local") return (localStore ??= new LocalImageStore());
+  return null;
 }
 
 /** Public URL for a stored hero image. Same-origin, so it needs no allowlisted host. */
