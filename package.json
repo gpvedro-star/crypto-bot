@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "check:secrets": "node scripts/check-secrets.mjs",
     "studio": "tsx src/cli/run.ts",
     "first-test": "tsx src/cli/run.ts --first-test",
     "regen": "tsx src/cli/regen.ts",

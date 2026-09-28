@@ -10,7 +10,6 @@ Business input → Research → Strategy → Brand → Creative → UX → (Copy
 ## Quick start
 
 ```bash
-cd dynatech-ai-studio
 npm install
 cp .env.example .env.local        # optional: add keys (see below)
 npm run first-test                # builds the Miami luxury-landscaping site
@@ -34,10 +33,12 @@ Keys are read server-side only and never sent to the browser (`/api/status` retu
 |---|---|
 | `npm run first-test` | Full pipeline with the Miami luxury landscaping brief |
 | `npm run first-test -- --browser-qa` | Also installs + builds the generated site and inspects it in headless Chromium (desktop + mobile, screenshots in `projects/<id>/qa/`) |
-| `npm run studio -- --business "..." --location "..." --audience "..." --style "..." [--name "Real Name"] [--logo file.png] [--mode supervised]` | Build any site from the CLI |
+| `npm run studio -- --business "..." --location "..." --audience "..." --style "..." [--name "Real Name"] [--logo assets/dynatech/dynatech-logo.jpg] [--mode supervised]` | Build any site from the CLI |
 | `npm run regen -- <project-id>` | Rebuild a site from stored project memory |
 | `npm run dev` / `npm start` | Dashboard |
 | `npm test` | Unit + pipeline tests (14) |
+| `git config core.hooksPath .githooks` | Enables the pre-commit secret scan (once per clone) |
+| `npm run check:secrets` | Scans tracked files for hardcoded credentials (values are never printed) |
 | `npm run typecheck` | TypeScript check |
 
 Generated sites land in `projects/<id>/site/` as standalone Next.js projects: `cd projects/<id>/site && npm install && npm run dev`.
@@ -47,6 +48,9 @@ Generated sites land in `projects/<id>/site/` as standalone Next.js projects: `c
 ## Architecture
 
 ```
+assets/dynatech/   brand reference assets (logo)
+legacy/crypto-bot/ unrelated standalone Python bot, isolated (see its README)
+scripts/           repo tooling (secret scan)
 src/
   core/            types, project memory, orchestrator (DAG + revision loop), agent contract, schemas, lint, color
   agents/          research, strategy, brand, creative, ux, copy, media, video, design-system, architect, developer, qa

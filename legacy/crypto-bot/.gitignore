@@ -1,0 +1,7 @@
+# Runtime state and logs written by the bot
+alerted_coins.json
+bot_log.txt
+__pycache__/
+.env
+.env.*
+!.env.example

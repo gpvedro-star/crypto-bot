@@ -1,0 +1,45 @@
+# ── Secrets & local configuration: never commit ──
+.env
+.env.*
+!.env.example
+*.env
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets/
+secrets.*
+credentials.json
+service-account*.json
+token.json
+
+# ── Dependencies & build output ──
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── DynaTech AI Studio generated projects (memory, sites, QA screenshots) ──
+projects/
+
+# ── Python (legacy crypto bot) ──
+__pycache__/
+*.pyc
+.venv/
+venv/
+legacy/crypto-bot/alerted_coins.json
+legacy/crypto-bot/bot_log.txt
+
+# ── Logs & OS/editor noise ──
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

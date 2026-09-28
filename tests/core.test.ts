@@ -53,7 +53,7 @@ test("askOrFallback uses a valid LLM answer, and falls back when the model outpu
 });
 
 test("brand agent extracts the real DynaTech logo palette (blue accent on dark navy)", async () => {
-  const logo = path.resolve(process.cwd(), "..", "assets", "dynatech", "dynatech-logo.jpg");
+  const logo = path.resolve(process.cwd(), "assets", "dynatech", "dynatech-logo.jpg");
   const memory = new ProjectMemoryStore("brand-test", tmpDir());
   const ctx = { ...fakeCtx({ name: "x", available: false, completeJSON: async () => { throw new Error(); } }), memory, input: { ...LANDSCAPING, logoPath: logo } } as AgentContext;
   const profile = await brandAgent.run(ctx);
