@@ -41,18 +41,26 @@ function priceRange(tool: AITool) {
  * like. `verdict` stays off the page until it is written: today it holds
  * placeholder copy about the verdict being written.
  */
-export function ToolsSection({ tools, articles }: { tools: AITool[]; articles: ArticleWithMeta[] }) {
+interface ToolsSectionProps {
+  tools: AITool[];
+  articles: ArticleWithMeta[];
+  /** True when this is the first thing under the hero (nothing else has published yet).
+   *  It still reads as a desk, not a headline story — same content, one size down. */
+  standalone?: boolean;
+}
+
+export function ToolsSection({ tools, articles, standalone = false }: ToolsSectionProps) {
   const [lead, ...rest] = tools;
   const others = rest.slice(0, 3);
   const explainers = articles.slice(0, 3);
 
   return (
     <section aria-labelledby="tools-heading" className="container-x">
-      <header className="border-t-2 border-navy-900 pt-4">
-        <p className="eyebrow text-navy-700">The tools desk</p>
+      <header className={standalone ? "border-t border-line-strong pt-4" : "border-t-2 border-navy-900 pt-4"}>
+        <p className="eyebrow text-navy-700">{standalone ? "Start here" : "The tools desk"}</p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <div className="max-w-2xl">
-            <h2 id="tools-heading" className="headline text-[2rem] sm:text-[2.5rem]">
+            <h2 id="tools-heading" className={`headline ${standalone ? "text-[1.75rem] sm:text-[2.15rem]" : "text-[2rem] sm:text-[2.5rem]"}`}>
               AI tools, explained
             </h2>
             <p className="mt-2 text-[1.02rem] leading-relaxed text-ink-500">

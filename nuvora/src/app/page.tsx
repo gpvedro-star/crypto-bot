@@ -5,7 +5,7 @@ import { MostReadBand } from "@/components/sections/MostReadBand";
 import { EverydaySection } from "@/components/sections/EverydaySection";
 import { ToolsSection } from "@/components/sections/ToolsSection";
 import { GuidesSection } from "@/components/sections/GuidesSection";
-import { NewsletterBlock } from "@/components/sections/NewsletterBlock";
+import { HomeNewsletterFeature } from "@/components/sections/HomeNewsletterFeature";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { tools } from "@/lib/content";
 import {
@@ -101,7 +101,7 @@ export default async function HomePage() {
       )}
       {featuredTools.length > 0 && (
         <div className="mt-20 sm:mt-28">
-          <ToolsSection tools={featuredTools} articles={toolStories} />
+          <ToolsSection tools={featuredTools} articles={toolStories} standalone={latest.length === 0 && mostRead.length === 0 && everyday.length === 0} />
         </div>
       )}
       <AdSlot name="home-mid" className="container-x mt-20" />
@@ -111,7 +111,7 @@ export default async function HomePage() {
         </div>
       )}
       <div className="mt-20 sm:mt-28">
-        <NewsletterBlock />
+        <HomeNewsletterFeature />
       </div>
     </>
   );
