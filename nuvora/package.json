@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "build:static": "bash scripts/build-static.sh",
     "test:editorial-auth": "node --test scripts/test-editorial-auth.mjs",
-    "test:auto-publish": "node --test scripts/test-auto-publish.mjs"
+    "test:auto-publish": "node --test scripts/test-auto-publish.mjs",
+    "test:hero-image": "node --test scripts/test-hero-image.mjs",
+    "test:pexels-select": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test scripts/test-pexels-select.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.0",

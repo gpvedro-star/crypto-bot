@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# nuvora-image <content_id>
+#
+# Asks NUVORA to attach the one Pexels hero image to a draft the Website
+# Publisher has already submitted with nuvora-submit. Deterministic: exactly
+# one HTTP call; the server builds the search query from the stored draft and
+# picks the photo itself. The Pexels key never leaves the NUVORA server, and
+# this script never prints the NUVORA_GROK_DRAFT_KEY.
+#
+# Reference implementation for the Grok computer. This file lives in the
+# NUVORA repository for review and version control; install it wherever the
+# other nuvora-* commands live (e.g. /workspace/bin/nuvora-image) and make it
+# executable. It is not run by NUVORA itself.
+#
+# Requires:
+#   NUVORA_BASE_URL   defaults to https://nuvora-news.netlify.app
+#   The draft key at /workspace/.secrets/nuvora-grok-draft-key (one line, no
+#   trailing content). Override the path with NUVORA_GROK_DRAFT_KEY_FILE.
+#
+# Output — exactly these lines, nothing else. Never a credential, a prompt,
+# or a raw response body:
+#   HTTP <status>
+#   content_id <content_id>
+#   image_status <ATTACHED|HERO_IMAGE_MISSING|IMAGE_LOOKUP_FAILED|NOT_CONFIGURED|NOT_DRAFT|FAILED>
+#   hero_url <path, or ->
+set -euo pipefail
+
+CONTENT_ID="${1:-}"
+if [ -z "$CONTENT_ID" ]; then
+  echo "usage: nuvora-image <content_id>" >&2
+  exit 2
+fi
+
+BASE_URL="${NUVORA_BASE_URL:-https://nuvora-news.netlify.app}"
+KEY_FILE="${NUVORA_GROK_DRAFT_KEY_FILE:-/workspace/.secrets/nuvora-grok-draft-key}"
+
+if [ ! -r "$KEY_FILE" ]; then
+  echo "nuvora-image: cannot read $KEY_FILE" >&2
+  exit 2
+fi
+DRAFT_KEY="$(tr -d '\n\r' < "$KEY_FILE")"
+if [ -z "$DRAFT_KEY" ]; then
+  echo "nuvora-image: $KEY_FILE is empty" >&2
+  exit 2
+fi
+
+TMP_BODY="$(mktemp)"
+TMP_HEADERS="$(mktemp)"
+chmod 600 "$TMP_HEADERS"
+trap 'rm -f "$TMP_BODY" "$TMP_HEADERS"' EXIT
+
+# The key goes to curl through a private header file, not argv, so it never
+# appears in the process list, a log line, or this script's output.
+printf 'Authorization: Bearer %s\n' "$DRAFT_KEY" > "$TMP_HEADERS"
+unset DRAFT_KEY
+
+HTTP_STATUS="$(curl -sS -o "$TMP_BODY" -w '%{http_code}' \
+  -X POST "${BASE_URL}/api/v1/editorial/articles/${CONTENT_ID}/generate-image" \
+  -H "@${TMP_HEADERS}" \
+  --max-time 90)"
+
+SUCCESS="$(grep -o '"success"[[:space:]]*:[[:space:]]*true' "$TMP_BODY" || true)"
+# "|| true": a field that isn't in this response is normal, and under
+# pipefail a non-matching grep would otherwise abort before any output.
+HERO_URL="$({ grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_BODY" || true; } | head -1 | sed -E 's/.*"([^"]*)"$/\1/')"
+REASON="$({ grep -o '"reason"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_BODY" || true; } | head -1 | sed -E 's/.*"([^"]*)"$/\1/')"
+
+if [ -n "$SUCCESS" ]; then
+  IMAGE_STATUS="ATTACHED"
+elif [ "$HTTP_STATUS" = "503" ]; then
+  IMAGE_STATUS="NOT_CONFIGURED"
+elif [ -n "$REASON" ]; then
+  IMAGE_STATUS="$REASON"
+else
+  IMAGE_STATUS="FAILED"
+fi
+
+echo "HTTP ${HTTP_STATUS}"
+echo "content_id ${CONTENT_ID}"
+echo "image_status ${IMAGE_STATUS}"
+echo "hero_url ${HERO_URL:--}"
+
+[ "$IMAGE_STATUS" = "ATTACHED" ]

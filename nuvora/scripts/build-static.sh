@@ -3,15 +3,17 @@
 # Server-only API routes are set aside for the duration of the build.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# A static export is a snapshot: it has no server, so neither the editorial API
-# nor the authenticated draft preview can exist in it. Both are set aside for
-# the build and restored afterwards.
+# A static export is a snapshot: it has no server, so the editorial API, the
+# authenticated draft preview, and the generated-hero-image media route can't
+# exist in it. All three are set aside for the build and restored afterwards.
 TMP="$(mktemp -d)"
 API_DIR="src/app/api"
 PREVIEW_DIR="src/app/preview"
+MEDIA_DIR="src/app/media"
 restore() {
   [ -d "$TMP/api" ] && mv "$TMP/api" "$API_DIR" || true
   [ -d "$TMP/preview" ] && mv "$TMP/preview" "$PREVIEW_DIR" || true
+  [ -d "$TMP/media" ] && mv "$TMP/media" "$MEDIA_DIR" || true
   [ -d "$TMP/articles" ] && mv "$TMP/articles" "src/app/articles" || true
   i=0
   for f in ${DYNAMIC_PAGES:-}; do
@@ -22,6 +24,7 @@ restore() {
 trap restore EXIT
 mv "$API_DIR" "$TMP/api"
 mv "$PREVIEW_DIR" "$TMP/preview"
+[ -d "$MEDIA_DIR" ] && mv "$MEDIA_DIR" "$TMP/media" || true
 
 # `output: export` refuses a dynamic route whose generateStaticParams returns
 # nothing. With every repository article currently unpublished pending

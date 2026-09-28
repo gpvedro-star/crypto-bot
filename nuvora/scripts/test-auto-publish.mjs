@@ -191,7 +191,40 @@ describe("Server publication gate", () => {
     assert.equal((await page(`/articles/${ids.missing.toLowerCase()}`)).status, 404);
   });
 
-  test("7. PASS on a valid article auto-publishes", async () => {
+  // A hero image is a required gate (HERO_IMAGE_MISSING). Whether the
+  // valid-article case actually publishes depends on this server having
+  // PEXELS_API_KEY and Pexels returning a suitable photo — this suite never
+  // fabricates that result.
+  let imageConfigured = null;
+
+  test("7a. without a hero image, PASS is blocked by HERO_IMAGE_MISSING", async () => {
+    const r = await factCheck(ids.valid, { ...pass, needs_human_review: false });
+    assert.equal(r.status, 200);
+    assert.equal(r.json.auto_publish.published, false);
+    assert.equal(r.json.auto_publish.reason, "HERO_IMAGE_MISSING");
+    assert.equal(r.json.publish_status, "DRAFT");
+    // Re-submitting clears the fact check (existing behaviour) so gate 7b starts clean.
+    await call("POST", "/api/v1/editorial/articles", DRAFT, article(ids.valid));
+  });
+
+  test("7b. requesting a hero image", async () => {
+    const r = await call("POST", `/api/v1/editorial/articles/${ids.valid}/generate-image`, DRAFT);
+    if (r.status === 503 || r.status === 422) {
+      imageConfigured = false;
+      console.log(`  (no hero attached: ${r.json?.reason ?? r.status} — skipping the publish-with-image path)`);
+      return;
+    }
+    imageConfigured = true;
+    assert.equal(r.status, 200, JSON.stringify(r.json));
+    assert.equal(r.json.success, true);
+    assert.ok(r.json.image?.url?.startsWith("/media/articles/"));
+    const rec = (await record(ids.valid)).record;
+    assert.equal(rec.hero_image_attached, true);
+    assert.equal(rec.image_assets?.[0]?.url, r.json.image.url);
+  });
+
+  test("7c. PASS with a hero image auto-publishes (only if OpenAI is configured)", async (t) => {
+    if (imageConfigured !== true) return t.skip("no hero image was attached on this server");
     const r = await factCheck(ids.valid, { ...pass, needs_human_review: false });
     assert.equal(r.status, 200);
     assert.equal(r.json.auto_publish.published, true, JSON.stringify(r.json.auto_publish));
@@ -201,9 +234,11 @@ describe("Server publication gate", () => {
     const rec = (await record(ids.valid)).record;
     assert.equal(rec.fact_check_status, "PASS", "fact-check metadata preserved");
     assert.equal(rec.sources.length, 1, "sources preserved");
+    assert.equal(rec.hero_image_attached, true, "hero metadata preserved");
   });
 
-  test("8. the published article is public without a rebuild", async () => {
+  test("8. the published article is public without a rebuild", async (t) => {
+    if (imageConfigured !== true) return t.skip("no hero image was attached on this server");
     const slug = ids.valid.toLowerCase();
     assert.equal((await page(`/articles/${slug}`)).status, 200);
     assert.ok((await page("/")).text.includes(`Auto publish test ${ids.valid}`), "homepage");
@@ -213,7 +248,8 @@ describe("Server publication gate", () => {
     assert.ok((await page("/search-index.json")).text.includes(`Auto publish test ${ids.valid}`), "search index");
   });
 
-  test("9. a repeated PASS does not publish twice, and bots cannot edit live content", async () => {
+  test("9. a repeated PASS does not publish twice, and bots cannot edit live content", async (t) => {
+    if (imageConfigured !== true) return t.skip("no hero image was attached on this server");
     const before = (await record(ids.valid)).record;
     const again = await factCheck(ids.valid, pass);
     assert.equal(again.status, 409);

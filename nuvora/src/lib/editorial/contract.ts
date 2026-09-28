@@ -102,6 +102,10 @@ export interface EditorialImageAsset {
   credit?: string;
   width?: number;
   height?: number;
+  /** Where the image came from, e.g. its Pexels photo page. */
+  source_page?: string;
+  photographer?: string;
+  photographer_url?: string;
 }
 
 export interface EditorialVerifiedFact {
@@ -173,6 +177,10 @@ export interface EditorialSubmission {
   fact_check_completed_at?: string;
   /** Set by the workflow when a person must look before publication. */
   needs_human_review?: boolean;
+  /** Set by the server after the hero-image endpoint attaches a photo. Never from a payload. */
+  hero_image_attached?: boolean;
+  /** Provenance of the attached hero, set by the server alongside hero_image_attached. */
+  hero_image_source?: { provider: "pexels"; id: number; query: string };
   /** Accepted but never honoured on create — see DRAFT_FIRST below. */
   publish_status?: PublishStatus;
 }
@@ -353,6 +361,8 @@ export function validateSubmission(
 
   // Server-owned: never accepted from a payload.
   delete b.submitted_via;
+  delete b.hero_image_attached;
+  delete b.hero_image_source;
 
   let factCheckStatus: FactCheckStatus | undefined;
   if (b.fact_check_status !== undefined && b.fact_check_status !== null) {

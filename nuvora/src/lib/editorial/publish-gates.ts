@@ -23,6 +23,7 @@ export type GateReason =
   | "INVALID_SLUG"
   | "DUPLICATE_SLUG"
   | "NO_SOURCES"
+  | "HERO_IMAGE_MISSING"
   | "ARTICLE_BLOCKED"
   | "FACT_CHECK_MISSING"
   | "FACT_CHECK_NOT_PASSED"
@@ -93,6 +94,14 @@ export async function evaluatePublicationGates(record: EditorialRecord, store: E
   }
   const unresolved = (record.verified_facts ?? []).filter((f) => f?.status === "CONFLICTING" || f?.status === "OUTDATED");
   if (unresolved.length) return fail("UNRESOLVED_FACT_CHECK_ISSUES", `${unresolved.length} claim(s) CONFLICTING or OUTDATED`);
+
+  // The article otherwise cleanly passes fact-check. Last: a hero image, and
+  // specifically one this server attached — hero_image_attached is set only by
+  // POST .../generate-image and is stripped from every submission payload, so
+  // a record cannot claim to have a hero it does not.
+  if (!record.hero_image_attached || !Array.isArray(record.image_assets) || record.image_assets.length === 0) {
+    return fail("HERO_IMAGE_MISSING", "no server-attached hero image on this draft");
+  }
 
   return { pass: true };
 }

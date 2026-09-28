@@ -79,7 +79,8 @@ There is no publish command for either bot. When the fact-check key records
 - the slug is valid, owned by this record, and not a repository article;
 - nothing is marked BLOCKED or needs human review;
 - `fact_check_status` is PASS, `fact_check_issues_count` is exactly 0, and no
-  verified fact is CONFLICTING or OUTDATED.
+  verified fact is CONFLICTING or OUTDATED;
+- a hero image this server attached is present (see below).
 
 A failed gate leaves the record DRAFT and returns
 `auto_publish: { published: false, reason, detail }` with one of:
@@ -87,15 +88,52 @@ A failed gate leaves the record DRAFT and returns
 `INVALID_CONTENT_ID`, `MISSING_REQUIRED_FIELD`, `UNRENDERABLE_BODY`,
 `INVALID_CATEGORY`, `INVALID_SLUG`, `DUPLICATE_SLUG`, `NO_SOURCES`,
 `ARTICLE_BLOCKED`, `FACT_CHECK_MISSING`, `FACT_CHECK_NOT_PASSED`,
-`UNRESOLVED_FACT_CHECK_ISSUES`, `NEEDS_HUMAN_REVIEW`. A result other than PASS
-is recorded but never triggers publication. A second PASS on a published
-record returns 409 `NOT_DRAFT` and changes nothing.
+`UNRESOLVED_FACT_CHECK_ISSUES`, `NEEDS_HUMAN_REVIEW`, `HERO_IMAGE_MISSING`. A
+result other than PASS is recorded but never triggers publication. A second
+PASS on a published record returns 409 `NOT_DRAFT` and changes nothing.
 
 Once published, a record is out of reach of both bot keys: corrections go
 through the admin key.
 
-`npm run test:editorial-auth` and `npm run test:auto-publish` exercise all of
-this against a running server.
+### Hero image
+
+`POST /api/v1/editorial/articles/{content_id}/generate-image` — draft or
+admin key. Finds and attaches the article's one hero image from Pexels. The
+request body is ignored: the server builds a single search query from the
+stored draft — `image_brief` first, then `final_headline`, then `summary`
+(category only as a last resort, since a section name is not a picture) —
+keeping at most eight meaningful words and dropping "AI"-type terms that pull
+stock results towards robots. Nothing in the request is ever used as a query.
+
+One search (`orientation=landscape`, `size=large`, 30 results) and one
+download, no retry. The photo chosen is the first, in Pexels' own relevance
+order, that is at least 1920px wide, sits between 1.3:1 and 2.1:1, has a
+photographer to credit, and whose Pexels description doesn't mention robots,
+neon, holograms, screens, logos and similar. The same input always selects
+the same photo (`src/lib/editorial/pexels-select.ts`).
+
+The 1920px rendition is downloaded server-side and stored in Netlify Blobs,
+served back at `/media/articles/{content_id}` — same-origin, so readers never
+load anything from Pexels and no `NUVORA_IMAGE_HOSTS` entry is needed. The
+draft's `image_assets[0]` gets the URL, Pexels' own alt text, the caption
+"Illustrative photo.", the credit "Photo by {photographer} on Pexels", the
+photographer, their profile link, the Pexels photo page, and the width and
+height. A second call replaces the previous server-attached hero; any image
+an editor attached by hand is left alone. `hero_image_attached` is then
+`true` — set only here, stripped from every submission payload, and what the
+publication gate checks.
+
+| Status | `reason` | Draft |
+|---|---|---|
+| 200 | — (`success: true`) | hero attached |
+| 422 | `HERO_IMAGE_MISSING` — no photo met the rules | unchanged |
+| 502 | `IMAGE_LOOKUP_FAILED` — search or download failed | unchanged |
+| 503 | `PEXELS_NOT_CONFIGURED` — no `PEXELS_API_KEY`, nothing attempted | unchanged |
+| 409 | `NOT_DRAFT` | unchanged |
+
+`PEXELS_API_KEY` is server-side only and never appears in a response or log.
+`scripts/grok/nuvora-image <content_id>` is the Grok-side wrapper: one call,
+four lines of output, key passed via a private header file rather than argv.
 
 ## Endpoints
 
