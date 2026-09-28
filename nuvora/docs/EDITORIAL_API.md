@@ -118,22 +118,54 @@ load anything from Pexels and no `NUVORA_IMAGE_HOSTS` entry is needed. The
 draft's `image_assets[0]` gets the URL, Pexels' own alt text, the caption
 "Illustrative photo.", the credit "Photo by {photographer} on Pexels", the
 photographer, their profile link, the Pexels photo page, and the width and
-height. A second call replaces the previous server-attached hero; any image
-an editor attached by hand is left alone. `hero_image_attached` is then
-`true` — set only here, stripped from every submission payload, and what the
-publication gate checks.
+height. `hero_image_attached` is then `true` — set only here, stripped from
+every submission payload, and what the publication gate checks.
 
-| Status | `reason` | Draft |
-|---|---|---|
-| 200 | — (`success: true`) | hero attached |
-| 422 | `HERO_IMAGE_MISSING` — no photo met the rules | unchanged |
-| 502 | `IMAGE_LOOKUP_FAILED` — search or download failed | unchanged |
-| 503 | `PEXELS_NOT_CONFIGURED` — no `PEXELS_API_KEY`, nothing attempted | unchanged |
-| 409 | `NOT_DRAFT` | unchanged |
+If this route already attached a hero to this draft, a further POST is a
+no-op: `ALREADY_ATTACHED`, nothing re-fetched, nothing replaced. Pexels is
+searched at most once per draft, ever. `GET` on the same URL is a read-only
+check of that same state — it never calls Pexels and never writes — for
+confirming a prior attach without risking another attempt.
+
+Both verbs return the same fields, at the top level, whether attaching,
+confirming, or reporting a failure:
+
+```json
+{
+  "success": true,
+  "content_id": "...",
+  "publish_status": "DRAFT",
+  "image_status": "ATTACHED",
+  "hero_url": "/media/articles/...",
+  "image_credit": "Photo by ... on Pexels",
+  "source_page": "https://www.pexels.com/photo/...",
+  "width": 1920,
+  "height": 1280,
+  "alt": "...",
+  "query": "...",
+  "request_id": "..."
+}
+```
+
+`query` is present only on a call that actually searched Pexels (`ATTACHED`),
+never on `ALREADY_ATTACHED` or a GET. A failure has the same top-level shape
+with `success: false`, `hero_url: null`, and `image_status` set to the
+reason (also mirrored in `reason`, for any older reader of that field).
+
+| Status | `image_status` | Verb | Draft |
+|---|---|---|---|
+| 200 | `ATTACHED` | POST | hero attached, one Pexels search |
+| 200 | `ALREADY_ATTACHED` | GET or POST | unchanged, no Pexels search |
+| 404 | `HERO_IMAGE_MISSING` | GET | nothing attached yet |
+| 422 | `HERO_IMAGE_MISSING` — no photo met the rules | POST | unchanged |
+| 502 | `IMAGE_LOOKUP_FAILED` — search or download failed | POST | unchanged |
+| 503 | `PEXELS_NOT_CONFIGURED` — no `PEXELS_API_KEY`, nothing attempted | GET or POST | unchanged |
+| 409 | `NOT_DRAFT` | POST | unchanged |
 
 `PEXELS_API_KEY` is server-side only and never appears in a response or log.
-`scripts/grok/nuvora-image <content_id>` is the Grok-side wrapper: one call,
-four lines of output, key passed via a private header file rather than argv.
+`scripts/grok/nuvora-image <content_id>` is the Grok-side wrapper: a GET
+verify followed by a POST only if nothing is attached yet, five lines of
+output, key passed via a private header file rather than argv.
 
 ## Endpoints
 

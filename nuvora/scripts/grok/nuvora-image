@@ -2,15 +2,26 @@
 # nuvora-image <content_id>
 #
 # Asks NUVORA to attach the one Pexels hero image to a draft the Website
-# Publisher has already submitted with nuvora-submit. Deterministic: exactly
-# one HTTP call; the server builds the search query from the stored draft and
-# picks the photo itself. The Pexels key never leaves the NUVORA server, and
-# this script never prints the NUVORA_GROK_DRAFT_KEY.
+# Publisher has already submitted with nuvora-submit. The server builds the
+# search query from the stored draft and picks the photo itself; the Pexels
+# key never leaves the NUVORA server, and this script never prints the
+# NUVORA_GROK_DRAFT_KEY.
 #
 # Reference implementation for the Grok computer. This file lives in the
 # NUVORA repository for review and version control; install it wherever the
 # other nuvora-* commands live (e.g. /workspace/bin/nuvora-image) and make it
 # executable. It is not run by NUVORA itself.
+#
+# Two calls, never more:
+#   1. GET  .../generate-image   — read-only check. If a hero is already
+#      attached, this alone tells us so and nothing further happens: no
+#      Pexels search, no risk of a second attempt.
+#   2. POST .../generate-image   — only if step 1 found nothing. The server
+#      itself is also idempotent (a second POST on an already-attached draft
+#      returns ALREADY_ATTACHED without touching Pexels), so this script
+#      never asks it to regenerate — not even if a step's response body
+#      turns out to be unparseable, which reports FAILED and stops rather
+#      than guessing and calling POST anyway.
 #
 # Requires:
 #   NUVORA_BASE_URL   defaults to https://nuvora-news.netlify.app
@@ -19,10 +30,13 @@
 #
 # Output — exactly these lines, nothing else. Never a credential, a prompt,
 # or a raw response body:
-#   HTTP <status>
+#   HTTP <status of the call that produced this result>
 #   content_id <content_id>
-#   image_status <ATTACHED|HERO_IMAGE_MISSING|IMAGE_LOOKUP_FAILED|NOT_CONFIGURED|NOT_DRAFT|FAILED>
+#   image_status <ATTACHED|ALREADY_ATTACHED|HERO_IMAGE_MISSING|IMAGE_LOOKUP_FAILED|NOT_CONFIGURED|NOT_DRAFT|FAILED>
 #   hero_url <path, or ->
+#   image_credit <credit line, or ->
+#
+# Exit 0 only for ATTACHED or ALREADY_ATTACHED.
 set -euo pipefail
 
 CONTENT_ID="${1:-}"
@@ -54,30 +68,65 @@ trap 'rm -f "$TMP_BODY" "$TMP_HEADERS"' EXIT
 printf 'Authorization: Bearer %s\n' "$DRAFT_KEY" > "$TMP_HEADERS"
 unset DRAFT_KEY
 
-HTTP_STATUS="$(curl -sS -o "$TMP_BODY" -w '%{http_code}' \
-  -X POST "${BASE_URL}/api/v1/editorial/articles/${CONTENT_ID}/generate-image" \
-  -H "@${TMP_HEADERS}" \
-  --max-time 90)"
+URL="${BASE_URL}/api/v1/editorial/articles/${CONTENT_ID}/generate-image"
 
-SUCCESS="$(grep -o '"success"[[:space:]]*:[[:space:]]*true' "$TMP_BODY" || true)"
-# "|| true": a field that isn't in this response is normal, and under
-# pipefail a non-matching grep would otherwise abort before any output.
-HERO_URL="$({ grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_BODY" || true; } | head -1 | sed -E 's/.*"([^"]*)"$/\1/')"
-REASON="$({ grep -o '"reason"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_BODY" || true; } | head -1 | sed -E 's/.*"([^"]*)"$/\1/')"
+# Every field this route reports is at the top level of the JSON body, under
+# these exact names, on both success and failure — so one parser covers both
+# calls below. "|| true": a field this response doesn't have is normal, and
+# under pipefail a non-matching grep would otherwise abort the script before
+# it could print anything (the bug that motivated this rewrite).
+extract() {
+  { grep -o "\"$1\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" "$TMP_BODY" || true; } | head -1 | sed -E 's/.*"([^"]*)"$/\1/'
+}
+has_true() {
+  grep -q "\"$1\"[[:space:]]*:[[:space:]]*true" "$TMP_BODY"
+}
 
-if [ -n "$SUCCESS" ]; then
-  IMAGE_STATUS="ATTACHED"
-elif [ "$HTTP_STATUS" = "503" ]; then
-  IMAGE_STATUS="NOT_CONFIGURED"
-elif [ -n "$REASON" ]; then
-  IMAGE_STATUS="$REASON"
-else
-  IMAGE_STATUS="FAILED"
+call() {
+  curl -sS -o "$TMP_BODY" -w '%{http_code}' -X "$1" "$URL" -H "@${TMP_HEADERS}" --max-time 90
+}
+
+report() {
+  # $1 = HTTP status of the call being reported. Missing/unparseable
+  # image_status is reported as FAILED, never assumed to mean anything else.
+  local http_status="$1" image_status hero_url image_credit
+  image_status="$(extract image_status)"
+  if [ -z "$image_status" ]; then
+    if has_true success; then image_status="ATTACHED"; else image_status="FAILED"; fi
+  fi
+  hero_url="$(extract hero_url)"
+  image_credit="$(extract image_credit)"
+  echo "HTTP ${http_status}"
+  echo "content_id ${CONTENT_ID}"
+  echo "image_status ${image_status}"
+  echo "hero_url ${hero_url:--}"
+  echo "image_credit ${image_credit:--}"
+  case "$image_status" in
+    ATTACHED|ALREADY_ATTACHED) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# 1. Read-only check first. Nothing here can trigger a Pexels search.
+GET_STATUS="$(call GET)"
+if [ "$GET_STATUS" = "200" ] && grep -q '"image_status"[[:space:]]*:[[:space:]]*"ALREADY_ATTACHED"' "$TMP_BODY"; then
+  report "$GET_STATUS"
+  exit $?
 fi
 
-echo "HTTP ${HTTP_STATUS}"
-echo "content_id ${CONTENT_ID}"
-echo "image_status ${IMAGE_STATUS}"
-echo "hero_url ${HERO_URL:--}"
+# GET found nothing attached (404) or hit its own error (any other status) —
+# either way, fall through to the one call that can actually attach a hero.
+# If GET returned 200 with a body we could not make sense of, stop here
+# instead of guessing: that ambiguous case is never treated as "go generate".
+if [ "$GET_STATUS" = "200" ]; then
+  echo "nuvora-image: unexpected 200 from GET that wasn't ALREADY_ATTACHED — stopping without a POST" >&2
+  echo "HTTP ${GET_STATUS}"
+  echo "content_id ${CONTENT_ID}"
+  echo "image_status FAILED"
+  echo "hero_url -"
+  echo "image_credit -"
+  exit 1
+fi
 
-[ "$IMAGE_STATUS" = "ATTACHED" ]
+POST_STATUS="$(call POST)"
+report "$POST_STATUS"

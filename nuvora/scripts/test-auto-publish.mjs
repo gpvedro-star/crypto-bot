@@ -217,13 +217,14 @@ describe("Server publication gate", () => {
     imageConfigured = true;
     assert.equal(r.status, 200, JSON.stringify(r.json));
     assert.equal(r.json.success, true);
-    assert.ok(r.json.image?.url?.startsWith("/media/articles/"));
+    assert.equal(r.json.image_status, "ATTACHED");
+    assert.ok(r.json.hero_url?.startsWith("/media/articles/"));
     const rec = (await record(ids.valid)).record;
     assert.equal(rec.hero_image_attached, true);
-    assert.equal(rec.image_assets?.[0]?.url, r.json.image.url);
+    assert.equal(rec.image_assets?.[0]?.url, r.json.hero_url);
   });
 
-  test("7c. PASS with a hero image auto-publishes (only if OpenAI is configured)", async (t) => {
+  test("7c. PASS with a hero image auto-publishes (only if Pexels is configured and returned a photo)", async (t) => {
     if (imageConfigured !== true) return t.skip("no hero image was attached on this server");
     const r = await factCheck(ids.valid, { ...pass, needs_human_review: false });
     assert.equal(r.status, 200);
