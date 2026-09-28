@@ -14,7 +14,7 @@ export const LANDSCAPING: BusinessInput = {
   location: "Miami, Florida",
   targetAudience: "High-income homeowners",
   style: "Premium, cinematic, sophisticated",
-  goal: "Generate leads for high-end landscaping projects.",
+  goal: "Generate qualified leads for high-end landscaping projects.",
 };
 
 export function tmpDir(): string { return fs.mkdtempSync(path.join(os.tmpdir(), "dynatech-test-")); }

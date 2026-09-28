@@ -45,3 +45,6 @@ code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 1
 .grid > * { min-width: 0; }
 label .opt { font-weight: 400; }
 input:not([type=radio]) { font-weight: 400; }
+.notice { border-color: var(--warn); } .notice ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+.produced { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.meta { display: grid; justify-items: end; gap: 2px; } .meta small { color: var(--muted); font-size: 11px; }

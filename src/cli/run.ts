@@ -12,8 +12,7 @@ const FIRST_TEST: BusinessInput = {
   location: "Miami, Florida",
   targetAudience: "High-income homeowners",
   style: "Premium, cinematic, sophisticated",
-  goal: "Generate leads for high-end landscaping projects.",
-  notes: "Focus on outdoor transformations",
+  goal: "Generate qualified leads for high-end landscaping projects.",
 };
 
 function arg(name: string): string | undefined {
