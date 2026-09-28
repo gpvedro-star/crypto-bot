@@ -25,3 +25,25 @@ export function makeOrchestrator(opts: { media?: MediaProvider; baseDir?: string
   const orch = new Orchestrator({ llm: new OfflineProvider(), media: opts.media ?? new NoMediaProvider(), video: new DisabledVideoProvider(), engines, baseDir });
   return { orch, baseDir };
 }
+
+import { AnthropicProvider } from "../src/services/llm/anthropic";
+import { PexelsProvider } from "../src/services/pexels";
+import { HiggsfieldProvider } from "../src/services/higgsfield";
+import type { LLMProvider } from "../src/services/llm/types";
+import type { VideoProvider } from "../src/services/higgsfield/types";
+
+export interface RealSetup {
+  llm?: LLMProvider; media?: MediaProvider; video?: VideoProvider; baseDir?: string; videoPollMs?: number; videoTimeoutMs?: number;
+}
+/** Orchestrator wired like production, but every provider points at a local mock server. */
+export function makeRealOrchestrator(o: RealSetup) {
+  const baseDir = o.baseDir ?? tmpDir();
+  const orch = new Orchestrator({
+    llm: o.llm ?? new OfflineProvider(), media: o.media ?? new NoMediaProvider(), video: o.video ?? new DisabledVideoProvider(),
+    engines: createEngineRegistry(), baseDir, videoPollMs: o.videoPollMs ?? 20, videoTimeoutMs: o.videoTimeoutMs ?? 5000,
+  });
+  return { orch, baseDir };
+}
+export const anthropicAt = (url: string, key = "test-anthropic-key") => new AnthropicProvider({ apiKey: key, baseURL: url, model: "claude-opus-5-5" });
+export const pexelsAt = (url: string, key = "test-pexels-key") => new PexelsProvider({ apiKey: key, baseURL: url });
+export const higgsfieldAt = (url: string, credentials = "hfkey:hfsecret", modelPath = "vendor/video-model/v1/text-to-video") => new HiggsfieldProvider({ credentials, baseURL: url, modelPath, retryDelayMs: 1, timeoutMs: 3000 });

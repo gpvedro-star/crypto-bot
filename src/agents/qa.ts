@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Agent, AgentContext } from "../core/agent";
+import { askLLM, type Agent, type AgentContext } from "../core/agent";
 import { contrast } from "../core/color";
 import { collectStrings, findBanned, findClaims } from "../core/lint";
-import type { QAIssue, QAReport } from "../core/types";
+import type { QAIssue, QAReport, QAVerdict } from "../core/types";
+import { QAReviewSchema } from "../core/schemas";
+import type { LLMImage } from "../services/llm";
 import { runBrowserQa } from "./qa-browser";
 
 const WEIGHT = { critical: 25, major: 10, minor: 3 } as const;
@@ -130,20 +132,47 @@ export function staticChecks(ctx: AgentContext, siteDir: string): { issues: QAIs
   if (bad.length) issue({ category: "technical", severity: "critical", message: `Contrast failures: ${bad.join(", ")}` });
 
   // ── media ──
-  const noAlt = media.assets.filter((a) => a.type === "image" && !a.alt?.trim()).map((a) => a.slot);
+  const noAlt = media.assets.filter((a) => a.type === "image" && a.status !== "failed" && !a.alt?.trim()).map((a) => a.slot);
   check("Every image has alt text", noAlt.length === 0, noAlt.join(", "));
   if (noAlt.length) issue({ category: "technical", severity: "major", message: `Images missing alt text: ${noAlt.join(", ")}`, fix: { agent: "media", action: "fill-alt" } });
+
+  // Required hero media: without a usable hero image the site must not ship.
+  const hero = media.assets.find((a) => a.slot === "hero");
+  const heroUsable = !!hero && hero.status !== "failed" && !!hero.url;
+  check("Required hero media exists", heroUsable, hero?.error ?? (hero ? undefined : "no hero asset"));
+  if (!heroUsable) issue({ category: "design", severity: "critical", message: `Required hero media is missing${hero?.error ? `: ${hero.error}` : ""}. The site cannot ship without it.` });
+
+  const failed = media.assets.filter((a) => a.status === "failed" && a.slot !== "hero");
+  check("No media slot failed", failed.length === 0, failed.map((a) => `${a.slot}: ${a.error}`).join(" | "));
+  for (const a of failed) issue({ category: "design", severity: a.type === "video" ? "minor" : "major", message: `Media slot "${a.slot}" failed: ${a.error}` });
+  for (const e of media.errors ?? []) if (!failed.some((a) => a.slot === e.slot) && e.slot === "hero") issue({ category: "technical", severity: "major", message: `Media error on hero: ${e.message}` });
+
+  // Placeholders are never "fully approved": they force at least PASS_WITH_WARNINGS.
   const ph = media.assets.filter((a) => a.source === "placeholder");
-  const stock = media.assets.filter((a) => a.source === "pexels");
-  check("Photography is real (not placeholder)", ph.length === 0, `${ph.length} placeholder slots`);
-  if (ph.length) {
-    const keyed = ctx.media.available;
-    issue({
-      category: "design", severity: keyed ? "major" : "minor",
-      message: keyed
-        ? `${ph.length} slots found no acceptable Pexels match and use placeholders; refine queries or supply photography.`
-        : `${ph.length} image slots use labelled placeholders because PEXELS_API_KEY is not set. Visual quality cannot be judged as premium until real photography is used.`,
-    });
+  const stock = media.assets.filter((a) => a.source === "pexels" && a.status === "approved");
+  check("Photography is real (no placeholders)", ph.length === 0, `${ph.length} placeholder slots`);
+  if (ph.length) issue({ category: "design", severity: "minor", message: `${ph.length} image slots use labelled placeholders${ctx.media.available ? "" : " because PEXELS_API_KEY is not set"}. Verdict cannot be PASS until real photography is used.` });
+
+  // The published site must not depend on a temporary remote URL.
+  const siteJson = read(siteDir, "content/site.json");
+  const remote = [...siteJson.matchAll(/"(?:src|poster)":\s*"(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
+  check("Site media are local files (no remote URLs)", remote.length === 0, remote.slice(0, 2).join(", "));
+  if (remote.length) issue({ category: "technical", severity: "major", message: `Site references remote media URLs that may expire: ${remote.slice(0, 2).join(", ")}` });
+  const missingFiles = media.assets.filter((a) => a.status === "approved" && a.url.startsWith("/media/") && !fs.existsSync(path.join(siteDir, "public", a.url))).map((a) => a.url);
+  check("Every referenced media file exists on disk", missingFiles.length === 0, missingFiles.slice(0, 3).join(", "));
+  if (missingFiles.length) issue({ category: "technical", severity: "critical", message: `Media files missing from the site: ${missingFiles.slice(0, 3).join(", ")}`, fix: { agent: "developer", action: "regenerate" } });
+  const attribution = stock.filter((a) => !a.credit?.name || !a.sourceUrl);
+  check("Every Pexels asset has attribution + source URL", attribution.length === 0, attribution.map((a) => a.slot).join(", "));
+  if (attribution.length) issue({ category: "content", severity: "major", message: `Assets missing attribution/source info: ${attribution.map((a) => a.slot).join(", ")}` });
+
+  // ── video ──
+  const vp = ctx.memory.get("video");
+  if (vp) {
+    if (vp.phase === "failed") issue({ category: "design", severity: "minor", message: `Video generation failed: ${vp.phaseDetail ?? "unknown error"}. The site uses the ${vp.fallback === "stock-video" ? "stock clip" : "still image"}.` });
+    if (vp.phase === "awaiting_approval") issue({ category: "design", severity: "minor", message: "Hero video generation is awaiting your approval; the site currently uses the fallback." });
+    if (vp.phase === "unavailable") issue({ category: "design", severity: "minor", message: `Hero video generation is not configured: ${vp.phaseDetail}` });
+    if (vp.qa && !vp.qa.passed) issue({ category: "technical", severity: "major", message: `Video QA failed: ${vp.qa.checks.filter((c) => !c.passed).map((c) => c.name).join("; ")}` });
+    check("Video lifecycle healthy (no failure)", vp.phase !== "failed", vp.phase);
   }
   const dupes = stock.length - new Set(stock.map((a) => a.id)).size;
   check("No duplicated photos across slots", dupes === 0);
@@ -152,16 +181,54 @@ export function staticChecks(ctx: AgentContext, siteDir: string): { issues: QAIs
   return { issues, checks };
 }
 
-function toReport(issues: QAIssue[], checks: QAReport["checks"], iteration: number, browserQa: boolean): QAReport {
+export function computeVerdict(issues: QAIssue[], hasPlaceholders: boolean): { verdict: QAVerdict; blockers: string[]; warnings: string[] } {
+  const blockers = issues.filter((i) => i.severity === "critical").map((i) => i.message);
+  const warnings = issues.filter((i) => i.severity !== "critical").map((i) => `[${i.severity}] ${i.message}`);
+  const verdict: QAVerdict = blockers.length ? "BLOCKED" : warnings.length || hasPlaceholders ? "PASS_WITH_WARNINGS" : "PASS";
+  return { verdict, blockers, warnings };
+}
+
+function toReport(issues: QAIssue[], checks: QAReport["checks"], iteration: number, browserQa: boolean, hasPlaceholders: boolean, review?: QAReport["review"]): QAReport {
   const score = Math.max(0, 100 - issues.reduce((n, i) => n + WEIGHT[i.severity], 0));
+  const v = computeVerdict(issues, hasPlaceholders);
   return {
+    verdict: v.verdict, blockers: v.blockers, warnings: v.warnings,
     score,
     criticalIssues: issues.filter((i) => i.severity === "critical"),
     designIssues: issues.filter((i) => i.severity !== "critical" && (i.category === "design" || i.category === "ai-quality")),
     uxIssues: issues.filter((i) => i.severity !== "critical" && (i.category === "ux" || i.category === "mobile")),
     technicalIssues: issues.filter((i) => i.severity !== "critical" && (i.category === "technical" || i.category === "content")),
     recommendedChanges: issues.map((i) => `[${i.severity}] ${i.message}`),
-    checks, iteration, browserQa,
+    checks, iteration, browserQa, review,
+  };
+}
+
+/** LLM reviewer: reads the actual copy, the section structure, the failing checks and (if browser QA ran) the hero screenshots. */
+async function llmReview(ctx: AgentContext, issues: QAIssue[], checks: QAReport["checks"]): Promise<{ issues: QAIssue[]; review?: QAReport["review"] }> {
+  if (!ctx.llm.available) return { issues: [] };
+  const copy = ctx.memory.require("copy");
+  const creative = ctx.memory.require("creative");
+  const ux = ctx.memory.require("ux");
+  const media = ctx.memory.require("media");
+  const shots: LLMImage[] = [];
+  for (const f of ["desktop-hero.png", "mobile-hero.png"]) {
+    const file = path.join(ctx.memory.root, "qa", f);
+    if (fs.existsSync(file) && fs.statSync(file).size < 3_500_000) shots.push({ base64: fs.readFileSync(file).toString("base64"), mediaType: "image/png" });
+  }
+  const out = await askLLM(ctx, {
+    task: "qa-review",
+    system: `You are the QA / Critic Agent for a premium website. Review critically like a creative director: does it look premium and intentional? Is the copy specific (not generic AI copy, no invented claims)? Is the CTA obvious? Is hierarchy strong? Are sections repetitive? Are animations purposeful? Images (if attached) are the desktop then mobile hero screenshots. Report only real, specific problems (do not repeat automated findings already listed). Use severity "critical" ONLY for something that must block launch. If rewriting the copy would fix a problem, put the instruction in copyFix; otherwise null.`,
+    prompt: `Business: ${ctx.input.business} in ${ctx.input.location}; audience ${ctx.input.targetAudience}; goal ${ctx.input.goal ?? "leads"}.\nCreative direction: ${creative.direction} — ${creative.concept}\nSections: ${ux.homepageFlow.map((s) => `${s.id}(${s.component}/${s.tone}/${s.layout})`).join(" → ")}\nCopy: ${JSON.stringify({ hero: copy.hero, intro: copy.intro, services: copy.services.items.map((i) => i.title), cta: copy.cta, seo: copy.seo })}\nMedia: ${media.assets.length} slots; sources: ${[...new Set(media.assets.map((a) => a.source))].join(", ")}\nAutomated findings (do not repeat): ${JSON.stringify(issues.map((i) => i.message))}\nFailed automated checks: ${JSON.stringify(checks.filter((c) => !c.passed).map((c) => c.name))}`,
+    images: shots,
+    schema: QAReviewSchema,
+    fallback: () => ({ issues: [], summary: "" }),
+  });
+  return {
+    issues: out.issues.map((i, n) => ({
+      id: `llm-${n + 1}`, category: i.category, severity: i.severity, message: `(reviewer) ${i.message}`,
+      ...(i.copyFix ? { fix: { agent: "copy" as const, action: "rewrite-with-feedback", target: i.copyFix } } : {}),
+    })),
+    review: { provider: ctx.llm.name, model: ctx.lastModel ?? ctx.llm.model, summary: out.summary },
   };
 }
 
@@ -178,12 +245,16 @@ export const qaAgent: Agent<QAReport> = {
       issues.push(...r.issues.map((i, n) => ({ ...i, id: `browser-${n + 1}` })));
       checks.push(...r.checks);
     }
-    const report = toReport(issues, checks, ctx.iteration, browser);
-    ctx.report({ usedLLM: browser ? "static+browser" : "static-analysis", summary: `Score ${report.score}/100 · ${report.criticalIssues.length} critical · ${issues.length - report.criticalIssues.length} other` });
+    const reviewed = await llmReview(ctx, issues, checks);
+    issues.push(...reviewed.issues);
+    const media = ctx.memory.require("media");
+    const report = toReport(issues, checks, ctx.iteration, browser, media.assets.some((a) => a.source === "placeholder"), reviewed.review);
+    const how = [browser ? "static+browser" : "static", reviewed.review ? "LLM review" : ""].filter(Boolean).join(" + ");
+    ctx.report({
+      provider: reviewed.review ? reviewed.review.provider : `rules (${browser ? "static+browser" : "static"})`,
+      ...(reviewed.review ? { model: reviewed.review.model } : {}),
+      summary: `${report.verdict} · score ${report.score}/100 · ${how} · ${report.blockers.length} blockers, ${report.warnings.length} warnings`,
+    });
     return report;
   },
 };
-
-export function qaPasses(r: QAReport): boolean {
-  return r.criticalIssues.length === 0 && [...r.designIssues, ...r.uxIssues, ...r.technicalIssues].every((i) => i.severity === "minor") && r.score >= 80;
-}

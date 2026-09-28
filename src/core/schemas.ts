@@ -62,3 +62,76 @@ export const CopySchema = z.object({
   seo: z.object({ title: str, description: str, keywords: strs, ogTitle: str, ogDescription: str, localBusinessType: str }),
   placeholders: z.array(z.object({ field: str, note: str })),
 });
+
+// ───────────── UX ─────────────
+const TECHNIQUES = ["scroll-story", "parallax", "before-after", "interactive-gallery", "cinematic-video", "micro-interactions", "sticky-sections", "progressive-reveal", "interactive-cards"] as const;
+export const UxSchema = z.object({
+  decisions: z.array(z.object({ technique: z.enum(TECHNIQUES), used: z.boolean(), purpose: str })).min(6),
+  story: z.object({ title: str, stages: z.array(z.object({ label: str, caption: str })).min(4).max(8) }).nullable(),
+  homepageFlow: z.array(SectionPlanSchema).min(6),
+  mobileRules: strs,
+  reducedMotion: str,
+});
+
+// ───────────── Brand (vision analysis of a supplied logo) ─────────────
+export const BrandVisionSchema = z.object({
+  personality: strs,
+  tone: str,
+  shapes: strs,
+  typographyCharacter: str,
+  notes: strs,
+});
+
+// ───────────── Design system refinements ─────────────
+const cssLength = z.string().regex(/^(0|\d+(\.\d+)?(px|rem|em|vh|vw|%))$/, "must be a CSS length like 24px or 1.5rem");
+const cssTime = z.string().regex(/^\d+(\.\d+)?(ms|s)$/, "must be a CSS time like 420ms");
+export const DesignRefinementSchema = z.object({
+  radius: z.object({ sm: cssLength, md: cssLength }),
+  shadowSoft: z.string().max(120),
+  button: z.object({ tracking: z.string().regex(/^-?\d+(\.\d+)?em$/), transform: z.enum(["uppercase", "none", "capitalize"]) }),
+  displayTracking: z.string().regex(/^-?\d+(\.\d+)?em$/),
+  displayLeading: z.string().regex(/^\d(\.\d+)?$/),
+  animations: z.object({ fast: cssTime, base: cssTime, slow: cssTime, hero: cssTime, revealDistance: cssLength }),
+  sectionPadding: z.string().max(80),
+  rationale: str,
+});
+
+// ───────────── Video planning ─────────────
+export const VideoPlanSchema = z.object({
+  decision: z.enum(["stock", "generate", "none"]),
+  reasoning: str,
+  concept: str,
+  prompt: str,
+  durationSeconds: z.number().min(3).max(15),
+});
+
+// ───────────── Architecture notes ─────────────
+export const ArchitectureNotesSchema = z.object({
+  performanceBudget: z.object({ lcpMs: z.number().min(800).max(6000), jsKb: z.number().min(40).max(400), imageStrategy: str }),
+  accessibility: strs,
+  seo: strs,
+  developerFlags: z.array(z.string()),
+});
+
+// ───────────── Media planning + curation ─────────────
+export const MediaPlanLLMSchema = z.object({
+  slots: z.array(z.object({ slot: str, query: str, altQueries: z.array(str).max(3), brief: str, alt: str })).min(1),
+  rules: strs,
+});
+export const CurationSchema = z.object({
+  chosen: z.string().nullable(),
+  score: z.number().min(0).max(1),
+  reason: str,
+});
+
+// ───────────── QA review ─────────────
+export const QAReviewSchema = z.object({
+  issues: z.array(z.object({
+    category: z.enum(["design", "ux", "mobile", "technical", "ai-quality", "content"]),
+    severity: z.enum(["minor", "major", "critical"]),
+    message: str,
+    /** Set only when rewriting the site copy would fix it. */
+    copyFix: z.string().nullable(),
+  })),
+  summary: str,
+});

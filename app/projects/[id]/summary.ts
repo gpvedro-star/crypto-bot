@@ -46,7 +46,8 @@ export function summarize(stageId: string, s: Sections): string[] {
     case "media": {
       const r = s.media; if (!r) break;
       const by = (src: string) => r.assets.filter((a: any) => a.source === src).length;
-      out.push(`Provider: ${r.provider}`, `${by("pexels")} Pexels assets · ${by("placeholder")} placeholders · ${by("higgsfield")} generated`);
+      out.push(`Provider: ${r.provider}`, `${by("pexels")} Pexels assets · ${by("placeholder")} placeholders · ${by("higgsfield")} generated · ${r.assets.filter((a: any) => a.status === "failed").length} failed`);
+      for (const e of r.errors ?? []) out.push(`FAILED ${e.slot}: ${e.message}`);
       const plan = s["media-plan"]; if (plan) out.push(`Search plan (${plan.slots.length} slots), e.g. "${plan.slots[0]?.query}"`);
       break;
     }
@@ -57,8 +58,9 @@ export function summarize(stageId: string, s: Sections): string[] {
     }
     case "video": {
       const r = s.video; if (!r) break;
-      out.push(`Decision: ${r.decision}`, r.reasoning); if (r.prompt) out.push(`Prompt: ${r.prompt}`);
-      if (r.job) out.push(`Generation job: ${r.job.status}`);
+      out.push(`Decision: ${r.decision}`, r.reasoning, `Phase: ${r.phase}${r.phaseDetail ? ` — ${r.phaseDetail}` : ""}`); if (r.prompt) out.push(`Prompt: ${r.prompt}`);
+      if (r.job) out.push(`Generation job ${r.job.id}: ${r.job.status}`);
+      if (r.qa) for (const c of r.qa.checks) out.push(`Video QA — ${c.passed ? "PASS" : "FAIL"}: ${c.name}${c.detail ? ` (${c.detail})` : ""}`);
       break;
     }
     case "architect": {
@@ -73,7 +75,10 @@ export function summarize(stageId: string, s: Sections): string[] {
     }
     case "qa": {
       const r = s.qa; if (!r) break;
-      out.push(`Score ${r.score}/100 · ${r.checks.filter((c: any) => c.passed).length}/${r.checks.length} checks passed${r.browserQa ? " (includes real-browser checks)" : ""}`);
+      out.push(`Verdict ${r.verdict} · score ${r.score}/100 · ${r.checks.filter((c: any) => c.passed).length}/${r.checks.length} checks passed${r.browserQa ? " (includes real-browser checks)" : ""}`);
+      for (const b of r.blockers ?? []) out.push(`BLOCKER: ${b}`);
+      for (const w of r.warnings ?? []) out.push(`Warning: ${w}`);
+      if (r.review) out.push(`Reviewer (${r.review.provider} / ${r.review.model}): ${r.review.summary}`);
       for (const c of r.checks.filter((c: any) => !c.passed)) out.push(`Failed: ${c.name}${c.detail ? ` (${c.detail})` : ""}`);
       break;
     }

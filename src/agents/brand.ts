@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import jpeg from "jpeg-js";
 import { PNG } from "pngjs";
-import type { Agent } from "../core/agent";
+import { askLLM, type Agent } from "../core/agent";
+import { BrandVisionSchema } from "../core/schemas";
 import type { BrandProfile } from "../core/types";
 import { hexToHsl, rgbToHex } from "../core/color";
 
@@ -85,7 +86,7 @@ export const brandAgent: Agent<BrandProfile> = {
   async run(ctx) {
     const logo = ctx.input.logoPath;
     if (!logo || !fs.existsSync(logo)) {
-      ctx.report({ usedLLM: "knowledge-base", summary: "No brand assets provided; creative direction is free" });
+      ctx.report({ provider: "none", summary: "No brand assets provided; nothing to analyze. Creative direction is free" });
       return { provided: false, colors: [], personality: [], tone: "", shapes: [], typographyCharacter: "", notes: ["No logo provided; the Creative Director defines the identity."] };
     }
     const px = decode(logo);
@@ -117,6 +118,23 @@ export const brandAgent: Agent<BrandProfile> = {
         "Existing brand colors are preserved by the Creative Director; the brand is extended, not redesigned.",
       ],
     };
+    // Vision analysis of the actual logo (typography character, shapes, tone). Needs an LLM; in demo mode only pixel analysis runs.
+    if (ctx.llm.available) {
+      const ext = path.extname(logo).toLowerCase();
+      const vision = await askLLM(ctx, {
+        task: "brand-vision",
+        system: "You are the Brand Agent. Analyze the supplied logo image. Describe its visual personality, tone of voice implied, distinctive shapes, and the character of its typography (geometric/humanist/serif/etc). The website must extend this brand, not redesign it.",
+        prompt: `Pixel analysis of this logo found: ${JSON.stringify(colors)}. Business: ${ctx.input.business}. Analyze the image and return the brand traits.`,
+        images: [{ base64: fs.readFileSync(logo).toString("base64"), mediaType: ext === ".png" ? "image/png" : "image/jpeg" }],
+        schema: BrandVisionSchema,
+        fallback: () => { throw new Error("unreachable: LLM is available"); },
+      });
+      profile.personality = [...new Set([...profile.personality, ...vision.personality])];
+      profile.tone = vision.tone;
+      profile.shapes = vision.shapes;
+      profile.typographyCharacter = vision.typographyCharacter;
+      profile.notes = [...profile.notes, ...vision.notes];
+    }
     // Publish the logo so the site can use it.
     const destDir = path.join(ctx.memory.siteDir, "public", "brand");
     fs.mkdirSync(destDir, { recursive: true });
@@ -124,7 +142,7 @@ export const brandAgent: Agent<BrandProfile> = {
     fs.copyFileSync(logo, path.join(destDir, dest));
     profile.logoUrl = `/brand/${dest}`;
     ctx.memory.recordDecision({ agent: "brand", key: "brand-accent", value: accent?.hex ?? "none", rationale: "Extracted from provided logo" });
-    ctx.report({ usedLLM: "pixel-analysis", summary: `Extracted ${colors.length} colors; accent ${accent?.hex}` });
+    ctx.report({ ...(ctx.llm.available ? {} : { provider: "pixel-analysis (demo: no vision)" }), summary: `Extracted ${colors.length} colors; accent ${accent?.hex}${ctx.llm.available ? "; vision analysis of the logo done" : ""}` });
     return profile;
   },
 };

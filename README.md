@@ -11,39 +11,71 @@ Business input → Research → Strategy → Brand → Creative → UX → (Copy
 
 ```bash
 npm install
-cp .env.example .env.local        # optional: add keys (see below)
-npm run first-test                # builds the Miami luxury-landscaping site
+cp .env.example .env.local        # add keys (see below)
+npm run preflight                 # checks keys AND network reachability, spends nothing
+npm run first-test -- --real      # Miami luxury landscaping brief; refuses to run unless real providers are ready
 npm run dev                       # dashboard on http://localhost:3000
 ```
 
-Everything works with **no API keys**: agents use a built-in industry knowledge base (landscaping, restaurant, legal, dental, generic), and image slots use clearly-labelled placeholders. Add keys to upgrade each capability:
+### Modes
 
-| Key | Enables | Without it |
+| Mode | Condition | Behaviour |
 |---|---|---|
-| `ANTHROPIC_API_KEY` (+ optional `ANTHROPIC_MODEL`) | LLM-written research, strategy, creative direction and copy for **any** industry | Knowledge-base agents |
-| `OPENAI_API_KEY` + `OPENAI_MODEL` | Same, via OpenAI | Knowledge-base agents |
-| `PEXELS_API_KEY` | Intelligent stock photo/video search, scored per slot | Labelled placeholder art |
-| `HIGGSFIELD_API_KEY` (+ `HIGGSFIELD_MODEL_PATH`, `HIGGSFIELD_API_SECRET`) | Generated hero video | Prompt is stored; hero uses a still |
+| **REAL** | LLM key **and** `PEXELS_API_KEY` set | Every reasoning agent uses the LLM; media comes from Pexels and is downloaded into the site; no placeholders. |
+| **PARTIAL** | only one of them | Runs, clearly labelled. Missing pieces are shown in the dashboard. |
+| **DEMO** | neither | Built-in knowledge base + labelled placeholder images. Output is marked `knowledge-base (demo)`; QA can never return PASS. |
 
-Keys are read server-side only and never sent to the browser (`/api/status` returns booleans).
+**No silent fallback.** If an LLM key exists and a call fails (auth, rate limit, refusal, truncated or invalid output after one repair round), the stage fails with the exact error. Templates are used only when *no* key is configured. With `STUDIO_REQUIRE_REAL=1` (or `--real`) the run refuses to start unless LLM + Pexels are ready, naming exactly which variables are missing.
+
+### API keys (put them in `.env.local` at the repo root)
+
+| Variable | Needed for | Notes |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | LLM (default provider) | `ANTHROPIC_MODEL` optional, default `claude-opus-5-5` |
+| `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL` | LLM alternative | no default OpenAI model: set it explicitly |
+| `PEXELS_API_KEY` | real photos/videos | required for REAL mode |
+| `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` (or `HF_KEY=key:secret`), `HIGGSFIELD_MODEL_PATH` | generated video | optional; approval-gated |
+
+The machine running the Studio must be able to reach `api.anthropic.com` (or `api.openai.com`), `api.pexels.com`, `images.pexels.com`, `videos.pexels.com`, and `api.higgsfield.ai` plus Higgsfield's output CDN. `npm run preflight` tests this.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `npm run first-test` | Full pipeline with the Miami luxury landscaping brief |
-| `npm run first-test -- --browser-qa` | Also installs + builds the generated site and inspects it in headless Chromium (desktop + mobile, screenshots in `projects/<id>/qa/`) |
-| `npm run studio -- --business "..." --location "..." --audience "..." --style "..." [--name "Real Name"] [--logo assets/dynatech/dynatech-logo.jpg] [--mode supervised]` | Build any site from the CLI |
+| `npm run preflight` | Provider configuration + network reachability. No spending. |
+| `npm run first-test -- --real` | The Miami brief, real providers required, browser QA on |
+| `npm run first-test` | Same brief with whatever is configured (demo if nothing) |
+| `npm run studio -- --business "..." --location "..." --audience "..." --style "..." [--goal ...] [--name "Real Name"] [--logo file.png] [--mode supervised] [--real]` | Any brief |
+| `npm run video -- <project-id> generate\|skip` | Answer the video cost gate. `generate` **spends Higgsfield credits** |
 | `npm run regen -- <project-id>` | Rebuild a site from stored project memory |
+| `npm run rehearsal` | Full pipeline against **local mock servers** (Anthropic SDK over SSE, Pexels, Higgsfield) incl. `next build` + browser QA. Not a real-provider test. |
+| `npm test` | Unit + integration tests (mock servers) |
+| `npm run typecheck` · `npm run check:secrets` | Type check · secret scan |
 | `npm run dev` / `npm start` | Dashboard |
-| `npm test` | Unit + pipeline tests (14) |
-| `git config core.hooksPath .githooks` | Enables the pre-commit secret scan (once per clone) |
-| `npm run check:secrets` | Scans tracked files for hardcoded credentials (values are never printed) |
-| `npm run typecheck` | TypeScript check |
 
 Generated sites land in `projects/<id>/site/` as standalone Next.js projects: `cd projects/<id>/site && npm install && npm run dev`.
 
-> The dashboard has no authentication. Run it locally, or put it behind auth before exposing it: it launches pipeline runs and writes to disk.
+## Media (Pexels)
+
+Search queries are written by the LLM per slot from the creative direction; candidates are pre-filtered (aspect, resolution, rejected terms), then **the model looks at the candidate thumbnails** and picks one or rejects them all (broader `altQueries` are tried next). The chosen asset is downloaded into `site/public/media/` at several widths (`srcset`), verified as a real image, and recorded with photographer, Pexels page URL, licence and the curation reason. Hero videos are downloaded, inspected by Video QA, and stored locally. The published site never depends on a remote URL. If Pexels fails, the exact error is recorded on the slot and shown in the dashboard; nothing is replaced by a placeholder. A missing hero image makes QA return **BLOCKED**.
+
+## Video (Higgsfield) and the cost gate
+
+```
+plan (LLM) ─▶ website is built ─▶ [Generate | Skip video]   "Video generation will use external generation credits."
+                                        │ Generate
+                                        ▼
+        job created (returns at once) ─▶ background polling ─▶ download ─▶ Video QA ─▶ replace fallback ─▶ rebuild site + QA
+                       failed / NSFW / timeout / bad file ─▶ the site keeps the fallback (stock clip or still) and QA warns
+```
+
+Nothing calls Higgsfield until **Generate** is pressed (dashboard) or `npm run video -- <id> generate` is run. Polling survives server restarts. Video QA checks: file downloads, MP4 container, web-compatible codec, duration (3–30 s), resolution (≥1280 px), size (≤`VIDEO_MAX_MB`). `FrameAnalyzer` is the reserved hook for future visual/AI frame analysis.
+
+**Adapter verification.** The adapter (`src/services/higgsfield`) was checked against the official `higgsfield-client` 0.2.0 SDK source: base URL `https://api.higgsfield.ai`, `Authorization: Key <key>:<secret>`, submit → `{request_id, status_url, cancel_url}`, status values `queued | in_progress | completed | failed | nsfw | canceled`, retry set 408/429/5xx. What that SDK does **not** document, and what is therefore configurable and unverified against a live account: the text-to-video model path (`HIGGSFIELD_MODEL_PATH`), that model's argument names (we send `prompt`, `aspect_ratio`, `duration`; extend with `HIGGSFIELD_EXTRA_ARGS`) and where the video URL sits in the completed payload (we check common shapes, then any `.mp4/.mov/.webm` URL).
+
+## QA verdicts
+
+`PASS` (nothing open) · `PASS_WITH_WARNINGS` (shippable; placeholders, a failed video or minor findings remain: placeholders can never PASS) · `BLOCKED` (critical finding or **required hero media missing**). Checks: static rules, real browser (build, console, overflow, broken images, tap targets, no external requests), and an LLM reviewer that reads the copy, structure and hero screenshots and can order a copy rewrite. Up to 3 automatic revisions; unresolved serious issues stop for human approval.
 
 ## Architecture
 
@@ -96,8 +128,8 @@ To receive inquiries set `LEAD_WEBHOOK_URL` in the generated site's environment.
 
 ## Known limitations (V1)
 
-- Higgsfield adapter endpoints/payloads follow platform conventions but are **unverified against live credentials**; they are isolated in `src/services/higgsfield/index.ts`.
-- LLM paths (Anthropic/OpenAI) are implemented and schema-validated but were exercised in tests with a fake provider, not live keys.
-- Brand analysis extracts colors by pixel analysis; typography/shape analysis needs a vision model (not yet wired).
-- Video "review" before approval is automated presence/status only; a human should watch generated clips.
+- Anthropic, OpenAI, Pexels and Higgsfield are exercised in tests against local mock servers using the real SDK/HTTP code; they have **not** been run with live keys from this repository's CI/sandbox (no keys, and the sandbox egress policy blocks Pexels/Higgsfield/OpenAI).
+- Higgsfield: model path, argument names and video-URL location are unverified against a live account (see above).
+- Video QA is automated (file, format, codec, duration, resolution, size). Frame-level visual analysis is a reserved hook (`FrameAnalyzer`), not implemented: a human should watch generated clips.
+- Brand vision analysis needs a supplied logo and an LLM; without a logo the Brand stage reports "nothing to analyze".
 - Browser QA does not measure Core Web Vitals yet.

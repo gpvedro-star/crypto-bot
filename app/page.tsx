@@ -2,7 +2,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-interface Status { llm: { name: string; available: boolean }; media: { name: string; available: boolean }; video: { name: string; available: boolean }; engines: { id: string; label: string; status: string }[] }
+interface Status { mode: string; llm: { provider: string; model?: string; available: boolean; missing: string[] }; media: { provider: string; available: boolean; missing: string[] }; video: { provider: string; available: boolean; missing: string[] }; engines: { id: string; label: string; status: string }[] }
 interface ProjectSummary { id: string; name: string; status: string; mode: string; createdAt: string }
 
 export default function Home() {
@@ -66,12 +66,12 @@ export default function Home() {
       </form>
 
       <section className="panel">
-        <h2>Providers</h2>
+        <h2>Providers · {status?.mode ? status.mode.toUpperCase() : "…"} mode</h2>
         {status ? (
           <ul className="providers">
-            <li><span className={status.llm.available ? "dot on" : "dot"} />LLM: {status.llm.available ? status.llm.name : "knowledge base (no API key)"}</li>
+            <li><span className={status.llm.available ? "dot on" : "dot"} />LLM: {status.llm.available ? `${status.llm.provider} / ${status.llm.model}` : `not configured, demo knowledge base (set ${status.llm.missing.join(" + ") || "ANTHROPIC_API_KEY"})`}</li>
             <li><span className={status.media.available ? "dot on" : "dot"} />Media: {status.media.available ? "Pexels" : "placeholders (set PEXELS_API_KEY)"}</li>
-            <li><span className={status.video.available ? "dot on" : "dot"} />Video: {status.video.available ? "Higgsfield" : "disabled (set HIGGSFIELD_*)"}</li>
+            <li><span className={status.video.available ? "dot on" : "dot"} />Video: {status.video.available ? "Higgsfield (asks before spending credits)" : "not configured (optional)"}</li>
             {status.engines.map((e) => <li key={e.id}><span className={e.status === "ready" ? "dot on" : "dot"} />Engine: {e.label} ({e.status})</li>)}
           </ul>
         ) : <p className="sub">Loading…</p>}

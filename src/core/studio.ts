@@ -7,21 +7,22 @@ import { Orchestrator } from "./orchestrator";
 /** Wires the orchestrator to whichever providers the environment configures. */
 export function createStudio(baseDir?: string) {
   const llm = createLLM(), media = createMediaProvider(), video = createVideoProvider(), engines = createEngineRegistry();
-  return { orchestrator: new Orchestrator({ llm, media, video, engines, baseDir }), llm, media, video, engines };
+  const orchestrator = new Orchestrator({ llm, media, video, engines, baseDir });
+  return { orchestrator, llm, media, video, engines };
 }
 
 const g = globalThis as unknown as { __dynatechStudio?: ReturnType<typeof createStudio> };
 /** Process-wide singleton so Next.js API routes share running projects and pending approvals. */
 export function getStudio() {
-  return (g.__dynatechStudio ??= createStudio());
+  if (!g.__dynatechStudio) {
+    g.__dynatechStudio = createStudio();
+    g.__dynatechStudio.orchestrator.resumeAllVideos(); // continue any generation that was in flight when the server stopped
+  }
+  return g.__dynatechStudio;
 }
 
+/** Booleans, names and model ids only. API keys are never returned. */
 export function providerStatus() {
   const s = getStudio();
-  return {
-    llm: { name: s.llm.name, available: s.llm.available },
-    media: { name: s.media.name, available: s.media.available },
-    video: { name: s.video.name, available: s.video.available },
-    engines: s.engines.list(),
-  };
+  return { ...s.orchestrator.providers(), engines: s.engines.list() };
 }

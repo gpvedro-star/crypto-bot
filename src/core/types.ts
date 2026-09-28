@@ -162,6 +162,18 @@ export interface Asset {
   alt: string;
   query?: string;
   credit?: { name: string; url: string };
+  /** Page on the source site (e.g. the Pexels photo page), kept for attribution/licensing. */
+  sourceUrl?: string;
+  license?: string;
+  /** Path of the local copy relative to the generated site (e.g. "public/media/hero-1800.jpg"). Set once downloaded. */
+  localPath?: string;
+  /** Local responsive variants (same image, several widths). */
+  variants?: { width: number; url: string }[];
+  bytes?: number;
+  /** Why the asset failed / was rejected. */
+  error?: string;
+  /** Curation rationale (why this asset was chosen for this slot). */
+  reason?: string;
   score?: number;
   status: AssetStatus;
   /** Present for generated assets */
@@ -177,11 +189,31 @@ export interface MediaSlot {
   minWidth: number;
   brief: string; // what the picture must show
   query: string; // final search query
+  /** Broader queries tried in order if the first finds nothing suitable. */
+  altQueries?: string[];
   alt: string;
 }
 
 export interface MediaPlan { slots: MediaSlot[]; searchSuffix: string; rules: string[] }
-export interface MediaResult { assets: Asset[]; provider: string; usedPlaceholders: boolean; log: string[] }
+export interface MediaResult {
+  assets: Asset[];
+  provider: string;
+  usedPlaceholders: boolean;
+  /** Exact provider failures, per slot. Never swallowed. */
+  errors: { slot: string; message: string }[];
+  log: string[];
+}
+
+export type VideoPhase =
+  | "not_needed"        // stock clip chosen, or this industry uses stills
+  | "unavailable"       // generation wanted but the provider is not configured
+  | "awaiting_approval" // waiting for the human to allow paid generation
+  | "skipped"           // human chose [Skip video]
+  | "generating"        // job created; polling in the background
+  | "downloading"
+  | "reviewing"
+  | "completed"         // generated clip downloaded, passed Video QA, and is in the site
+  | "failed";           // job failed / timed out / did not pass Video QA; site uses the fallback
 
 export interface VideoPlan {
   decision: "stock" | "generate" | "none";
@@ -190,14 +222,33 @@ export interface VideoPlan {
   prompt: string;
   durationSeconds: number;
   aspect: "16:9" | "9:16";
+  phase: VideoPhase;
+  /** Human-readable explanation of the current phase (errors are shown verbatim). */
+  phaseDetail?: string;
   job?: GenerationJob;
   asset?: Asset;
+  /** What the site uses in the meantime / if generation is skipped or fails. */
+  fallback?: "stock-video" | "still-image" | "none";
+  qa?: VideoQAReport;
+  requestedAt?: string;
+  finishedAt?: string;
+}
+
+export interface VideoQAReport {
+  passed: boolean;
+  checks: { name: string; passed: boolean; detail?: string }[];
+  info: { bytes?: number; durationSeconds?: number; width?: number; height?: number; format?: string; brand?: string };
+  /** Reserved for future visual/AI analysis of extracted frames. */
+  frameAnalysis: { status: "not_implemented" | "completed" | "failed"; findings?: string[] };
 }
 
 export interface GenerationJob {
   id: string;
   provider: string;
-  status: "queued" | "running" | "completed" | "failed" | "disabled";
+  /** Status/cancel URLs returned by the API (only ever called if same-origin with the configured base URL). */
+  statusUrl?: string;
+  cancelUrl?: string;
+  status: "queued" | "running" | "completed" | "failed" | "cancelled" | "nsfw" | "disabled";
   prompt: string;
   url?: string;
   posterUrl?: string;
@@ -240,7 +291,13 @@ export interface QAIssue {
   fix?: { agent: "copy" | "creative" | "ux" | "media" | "developer"; action: string; target?: string };
 }
 
+export type QAVerdict = "PASS" | "PASS_WITH_WARNINGS" | "BLOCKED";
+
 export interface QAReport {
+  /** PASS: nothing open. PASS_WITH_WARNINGS: shippable, but warnings (placeholders, minor issues) remain. BLOCKED: do not ship. */
+  verdict: QAVerdict;
+  warnings: string[];
+  blockers: string[];
   score: number;
   criticalIssues: QAIssue[];
   designIssues: QAIssue[];
@@ -250,10 +307,14 @@ export interface QAReport {
   checks: { name: string; passed: boolean; detail?: string }[];
   iteration: number;
   browserQa: boolean;
+  /** Present when an LLM reviewed the site (copy, structure and hero screenshots). */
+  review?: { provider: string; model: string; summary: string };
 }
 
 export interface FinalReport {
-  status: "approved" | "needs_human_approval";
+  verdict: QAVerdict;
+  status: "approved" | "approved_with_warnings" | "blocked" | "needs_human_approval";
+  assetCounts: { real: number; placeholders: number; failed: number };
   score: number;
   iterations: number;
   outputDir: string;
@@ -270,6 +331,12 @@ export const COMPONENT_NAMES = [
   "FAQ", "CTA", "Contact", "Footer", "ImageReveal", "VideoReveal",
 ] as const;
 export type ComponentName = (typeof COMPONENT_NAMES)[number];
+
+/** Components the Next.js engine can fill from project data. Others exist in the library but need real data (Stats) or are inline-only. */
+export const SUPPORTED_SECTION_COMPONENTS: ComponentName[] = [
+  "Navbar", "Hero", "VideoHero", "Marquee", "SplitSection", "Services", "ScrollStory", "BeforeAfter", "ImageGallery",
+  "Process", "Trust", "Testimonials", "FAQ", "CTA", "Contact", "Footer",
+];
 
 // ───────────────────────── Project memory ─────────────────────────
 
@@ -319,7 +386,10 @@ export interface StageState {
   startedAt?: string;
   finishedAt?: string;
   summary?: string;
-  usedLLM?: string; // provider name or "knowledge-base"
+  /** Who produced this output: "anthropic", "openai", "pexels", "higgsfield", "rules", "template-engine", or "knowledge-base (demo)". */
+  provider?: string;
+  /** Exact model id when an LLM produced the output. */
+  model?: string;
   error?: string;
 }
 
@@ -327,7 +397,10 @@ export interface ProjectState {
   id: string;
   name: string;
   mode: RunMode;
-  status: "created" | "running" | "awaiting_approval" | "completed" | "needs_human_approval" | "failed";
+  status: "created" | "running" | "awaiting_approval" | "completed" | "completed_with_warnings" | "blocked" | "needs_human_approval" | "failed";
+  verdict?: QAVerdict;
+  /** Providers actually used for this project (captured at run start). */
+  providers?: RuntimeProviders;
   awaiting?: Checkpoint;
   approvals: Checkpoint[];
   feedback?: Partial<Record<Checkpoint, string>>;
@@ -338,3 +411,11 @@ export interface ProjectState {
 }
 
 export interface StudioEvent { at: string; level: "info" | "warn" | "error"; agent?: AgentId | "orchestrator"; message: string }
+
+export interface RuntimeProviders {
+  /** real = LLM + Pexels configured; partial = one of them; demo = knowledge-base + placeholders. */
+  mode: "real" | "partial" | "demo";
+  llm: { provider: string; model?: string; available: boolean; missing: string[] };
+  media: { provider: string; available: boolean; missing: string[] };
+  video: { provider: string; available: boolean; missing: string[] };
+}

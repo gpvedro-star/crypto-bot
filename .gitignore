@@ -43,3 +43,5 @@ npm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+projects-rehearsal/
+projects-rehearsal-gate/

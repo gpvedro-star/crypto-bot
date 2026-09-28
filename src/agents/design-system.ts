@@ -1,4 +1,5 @@
-import type { Agent } from "../core/agent";
+import { askLLM, type Agent } from "../core/agent";
+import { DesignRefinementSchema } from "../core/schemas";
 import { contrast, ensureContrast, mix } from "../core/color";
 import type { CreativeDirection, DesignSystem } from "../core/types";
 
@@ -76,8 +77,32 @@ export const designSystemAgent: Agent<DesignSystem> = {
   label: "Design System",
   async run(ctx) {
     const creative = ctx.memory.require("creative");
-    const ds = buildDesignSystem(creative);
-    ctx.report({ usedLLM: "rule-based", summary: `${Object.keys(ds.colors).length} color tokens, ${Object.keys(ds.typography.scale).length} type steps` });
+    const ux = ctx.memory.require("ux");
+    const base = buildDesignSystem(creative);
+    // Colors, type scale and spacing scale stay deterministic (contrast-enforced). The LLM tunes the character of the system.
+    const r = await askLLM(ctx, {
+      task: "design-system",
+      system: "You are the Design System Agent. Given the creative direction, choose the character of the design tokens: corner radius, shadow, button tracking/case, headline tracking/leading, motion timing and reveal distance, and section padding. Keep it consistent with the direction (e.g. cinematic = slower motion, sharper corners). Colors are fixed by the Creative Director and must not be changed. Use only CSS lengths/times as specified.",
+      prompt: `Creative direction: ${JSON.stringify({ direction: creative.direction, concept: creative.concept, animationStyle: creative.animationStyle, layoutPersonality: creative.layoutPersonality, typography: creative.typography, palette: creative.palette })}\nUX plan: techniques used: ${ux.decisions.filter((d) => d.used).map((d) => d.technique).join(", ")}\nCurrent defaults: ${JSON.stringify({ radius: base.radius, displayTracking: base.typography.displayTracking, displayLeading: base.typography.displayLeading, animations: base.animations.durations, revealDistance: base.animations.revealDistance, sectionPadding: base.layout.sectionPadding })}`,
+      schema: DesignRefinementSchema,
+      fallback: () => ({
+        radius: { sm: base.radius.sm, md: base.radius.md }, shadowSoft: base.shadows.soft,
+        button: { tracking: base.components.button.tracking, transform: base.components.button.transform as "uppercase" },
+        displayTracking: base.typography.displayTracking, displayLeading: base.typography.displayLeading,
+        animations: { ...(base.animations.durations as { fast: string; base: string; slow: string; hero: string }), revealDistance: base.animations.revealDistance },
+        sectionPadding: base.layout.sectionPadding, rationale: "defaults",
+      }),
+    });
+    const ds: DesignSystem = {
+      ...base,
+      radius: { ...base.radius, sm: r.radius.sm, md: r.radius.md },
+      shadows: { ...base.shadows, soft: r.shadowSoft },
+      typography: { ...base.typography, displayTracking: r.displayTracking, displayLeading: r.displayLeading },
+      layout: { ...base.layout, sectionPadding: r.sectionPadding },
+      components: { ...base.components, button: { ...base.components.button, tracking: r.button.tracking, transform: r.button.transform } },
+      animations: { ...base.animations, durations: { fast: r.animations.fast, base: r.animations.base, slow: r.animations.slow, hero: r.animations.hero }, revealDistance: r.animations.revealDistance },
+    };
+    ctx.report({ summary: `${Object.keys(ds.colors).length} color tokens, ${Object.keys(ds.typography.scale).length} type steps${ctx.llm.available ? `; ${r.rationale.slice(0, 80)}` : ""}` });
     return ds;
   },
 };

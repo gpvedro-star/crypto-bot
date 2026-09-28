@@ -48,3 +48,18 @@ input:not([type=radio]) { font-weight: 400; }
 .notice { border-color: var(--warn); } .notice ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
 .produced { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
 .meta { display: grid; justify-items: end; gap: 2px; } .meta small { color: var(--muted); font-size: 11px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.facts small { display: block; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+.facts strong { font-size: 16px; overflow-wrap: anywhere; }
+.failure { border-color: var(--bad); } .failure pre { white-space: pre-wrap; margin: 8px 0 0; color: var(--bad); font-size: 13px; } .failure ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+.tablewrap { overflow-x: auto; }
+table.agents { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.agents th { text-align: left; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+table.agents td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.agents tbody tr { cursor: pointer; } table.agents tbody tr:hover, table.agents tr.sel { background: var(--bg); }
+table.agents tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.sumcell { max-width: 520px; color: var(--muted); } .model { display: block; color: var(--muted); font-size: 11px; }
+.st { white-space: nowrap; text-transform: capitalize; } .st.done { color: var(--ok); } .st.running, .st.awaiting_approval { color: var(--warn); } .st.failed { color: var(--bad); }
+.pill.v-PASS { color: var(--ok); border-color: var(--ok); } .pill.v-PASS_WITH_WARNINGS { color: var(--warn); border-color: var(--warn); } .pill.v-BLOCKED, .pill.blocked { color: var(--bad); border-color: var(--bad); }
+.pill.completed_with_warnings { color: var(--warn); border-color: var(--warn); }
+.produced li.bad { color: var(--bad); }

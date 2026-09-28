@@ -1,4 +1,4 @@
-import { askOrFallback, type Agent } from "../core/agent";
+import { askLLM, type Agent } from "../core/agent";
 import { ResearchSchema } from "../core/schemas";
 import type { ResearchReport } from "../core/types";
 import { cityOf, matchIndustry } from "../knowledge";
@@ -24,10 +24,11 @@ export const researchAgent: Agent<ResearchReport> = {
         `Reflect ${city} specifics (climate, neighborhoods, local expectations) in copy and imagery.`,
       ],
     });
-    const out = await askOrFallback(ctx, {
+    const out = await askLLM(ctx, {
       task: "research",
+      check: (v) => [...(v.services.length < 3 ? ["services must list at least 3 items"] : []), ...(v.customerProblems.length < 3 ? ["customerProblems must list at least 3 items"] : [])],
       system: "You are the Research Agent. Analyze the business category, audience, problems, services, competitive positioning and modern website patterns. Use industryKey as a short kebab-case slug.",
-      prompt: `Business: ${input.business}\nLocation: ${input.location}\nAudience: ${input.targetAudience}\nStyle: ${input.style}\nGoal: ${input.goal ?? "generate leads"}\nNotes: ${input.notes ?? "-"}`,
+      prompt: `Research this business for a website project. Business: ${input.business}\nLocation: ${input.location}\nAudience: ${input.targetAudience}\nStyle: ${input.style}\nGoal: ${input.goal ?? "generate leads"}\nNotes: ${input.notes ?? "-"}`,
       schema: ResearchSchema,
       fallback,
     });

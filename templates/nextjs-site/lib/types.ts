@@ -1,4 +1,4 @@
-export interface Img { src: string; alt: string; width: number; height: number; source?: string; credit?: { name: string; url: string } }
+export interface Img { src: string; alt: string; width: number; height: number; source?: string; credit?: { name: string; url: string }; variants?: { width: number; url: string }[] }
 export interface Link { label: string; href: string }
 export interface Common { id: string; tone: "dark" | "light" | "accent"; layout: string }
 

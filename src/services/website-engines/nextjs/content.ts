@@ -3,13 +3,13 @@ import type { Asset, ComponentName } from "../../../core/types";
 import type { EngineInput } from "../types";
 
 type Mem = EngineInput["memory"];
-type Img = { src: string; alt: string; width: number; height: number; source?: string; credit?: { name: string; url: string } };
+type Img = { src: string; alt: string; width: number; height: number; source?: string; credit?: { name: string; url: string }; variants?: { width: number; url: string }[] };
 
 const NAV_LABELS: Record<string, string> = { services: "Services", story: "Transformation", gallery: "Work", process: "Process", faq: "FAQ" };
 
 function toImg(a: Asset | undefined): Img | undefined {
-  if (!a || !a.url) return undefined;
-  return { src: a.url, alt: a.alt, width: a.width ?? 1600, height: a.height ?? 1000, source: a.source, credit: a.credit };
+  if (!a || !a.url || a.status === "failed") return undefined;
+  return { src: a.url, alt: a.alt, width: a.width ?? 1600, height: a.height ?? 1000, source: a.source, credit: a.credit, variants: a.variants };
 }
 
 export interface BuiltContent { content: Record<string, unknown>; warnings: string[] }
@@ -21,8 +21,9 @@ export function buildSiteContent(m: Mem): BuiltContent {
   const bySlot = new Map(media.assets.map((a) => [a.slot, a]));
   const img = (slot: string) => toImg(bySlot.get(slot));
   const heroAsset = bySlot.get("hero");
-  const videoAsset = media.assets.find((a) => a.type === "video" && a.status === "approved");
-  const video = m.video.asset?.status === "approved" ? m.video.asset : videoAsset;
+  const stockVideo = media.assets.find((a) => a.type === "video" && a.status === "approved");
+  // A generated clip replaces the stock clip/still only once it is downloaded and has passed Video QA (phase "completed").
+  const video = m.video.phase === "completed" && m.video.asset?.status === "approved" ? m.video.asset : stockVideo;
   const contact = business.contact ?? {};
   const cta = { label: m.strategy.primaryCTA.label, href: m.strategy.primaryCTA.target };
   const secondary = { label: m.strategy.secondaryCTA.label, href: m.strategy.secondaryCTA.target };
@@ -33,7 +34,7 @@ export function buildSiteContent(m: Mem): BuiltContent {
   const shortCta = cta.label.length > 22 ? { ...cta, label: cta.label.split(" ").slice(-2).join(" ") } : cta;
 
   const credits = new Map<string, { name: string; url: string }>();
-  for (const a of media.assets) if (a.credit && a.source === "pexels") credits.set(a.credit.url, a.credit);
+  for (const a of media.assets) if (a.credit && a.source === "pexels" && a.status === "approved") credits.set(a.credit.url, a.credit);
 
   const sections: { id: string; component: ComponentName; tone: string; layout: string; props: Record<string, unknown> }[] = [];
   const push = (s: (typeof flow)[number], props: Record<string, unknown>) => sections.push({ id: s.id, component: s.component, tone: s.tone, layout: s.layout, props });
@@ -48,7 +49,7 @@ export function buildSiteContent(m: Mem): BuiltContent {
         push(s, {
           eyebrow: copy.hero.eyebrow, headline: copy.hero.headline, sub: copy.hero.sub,
           primaryCta: cta, secondaryCta: secondary,
-          image: toImg(heroAsset), video: video ? { src: video.url, poster: video.posterUrl } : undefined,
+          image: toImg(heroAsset), video: video ? { src: video.url, poster: video.posterUrl ?? heroAsset?.url } : undefined,
           credit: heroAsset?.credit,
         });
         break;

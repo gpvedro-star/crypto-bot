@@ -66,10 +66,11 @@ export async function runBrowserQa(ctx: AgentContext, siteDir: string): Promise<
     for (const vp of [{ name: "desktop", width: 1440, height: 900, mobile: false }, { name: "mobile", width: 390, height: 844, mobile: true }]) {
       const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.mobile, hasTouch: vp.mobile, deviceScaleFactor: 1 });
       const page = await context.newPage();
-      const errors: string[] = [], failed: string[] = [];
+      const errors: string[] = [], failed: string[] = [], external: string[] = [];
       page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
       page.on("pageerror", (e) => errors.push(e.message));
       page.on("requestfailed", (r) => failed.push(r.url()));
+      page.on("request", (r) => { const u = new URL(r.url()); if (u.origin !== new URL(url).origin && !/fonts\.(googleapis|gstatic)\.com$/.test(u.hostname) && !u.protocol.startsWith("data")) external.push(r.url()); });
       await page.goto(url, { waitUntil: "load" });
       // Scroll through so lazy images and reveals trigger.
       const total = await page.evaluate(() => document.documentElement.scrollHeight);
@@ -88,6 +89,8 @@ export async function runBrowserQa(ctx: AgentContext, siteDir: string): Promise<
         return { overflow: document.documentElement.scrollWidth - vw, h1: document.querySelectorAll("h1").length, broken, small, body, title: document.title, desc: document.querySelector('meta[name="description"]')?.getAttribute("content") ?? "", lang: document.documentElement.lang };
       });
 
+      checks.push({ name: `[${vp.name}] No external media/network dependencies (fonts excepted)`, passed: external.length === 0, detail: external.slice(0, 2).join(", ") });
+      if (external.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] Site loads resources from other origins: ${external.slice(0, 2).join(", ")}` });
       const realErrors = errors.filter((e) => !/fonts\.(googleapis|gstatic)|pexels|ERR_(NAME_NOT_RESOLVED|INTERNET_DISCONNECTED|CONNECTION|TUNNEL|PROXY|CERT)|Failed to load resource/i.test(e));
       checks.push({ name: `[${vp.name}] No console/page errors`, passed: realErrors.length === 0, detail: realErrors.slice(0, 2).join(" | ") });
       if (realErrors.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] Console errors: ${realErrors.slice(0, 2).join(" | ")}`, fix: { agent: "developer", action: "regenerate" } });

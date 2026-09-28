@@ -1,5 +1,5 @@
-import { askOrFallback, type Agent } from "../core/agent";
-import { mapStrings, scrubBanned, findClaims } from "../core/lint";
+import { askLLM, type Agent } from "../core/agent";
+import { collectStrings, findBanned, findClaims, mapStrings, scrubBanned } from "../core/lint";
 import { CopySchema } from "../core/schemas";
 import type { SiteCopy } from "../core/types";
 import { cityOf, fill, matchIndustry } from "../knowledge";
@@ -102,10 +102,30 @@ export const copyAgent: Agent<SiteCopy> = {
       };
     };
 
-    const out = await askOrFallback(ctx, {
+    const ux = ctx.memory.get("ux");
+    const out = await askLLM(ctx, {
       task: "copy",
+      check: (v) => {
+        const p: string[] = [];
+        const inputText = JSON.stringify(input).toLowerCase();
+        if (v.hero.headline.trim().split(/\s+/).length > 10) p.push("hero.headline must be at most 10 words");
+        if (v.seo.title.length > 60) p.push(`seo.title is ${v.seo.title.length} chars (max 60)`);
+        if (v.seo.description.length < 70 || v.seo.description.length > 160) p.push(`seo.description is ${v.seo.description.length} chars (must be 70-160)`);
+        const want = ux?.story?.stages.length ?? 0;
+        if (v.story.stages.length !== want) p.push(`story.stages must have exactly ${want} items (one per UX story stage), got ${v.story.stages.length}`);
+        const strings = collectStrings({ ...v, placeholders: undefined });
+        const banned = new Set<string>(), claims = new Set<string>();
+        for (const s of strings) {
+          findBanned(s.text).forEach((b) => banned.add(b));
+          if (findClaims(s.text).length && !inputText.includes(s.text.toLowerCase().slice(0, 20))) findClaims(s.text).forEach((c) => claims.add(`${c} in "${s.text.slice(0, 60)}"`));
+        }
+        if (banned.size) p.push(`remove generic phrases: ${[...banned].join(", ")}`);
+        if (claims.size) p.push(`remove invented business claims (use placeholders instead): ${[...claims].slice(0, 4).join(" | ")}`);
+        if (v.testimonials.slots.length && v.testimonials.slots.some((s) => !/add|placeholder|real/i.test(s.hint))) p.push("testimonials.slots must be placeholder hints only (e.g. 'Add a real client quote')");
+        return p;
+      },
       system: `You are the Copy Agent: native-quality American English, premium positioning, conversion + SEO. Direction: ${creative.direction}. Never invent business facts; use bracketed placeholders and list them in "placeholders". Hero headline max 9 words. SEO title <= 60 chars, description <= 158 chars. Include a testimonials section with placeholder slots only. If the industry has no transformation, story.stages and gallery.captions may be empty arrays and beforeAfter strings short.`,
-      prompt: `Business: ${input.business}\nBrand name given: ${input.businessName ?? "(none — use a descriptive working title and mark brandNameIsPlaceholder true)"}\nLocation: ${input.location}\nAudience: ${input.targetAudience}\nGoal: ${input.goal ?? "generate leads"}\nResearch: ${JSON.stringify(research)}\nStrategy: ${JSON.stringify(strategy)}`,
+      prompt: `Write the complete website copy. Business: ${input.business}\nUX story stages (copy must match this count, in order): ${JSON.stringify(ux?.story?.stages.map((x) => x.label) ?? [])}\nBrand name given: ${input.businessName ?? "(none — use a descriptive working title and mark brandNameIsPlaceholder true)"}\nLocation: ${input.location}\nAudience: ${input.targetAudience}\nGoal: ${input.goal ?? "generate leads"}\nResearch: ${JSON.stringify(research)}\nStrategy: ${JSON.stringify(strategy)}`,
       schema: CopySchema,
       fallback,
     });
@@ -126,7 +146,19 @@ export const copyAgent: Agent<SiteCopy> = {
         });
       }
     }
-    ctx.report({ usedLLM: "rule-based-revision", summary: `Applied ${actions.length} copy fixes` });
+    const rewrite = actions.filter((a) => a.action === "rewrite-with-feedback" && a.target);
+    if (rewrite.length) {
+      if (!ctx.llm.available) ctx.log("Reviewer asked for a copy rewrite but no LLM is configured; skipped", "warn");
+      else {
+        const feedback = rewrite.map((a, i) => `${i + 1}. ${a.target}`).join("\n");
+        const previousPlaceholders = copy.placeholders;
+        copy = await copyAgent.run({ ...ctx, feedback });
+        if (!copy.placeholders?.length) copy = { ...copy, placeholders: previousPlaceholders };
+        ctx.report({ summary: `Rewrote copy to address ${rewrite.length} reviewer note(s)` });
+        return copy;
+      }
+    }
+    ctx.report({ provider: "rules", summary: `Applied ${actions.length} copy fixes` });
     return copy;
   },
 };

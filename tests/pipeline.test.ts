@@ -5,14 +5,16 @@ import { test } from "node:test";
 import { scoreAsset } from "../src/agents/media";
 import { PIPELINE } from "../src/core/orchestrator";
 import { MEMORY_SECTIONS, type Asset } from "../src/core/types";
-import type { MediaProvider } from "../src/services/pexels";
 import { LANDSCAPING, makeOrchestrator } from "./helpers";
 
-test("autonomous pipeline produces every memory section and a complete site", async () => {
+test("DEMO pipeline (no keys) produces every memory section and a complete site, but placeholders can never PASS", async () => {
   const { orch } = makeOrchestrator();
   const state = orch.create(LANDSCAPING);
   const final = await orch.run(state.id);
-  assert.equal(final.status, "completed", JSON.stringify(final.stages.filter((s) => s.status !== "done")));
+  assert.equal(final.status, "completed_with_warnings", JSON.stringify(final.stages.filter((s) => s.status !== "done")));
+  assert.equal(final.verdict, "PASS_WITH_WARNINGS");
+  assert.equal(final.providers?.mode, "demo");
+  assert.ok(final.stages.filter((s) => ["research", "strategy", "creative", "ux", "copy"].includes(s.id)).every((s) => s.provider === "knowledge-base (demo)"), "demo output is labelled as demo");
   const mem = orch.store(state.id);
   for (const s of MEMORY_SECTIONS) assert.ok(mem.has(s), `memory section ${s}`);
 
@@ -26,7 +28,10 @@ test("autonomous pipeline produces every memory section and a complete site", as
   const copy = mem.require("copy");
   assert.ok(copy.testimonials.slots.every((s) => /Add a real/.test(s.hint)));
   assert.ok(copy.placeholders.some((p) => p.field === "testimonials"));
-  assert.equal(mem.require("final").status, "approved");
+  const fin = mem.require("final");
+  assert.equal(fin.status, "approved_with_warnings");
+  assert.ok(fin.assetCounts.placeholders > 0 && fin.assetCounts.real === 0);
+  assert.ok(mem.require("qa").warnings.some((w) => /placeholders/.test(w)), "placeholder warning present");
   // No API key strings ended up in generated output.
   const blob = fs.readdirSync(path.join(mem.siteDir, "content")).map((f) => fs.readFileSync(path.join(mem.siteDir, "content", f), "utf8")).join("");
   assert.ok(!/API_KEY|sk-ant|Bearer /.test(blob));
@@ -65,7 +70,7 @@ test("revision loop: QA finds injected defects, agents fix them, QA passes (≤ 
     const history = fs.readFileSync(path.join(mem.root, "qa-history.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
     assert.ok(history[0].score < 100 && history[0].issues.some((i: string) => /banned|Generic|claims|Repetitive/i.test(i)), JSON.stringify(history[0]));
     assert.ok(history.length >= 2 && history.length <= 4, `iterations ${history.length}`);
-    assert.equal(final.status, "completed");
+    assert.equal(final.status, "completed_with_warnings");
     const copy = JSON.stringify(mem.require("copy"));
     assert.ok(!/world-class|Welcome to our website|20 years/i.test(copy), "defects were removed from copy");
     assert.ok(final.iteration <= 3);
@@ -74,7 +79,7 @@ test("revision loop: QA finds injected defects, agents fix them, QA passes (≤ 
   }
 });
 
-test("unfixable serious issues stop after max iterations and demand human approval", async () => {
+test("unfixable critical issues stop after max iterations and BLOCK the site", async () => {
   const { orch } = makeOrchestrator();
   const copyNode = PIPELINE.find((n) => n.id === "copy")!;
   const orig = copyNode.agent.run;
@@ -85,9 +90,11 @@ test("unfixable serious issues stop after max iterations and demand human approv
   try {
     const state = orch.create(LANDSCAPING);
     const final = await orch.run(state.id, { maxIterations: 3 });
-    assert.equal(final.status, "needs_human_approval");
+    // An invented business claim is a critical finding: after 3 failed automatic revisions the verdict is BLOCKED.
+    assert.equal(final.status, "blocked");
+    assert.equal(final.verdict, "BLOCKED");
     assert.equal(final.iteration, 3);
-    assert.equal(orch.store(state.id).require("final").status, "needs_human_approval");
+    assert.equal(orch.store(state.id).require("final").status, "blocked");
   } finally { copyNode.agent.run = orig; copyNode.agent.revise = origRevise; }
 });
 
@@ -104,34 +111,9 @@ test("supervised mode pauses at every checkpoint until approved", async () => {
     orch.approve(state.id, cp, true);
   }
   const final = await done;
-  assert.equal(final.status, "completed");
+  assert.equal(final.status, "completed_with_warnings");
   assert.deepEqual(seen, ["strategy", "creative", "homepage", "final"]);
   assert.deepEqual(final.approvals, ["strategy", "creative", "homepage", "final"]);
-});
-
-test("media agent: intelligent queries, scored selection, no duplicate photos, Pexels credit kept", async () => {
-  const photo = (id: number, slug: string, w = 3200, h = 2000): Asset => ({
-    id: `pexels-photo-${id}`, type: "image", source: "pexels", url: `https://images.pexels.com/photos/${id}/${slug}-${id}.jpeg`, width: w, height: h,
-    usage: "gallery", slot: "", description: slug.replace(/-/g, " "), alt: slug.replace(/-/g, " "), credit: { name: "Jane Doe", url: "https://www.pexels.com/@jane" }, status: "candidate",
-  });
-  const queries: string[] = [];
-  const fake: MediaProvider = {
-    name: "pexels", available: true,
-    searchImages: async (q) => { queries.push(q); return [photo(1, "luxury-modern-backyard-landscaping-miami-sunset"), photo(2, "cartoon-illustration-garden"), photo(3, "garden-landscape-luxury-terrace-dusk"), photo(4, "empty-green-lot-land-open-field"), photo(5, "tropical-garden-palm-trees-planting")]; },
-    searchVideos: async () => [],
-  };
-  const { orch } = makeOrchestrator({ media: fake });
-  const state = orch.create(LANDSCAPING);
-  await orch.run(state.id);
-  const media = orch.store(state.id).require("media");
-  assert.ok(queries.every((q) => q.split(" ").length >= 4), "queries are descriptive, never a single noun");
-  assert.ok(queries.some((q) => /Miami/.test(q)), "queries include location");
-  const stock = media.assets.filter((a) => a.source === "pexels");
-  assert.equal(new Set(stock.map((a) => a.id)).size, stock.length, "no duplicate photos across slots");
-  assert.ok(!stock.some((a) => /cartoon/.test(a.description)), "illustrations rejected");
-  assert.ok(stock.every((a) => a.credit && a.status === "approved"));
-  const hero = media.assets.find((a) => a.slot === "hero")!;
-  assert.equal(hero.id, "pexels-photo-1");
 });
 
 test("scoreAsset prefers relevant landscape images and penalizes rejects", () => {

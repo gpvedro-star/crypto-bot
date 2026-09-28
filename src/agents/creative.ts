@@ -1,4 +1,4 @@
-import { askOrFallback, type Agent } from "../core/agent";
+import { askLLM, type Agent } from "../core/agent";
 import { ensureContrast, mix } from "../core/color";
 import { CreativeSchema } from "../core/schemas";
 import type { CreativeDirection } from "../core/types";
@@ -99,8 +99,9 @@ export const creativeAgent: Agent<CreativeDirection> = {
       };
     };
 
-    const out = await askOrFallback(ctx, {
+    const out = await askLLM(ctx, {
       task: "creative-direction",
+      check: (v) => (v.visualLanguage.length < 2 ? ["visualLanguage needs at least 2 items"] : []),
       system: "You are the Creative Director. Define a distinctive, intentional visual identity. Palette hex values must give AA contrast (ink on ground >= 7:1, accent on ground >= 4.5:1). If a brand profile is provided, preserve its colors and extend the brand.",
       prompt: `Business: ${input.business} in ${input.location}\nStyle requested: ${input.style}\nAudience: ${input.targetAudience}\nBrand profile: ${JSON.stringify(brand)}\nStrategy: ${JSON.stringify({ mainMessage: strategy.mainMessage, sections: strategy.sections.map((s) => s.component) })}`,
       schema: CreativeSchema,

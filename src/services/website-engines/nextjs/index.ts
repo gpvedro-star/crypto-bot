@@ -61,7 +61,8 @@ export class NextJsEngine implements WebsiteEngine {
   async generate({ memory, outputDir }: EngineInput): Promise<EngineResult> {
     const files: string[] = [];
     // Regenerable directories are replaced wholesale so revisions never leave stale files behind.
-    for (const d of ["app", "components", "lib", "content", path.join("public", "media")]) fs.rmSync(path.join(outputDir, d), { recursive: true, force: true });
+    // public/media is NOT cleared: it holds the downloaded photos/videos, which are project assets, not generated code.
+    for (const d of ["app", "components", "lib", "content"]) fs.rmSync(path.join(outputDir, d), { recursive: true, force: true });
     const tpl = templateDir();
     if (!fs.existsSync(tpl)) throw new Error(`Site template not found at ${tpl}. Run from the studio root or set STUDIO_ROOT.`);
     copyDir(tpl, outputDir, files);
