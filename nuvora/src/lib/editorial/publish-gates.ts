@@ -1,9 +1,8 @@
 import { getAllArticles } from "@/lib/content";
 import type { EditorialRecord } from "./contract";
-import { isValidContentId, isValidSlug } from "./contract";
+import { isKnownCategory, isValidContentId, isValidSlug } from "./contract";
 import type { EditorialStore } from "./store";
 import { safeLinkUrl, safeText, toContentBlocks } from "./body";
-import { isKnownCategory } from "./publish-map";
 
 /**
  * The server's automatic publication decision.

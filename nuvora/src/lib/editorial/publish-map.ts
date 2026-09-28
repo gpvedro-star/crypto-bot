@@ -1,7 +1,7 @@
-import type { Article, CategorySlug, ImageAsset } from "@/content/types";
-import { categories } from "@/content/categories";
+import type { Article, ImageAsset } from "@/content/types";
 import { BRAND_BYLINE_SLUG } from "@/content/authors";
 import type { EditorialRecord, EditorialSource } from "./contract";
+import { resolveCategory } from "./contract";
 import { safeImageUrl, safeLinkUrl, safeText, toContentBlocks, toImageAsset } from "./body";
 
 /**
@@ -15,50 +15,8 @@ import { safeImageUrl, safeLinkUrl, safeText, toContentBlocks, toImageAsset } fr
  * in the record for the desk but never presented as a person on the site.
  */
 
-const CATEGORY_SLUGS = new Set<string>(categories.map((c) => c.slug));
-
-/** Common ways the editorial office might name a section. */
-const CATEGORY_ALIASES: Record<string, CategorySlug> = {
-  "ai-news": "news",
-  news: "news",
-  "breaking-news": "news",
-  tools: "tools",
-  "tool-reviews": "reviews",
-  "ai-tools": "tools",
-  reviews: "reviews",
-  review: "reviews",
-  "everyday-ai": "everyday-ai",
-  everyday: "everyday-ai",
-  "ai-for-everyday-life": "everyday-ai",
-  "ai-at-work": "ai-at-work",
-  work: "ai-at-work",
-  business: "ai-at-work",
-  guides: "guides",
-  guide: "guides",
-  "how-to": "guides",
-  explainers: "guides",
-};
-
-function slugifyLoose(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-/** Strict form for the publication gate: no fallback, the section must be recognised. */
-export function isKnownCategory(value: unknown): boolean {
-  const key = slugifyLoose(typeof value === "string" ? value : "");
-  return CATEGORY_SLUGS.has(key) || key in CATEGORY_ALIASES;
-}
-
-/** Never throws: an unrecognised section falls back to News rather than 404ing. */
-export function resolveCategory(value: unknown): CategorySlug {
-  const key = slugifyLoose(typeof value === "string" ? value : "");
-  if (CATEGORY_SLUGS.has(key)) return key as CategorySlug;
-  return CATEGORY_ALIASES[key] ?? "news";
-}
+// Category resolution lives in ./contract.ts (single source of truth for
+// both submission validation and the auto-publish gate).
 
 const FALLBACK_IMAGE: ImageAsset = {
   src: "/images/editorial/placeholder.svg",

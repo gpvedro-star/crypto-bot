@@ -1,3 +1,6 @@
+import type { CategorySlug } from "@/content/types";
+import { categories } from "@/content/categories";
+
 /**
  * NUVORA Editorial API contract.
  *
@@ -11,6 +14,60 @@
  * upper case ("AI", "DRAFT") and this store keeps them lower case — and are
  * echoed back in upper case so the agent sees what it sent.
  */
+
+/**
+ * The site's category taxonomy, single source of truth. Both submission
+ * validation (below) and the auto-publish gate (publish-gates.ts) resolve
+ * a category through this — a category is either one of these slugs, one of
+ * these aliases, or the submission is rejected. Nothing else decides.
+ */
+const CATEGORY_SLUGS = new Set<string>(categories.map((c) => c.slug));
+
+/** Common ways the editorial office might name a section. Aliases only ever resolve to a real slug above. */
+const CATEGORY_ALIASES: Record<string, CategorySlug> = {
+  "ai-news": "news",
+  news: "news",
+  "breaking-news": "news",
+  tools: "tools",
+  "tool-reviews": "reviews",
+  "ai-tools": "tools",
+  reviews: "reviews",
+  review: "reviews",
+  "everyday-ai": "everyday-ai",
+  everyday: "everyday-ai",
+  "ai-for-everyday-life": "everyday-ai",
+  "ai-at-work": "ai-at-work",
+  work: "ai-at-work",
+  business: "ai-at-work",
+  guides: "guides",
+  guide: "guides",
+  "how-to": "guides",
+  explainers: "guides",
+};
+
+function slugifyCategory(value: unknown): string {
+  return typeof value === "string"
+    ? value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+    : "";
+}
+
+/** Strict: true only for a real category slug or a recognised alias of one. No fallback. */
+export function isKnownCategory(value: unknown): boolean {
+  const key = slugifyCategory(value);
+  return CATEGORY_SLUGS.has(key) || key in CATEGORY_ALIASES;
+}
+
+/** Resolves a known category or alias to its real slug. Never throws; falls back to "news" for an unknown value — used only where a category is already known-valid (e.g. the desk's alias display). */
+export function resolveCategory(value: unknown): CategorySlug {
+  const key = slugifyCategory(value);
+  if (CATEGORY_SLUGS.has(key)) return key as CategorySlug;
+  return CATEGORY_ALIASES[key] ?? "news";
+}
+
+/** The allowed values, for error messages and documentation. */
+export function allowedCategories(): string[] {
+  return [...CATEGORY_SLUGS];
+}
 
 /** Projects the content model can carry. */
 export const EDITORIAL_PROJECTS = ["ai", "travel"] as const;
@@ -216,6 +273,16 @@ export function validateSubmission(
   // Required by the editorial office's content object.
   for (const field of ["content_id", "final_headline", "summary", "category"] as const) {
     if (!isNonEmptyString(b[field])) errors.push({ field, message: "Required, must be a non-empty string." });
+  }
+
+  // Rejected here, before fact-check or auto-publish ever runs: a category
+  // that is not one of the site's own sections (or a recognised alias of
+  // one) is a submission-time error, not a publish-time surprise.
+  if (isNonEmptyString(b.category) && !isKnownCategory(b.category)) {
+    errors.push({
+      field: "category",
+      message: `Unknown category "${b.category}". Must be one of: ${allowedCategories().join(", ")} (aliases are also accepted).`,
+    });
   }
 
   if (isNonEmptyString(b.content_id) && !CONTENT_ID_RE.test(b.content_id.trim())) {
