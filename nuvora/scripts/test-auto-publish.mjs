@@ -224,8 +224,24 @@ describe("Server publication gate", () => {
     assert.equal(rec.image_assets?.[0]?.url, r.json.hero_url);
   });
 
-  test("7c. PASS with a hero image auto-publishes (only if Pexels is configured and returned a photo)", async (t) => {
+  test("7b2. with a hero but no inline image, PASS is blocked by INLINE_IMAGE_MISSING", async (t) => {
     if (imageConfigured !== true) return t.skip("no hero image was attached on this server");
+    const r = await factCheck(ids.valid, { ...pass, needs_human_review: false });
+    assert.equal(r.status, 200);
+    assert.equal(r.json.auto_publish.published, false);
+    assert.equal(r.json.auto_publish.reason, "INLINE_IMAGE_MISSING");
+    assert.equal(r.json.publish_status, "DRAFT");
+    const inline = await call("POST", `/api/v1/editorial/articles/${ids.valid}/inline-image`, DRAFT);
+    if (inline.status !== 200) {
+      imageConfigured = false;
+      console.log(`  (no inline image attached: ${inline.json?.image_status ?? inline.status} — skipping the publish path)`);
+      return;
+    }
+    assert.equal(inline.json.image_status, "ATTACHED");
+  });
+
+  test("7c. PASS with hero + inline image auto-publishes (only if Pexels is configured and returned photos)", async (t) => {
+    if (imageConfigured !== true) return t.skip("no hero + inline image were attached on this server");
     const r = await factCheck(ids.valid, { ...pass, needs_human_review: false });
     assert.equal(r.status, 200);
     assert.equal(r.json.auto_publish.published, true, JSON.stringify(r.json.auto_publish));

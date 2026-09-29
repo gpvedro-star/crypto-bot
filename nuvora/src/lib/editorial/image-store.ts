@@ -10,8 +10,9 @@ import { openScopedBlobStore } from "./blob-scope";
  * per-deploy store, so an image attached against a preview can never
  * overwrite the production hero for the same content_id.
  *
- * Key: articles/<content_id> — one hero per article, content_id is already
- * unique, so no separate slug index is needed.
+ * Keys: articles/<content_id> for the hero, articles/<content_id>/<slot> for
+ * inline body photos (slot "inline-1", …). content_id is already unique, so no
+ * separate slug index is needed.
  */
 export const IMAGE_STORE_NAME = "nuvora-editorial-images";
 
@@ -22,26 +23,34 @@ export interface StoredImage {
   height: number;
 }
 
+/** Hero when omitted; an inline body photo otherwise. */
+export type ImageSlot = `inline-${number}`;
+
 export interface ImageStore {
-  put(contentId: string, image: StoredImage): Promise<void>;
-  get(contentId: string): Promise<StoredImage | null>;
+  put(contentId: string, image: StoredImage, slot?: ImageSlot): Promise<void>;
+  get(contentId: string, slot?: ImageSlot): Promise<StoredImage | null>;
 }
 
-const imageKey = (contentId: string) => `articles/${contentId}`;
-const metaKey = (contentId: string) => `articles/${contentId}.meta`;
+/** Only slots this module knows how to serve: inline-1 … inline-9. */
+export function isImageSlot(value: string): value is ImageSlot {
+  return /^inline-[1-9]$/.test(value);
+}
+
+const imageKey = (contentId: string, slot?: ImageSlot) => (slot ? `articles/${contentId}/${slot}` : `articles/${contentId}`);
+const metaKey = (contentId: string, slot?: ImageSlot) => `${imageKey(contentId, slot)}.meta`;
 
 class BlobsImageStore implements ImageStore {
   constructor(private readonly store: Store) {}
 
-  async put(contentId: string, image: StoredImage): Promise<void> {
-    await this.store.set(imageKey(contentId), image.bytes, { metadata: { contentType: image.contentType } });
-    await this.store.setJSON(metaKey(contentId), { contentType: image.contentType, width: image.width, height: image.height });
+  async put(contentId: string, image: StoredImage, slot?: ImageSlot): Promise<void> {
+    await this.store.set(imageKey(contentId, slot), image.bytes, { metadata: { contentType: image.contentType } });
+    await this.store.setJSON(metaKey(contentId, slot), { contentType: image.contentType, width: image.width, height: image.height });
   }
 
-  async get(contentId: string): Promise<StoredImage | null> {
+  async get(contentId: string, slot?: ImageSlot): Promise<StoredImage | null> {
     const [bytes, meta] = await Promise.all([
-      this.store.get(imageKey(contentId), { type: "arrayBuffer" }) as Promise<ArrayBuffer | null>,
-      this.store.get(metaKey(contentId), { type: "json" }) as Promise<{ contentType: string; width: number; height: number } | null>,
+      this.store.get(imageKey(contentId, slot), { type: "arrayBuffer" }) as Promise<ArrayBuffer | null>,
+      this.store.get(metaKey(contentId, slot), { type: "json" }) as Promise<{ contentType: string; width: number; height: number } | null>,
     ]);
     if (!bytes || !meta) return null;
     return { bytes, contentType: meta.contentType, width: meta.width, height: meta.height };
@@ -61,25 +70,26 @@ class LocalImageStore implements ImageStore {
     return fs;
   }
 
-  private file(contentId: string, ext: string) {
-    return `${this.dir}/${contentId.replace(/[^A-Za-z0-9._-]/g, "_")}.${ext}`;
+  private file(contentId: string, ext: string, slot?: ImageSlot) {
+    const base = contentId.replace(/[^A-Za-z0-9._-]/g, "_");
+    return `${this.dir}/${slot ? `${base}__${slot}` : base}.${ext}`;
   }
 
-  async put(contentId: string, image: StoredImage): Promise<void> {
+  async put(contentId: string, image: StoredImage, slot?: ImageSlot): Promise<void> {
     const fs = await this.fs();
-    await fs.writeFile(this.file(contentId, "bin"), Buffer.from(image.bytes));
+    await fs.writeFile(this.file(contentId, "bin", slot), Buffer.from(image.bytes));
     await fs.writeFile(
-      this.file(contentId, "json"),
+      this.file(contentId, "json", slot),
       JSON.stringify({ contentType: image.contentType, width: image.width, height: image.height }),
     );
   }
 
-  async get(contentId: string): Promise<StoredImage | null> {
+  async get(contentId: string, slot?: ImageSlot): Promise<StoredImage | null> {
     const fs = await this.fs();
     try {
       const [bytes, metaRaw] = await Promise.all([
-        fs.readFile(this.file(contentId, "bin")),
-        fs.readFile(this.file(contentId, "json"), "utf8"),
+        fs.readFile(this.file(contentId, "bin", slot)),
+        fs.readFile(this.file(contentId, "json", slot), "utf8"),
       ]);
       const meta = JSON.parse(metaRaw) as { contentType: string; width: number; height: number };
       return { bytes: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), contentType: meta.contentType, width: meta.width, height: meta.height };
@@ -110,4 +120,9 @@ export function getImageStore(): ImageStore | null {
 /** Public URL for a stored hero image. Same-origin, so it needs no allowlisted host. */
 export function heroImageUrl(contentId: string): string {
   return `/media/articles/${encodeURIComponent(contentId)}`;
+}
+
+/** Public URL for a stored inline body photo, e.g. /media/articles/{id}/inline-1. */
+export function inlineImageUrl(contentId: string, slot: ImageSlot = "inline-1"): string {
+  return `${heroImageUrl(contentId)}/${slot}`;
 }

@@ -1,6 +1,6 @@
 import type { EditorialRecord } from "./contract";
 import { safeText } from "./body";
-import { buildPexelsQuery, heroRendition, pexelsCredit, selectPexelsPhoto, type PexelsPhoto } from "./pexels-select";
+import { buildInlinePexelsQuery, buildPexelsQuery, heroRendition, pexelsCredit, selectPexelsPhoto, type PexelsPhoto } from "./pexels-select";
 
 /**
  * One hero image per article, from Pexels.
@@ -21,6 +21,7 @@ const RESULTS_PER_SEARCH = 30;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export type HeroImageFailure = "PEXELS_NOT_CONFIGURED" | "IMAGE_LOOKUP_FAILED" | "HERO_IMAGE_MISSING";
+export type InlineImageFailure = "PEXELS_NOT_CONFIGURED" | "IMAGE_LOOKUP_FAILED" | "INLINE_IMAGE_MISSING";
 
 export interface HeroImageResult {
   bytes: ArrayBuffer;
@@ -37,14 +38,32 @@ export interface HeroImageResult {
 }
 
 export type HeroImageOutcome = { ok: true; image: HeroImageResult } | { ok: false; reason: HeroImageFailure; query?: string };
+export type InlineImageOutcome = { ok: true; image: HeroImageResult } | { ok: false; reason: InlineImageFailure; query?: string };
 
-export async function findHeroImage(
-  record: Pick<EditorialRecord, "final_headline" | "summary" | "category" | "image_brief">,
-): Promise<HeroImageOutcome> {
+type Fields = Pick<EditorialRecord, "final_headline" | "summary" | "category" | "image_brief" | "inline_image_brief">;
+
+export async function findHeroImage(record: Fields): Promise<HeroImageOutcome> {
+  return findPexelsImage(record, buildPexelsQuery(record), [], "HERO_IMAGE_MISSING");
+}
+
+/**
+ * The one inline body photo: its own single search, from the writer's
+ * `inline_image_brief`, and never the photo already used as this article's
+ * hero (`excludeIds`). Same download, storage and attribution as the hero.
+ */
+export async function findInlineImage(record: Fields, excludeIds: number[]): Promise<InlineImageOutcome> {
+  return findPexelsImage(record, buildInlinePexelsQuery(record), excludeIds, "INLINE_IMAGE_MISSING");
+}
+
+async function findPexelsImage<M extends "HERO_IMAGE_MISSING" | "INLINE_IMAGE_MISSING">(
+  record: Fields,
+  query: string,
+  excludeIds: number[],
+  missing: M,
+): Promise<{ ok: true; image: HeroImageResult } | { ok: false; reason: "PEXELS_NOT_CONFIGURED" | "IMAGE_LOOKUP_FAILED" | M; query?: string }> {
   const apiKey = process.env.PEXELS_API_KEY?.trim();
   if (!apiKey) return { ok: false, reason: "PEXELS_NOT_CONFIGURED" };
 
-  const query = buildPexelsQuery(record);
   const url = new URL(SEARCH_URL);
   url.searchParams.set("query", query);
   url.searchParams.set("orientation", "landscape");
@@ -66,8 +85,8 @@ export async function findHeroImage(
     return { ok: false, reason: "IMAGE_LOOKUP_FAILED", query };
   }
 
-  const photo = selectPexelsPhoto(photos);
-  if (!photo) return { ok: false, reason: "HERO_IMAGE_MISSING", query };
+  const photo = selectPexelsPhoto(photos, { excludeIds });
+  if (!photo) return { ok: false, reason: missing, query };
 
   const rendition = heroRendition(photo);
   let bytes: ArrayBuffer;

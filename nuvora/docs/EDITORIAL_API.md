@@ -26,8 +26,14 @@ Netlify Blobs, via platform context. No site ID or token is in the repository.
 
 | Context | Store | Lifetime |
 |---|---|---|
-| `production` | `nuvora-editorial` (site-wide, strong consistency) | Survives deploys |
-| deploy preview / branch | `nuvora-editorial-preview` (per-deploy) | Scoped to that deploy |
+| `production` | `nuvora-editorial`, `nuvora-editorial-images` (site-wide, strong consistency) | Survives deploys |
+| deploy preview / branch | `…-preview` (per-deploy) | Scoped to that deploy |
+
+The scope is decided per request from `Netlify.context.deploy.context`
+(`src/lib/editorial/blob-scope.ts`), never from `process.env.CONTEXT`, which
+Netlify sets only at build time. Every read and write — API, fact-check,
+auto-publish, pages, sitemap, RSS, media — goes through that one resolver, and
+it fails closed rather than falling back to another store.
 
 Preview submissions therefore cannot read or overwrite production editorial
 data. Outside Netlify (`next dev`) there is no Blobs context, so the API falls
@@ -38,6 +44,9 @@ Keys:
 
 - `record/<content_id>` — the stored record
 - `slug/<slug>` — the `content_id` that owns that slug
+- `index/published` — ids of published records (read with strong consistency)
+- images store: `articles/<content_id>` (hero) and `articles/<content_id>/inline-1`
+  (inline photo), each with a `.meta` JSON beside it
 
 ## Authentication
 
@@ -80,7 +89,8 @@ There is no publish command for either bot. When the fact-check key records
 - nothing is marked BLOCKED or needs human review;
 - `fact_check_status` is PASS, `fact_check_issues_count` is exactly 0, and no
   verified fact is CONFLICTING or OUTDATED;
-- a hero image this server attached is present (see below).
+- a hero image this server attached is present (see below);
+- the one inline image this server attached is present (see "Inline image").
 
 A failed gate leaves the record DRAFT and returns
 `auto_publish: { published: false, reason, detail }` with one of:
@@ -88,7 +98,8 @@ A failed gate leaves the record DRAFT and returns
 `INVALID_CONTENT_ID`, `MISSING_REQUIRED_FIELD`, `UNRENDERABLE_BODY`,
 `INVALID_CATEGORY`, `INVALID_SLUG`, `DUPLICATE_SLUG`, `NO_SOURCES`,
 `ARTICLE_BLOCKED`, `FACT_CHECK_MISSING`, `FACT_CHECK_NOT_PASSED`,
-`UNRESOLVED_FACT_CHECK_ISSUES`, `NEEDS_HUMAN_REVIEW`, `HERO_IMAGE_MISSING`. A
+`UNRESOLVED_FACT_CHECK_ISSUES`, `NEEDS_HUMAN_REVIEW`, `HERO_IMAGE_MISSING`,
+`INLINE_IMAGE_MISSING`. A
 result other than PASS is recorded but never triggers publication. A second
 PASS on a published record returns 409 `NOT_DRAFT` and changes nothing.
 
@@ -167,6 +178,59 @@ reason (also mirrored in `reason`, for any older reader of that field).
 verify followed by a POST only if nothing is attached yet, five lines of
 output, key passed via a private header file rather than argv.
 
+### Inline image
+
+`POST /api/v1/editorial/articles/{content_id}/inline-image` — draft or admin
+key; the fact-check key is refused. Attaches the article's one inline body
+photo, after the hero. Same rules as the hero: one Pexels search, one
+download, stored by NUVORA and served at `/media/articles/{content_id}/inline-1`,
+truthful Pexels credit, never publishes, never touches article text. The query
+comes from the draft's `inline_image_brief` — a practical scene from the
+middle of the piece, different from the hero concept — then the summary, then
+the headline. The photo already used as the hero is excluded, so the two are
+never the same Pexels asset. A second POST is a no-op (`ALREADY_ATTACHED`, no
+search); `GET` on the same URL is the read-only check.
+
+Writer rules for `inline_image_brief` (one sentence, plain English): a
+visual, practical, editorial scene tied to the middle section of the article,
+and a different idea from the hero. Example — hero: "A middle-aged woman using
+a laptop at a kitchen table"; inline: "A close-up of a phone showing a security
+settings screen while someone reviews account activity." Never robots, AI
+brains, glowing interfaces, neon or cyberpunk, and no generic stock-office
+scene when something specific is possible. Optional in the schema (older
+drafts lack it), but every new article should carry one.
+
+Response fields: `success`, `content_id`, `publish_status`, `image_status`,
+`inline_image_url`, `image_credit`, `source_page`, `width`, `height`, `alt`,
+`placement`, `query` (only when a search ran), `request_id`.
+
+| Status | `image_status` | Verb | Draft |
+|---|---|---|---|
+| 200 | `ATTACHED` | POST | inline photo attached, one Pexels search |
+| 200 | `ALREADY_ATTACHED` | GET or POST | unchanged, no Pexels search |
+| 404 | `INLINE_IMAGE_MISSING` | GET | nothing attached yet |
+| 409 | `HERO_IMAGE_REQUIRED` | POST | unchanged — attach the hero first |
+| 409 | `NOT_DRAFT` | POST | unchanged |
+| 422 | `INLINE_IMAGE_MISSING` — no photo met the rules | POST | unchanged |
+| 502 | `IMAGE_LOOKUP_FAILED` | POST | unchanged |
+| 503 | `PEXELS_NOT_CONFIGURED` | POST | unchanged |
+
+The record gets `inline_image_attached: true` and `inline_images: [{ src, alt,
+caption, credit, source_page, photographer, photographer_url, width, height,
+placement: "middle", provider, pexels_id, query }]` — both server-owned and
+stripped from every submission. The article renders it after the paragraph
+nearest 47.5% of the way through the text (never after the first paragraph,
+never as the last block, never directly before a list, quote or table).
+Articles published before this rule have no inline image and render as before;
+the `INLINE_IMAGE_MISSING` gate only runs on drafts.
+
+`scripts/grok/nuvora-inline-image <content_id>` is the Grok-side wrapper, same
+shape as `nuvora-image`. Production order:
+
+`nuvora-submit` → verify DRAFT → `nuvora-image` → verify hero ATTACHED →
+`nuvora-inline-image` → verify inline ATTACHED → Fact Check →
+`nuvora-factcheck` PASS 0 → server auto-publish.
+
 ## Endpoints
 
 ### `POST /api/v1/editorial/articles` — create or update a draft
@@ -175,7 +239,7 @@ output, key passed via a private header file rather than argv.
 `article_body`.
 
 **Optional:** `status`, `priority`, `topic`, `working_headline`, `slug`,
-`key_takeaways`, `sources`, `verified_facts`, `image_brief`, `image_assets`,
+`key_takeaways`, `sources`, `verified_facts`, `image_brief`, `inline_image_brief`, `image_assets`,
 `social_content`, `seo_title`, `seo_description`, `keywords`, `author`, `notes`,
 `created_at`, `updated_at`, `published_at`.
 

@@ -3,6 +3,7 @@ import { BRAND_BYLINE_SLUG } from "@/content/authors";
 import type { EditorialRecord, EditorialSource } from "./contract";
 import { resolveCategory } from "./contract";
 import { safeImageUrl, safeLinkUrl, safeText, toContentBlocks, toImageAsset } from "./body";
+import { withInlineImage } from "./inline-placement";
 
 /**
  * Maps a stored editorial record onto the site's `Article` shape, so published
@@ -93,7 +94,11 @@ function isoOr(value: unknown, fallback: string): string {
 export function recordToArticle(record: EditorialRecord): Article {
   const title = safeText(record.final_headline ?? record.working_headline, 300) || "Untitled";
   const summary = safeText(record.summary, 1200);
-  const content = toContentBlocks(record.article_body);
+  // The one server-attached "middle" photo, if this record has one. Records
+  // published before inline images existed simply have none and render as before.
+  const middle = (Array.isArray(record.inline_images) ? record.inline_images : []).find((i) => i?.placement === "middle");
+  const inlineImage = middle ? toImageAsset({ ...middle, url: middle.src }, title) : null;
+  const content = withInlineImage(toContentBlocks(record.article_body), inlineImage);
 
   const rawAssets = Array.isArray(record.image_assets) ? record.image_assets : [];
   const assets = rawAssets

@@ -24,6 +24,7 @@ export type GateReason =
   | "DUPLICATE_SLUG"
   | "NO_SOURCES"
   | "HERO_IMAGE_MISSING"
+  | "INLINE_IMAGE_MISSING"
   | "ARTICLE_BLOCKED"
   | "FACT_CHECK_MISSING"
   | "FACT_CHECK_NOT_PASSED"
@@ -101,6 +102,12 @@ export async function evaluatePublicationGates(record: EditorialRecord, store: E
   // a record cannot claim to have a hero it does not.
   if (!record.hero_image_attached || !Array.isArray(record.image_assets) || record.image_assets.length === 0) {
     return fail("HERO_IMAGE_MISSING", "no server-attached hero image on this draft");
+  }
+  // And the one inline photo, also only ever set by the server. Gates run on
+  // drafts at fact-check time, so articles published before this rule are
+  // never re-evaluated against it.
+  if (!record.inline_image_attached || !Array.isArray(record.inline_images) || record.inline_images.length === 0) {
+    return fail("INLINE_IMAGE_MISSING", "no server-attached inline image on this draft");
   }
 
   return { pass: true };

@@ -108,6 +108,26 @@ export interface EditorialImageAsset {
   photographer_url?: string;
 }
 
+/** Where an inline image sits in the body. Only "middle" exists today; the field keeps room for more. */
+export type InlineImagePlacement = "middle";
+
+/** An inline body photo attached by the server (never from a payload). */
+export interface EditorialInlineImage {
+  src: string;
+  alt: string;
+  caption?: string;
+  credit: string;
+  source_page: string;
+  photographer: string;
+  photographer_url?: string;
+  width: number;
+  height: number;
+  placement: InlineImagePlacement;
+  provider: "pexels";
+  pexels_id: number;
+  query: string;
+}
+
 export interface EditorialVerifiedFact {
   claim: string;
   source: string;
@@ -157,6 +177,8 @@ export interface EditorialSubmission {
   sources?: EditorialSource[];
   verified_facts?: EditorialVerifiedFact[];
   image_brief?: string;
+  /** Writer's brief for the one inline photo: a practical scene from the middle of the piece, distinct from the hero. */
+  inline_image_brief?: string;
   image_assets?: EditorialImageAsset[];
   /** Per-platform captions prepared upstream. Free-form object. */
   social_content?: Record<string, unknown>;
@@ -181,6 +203,10 @@ export interface EditorialSubmission {
   hero_image_attached?: boolean;
   /** Provenance of the attached hero, set by the server alongside hero_image_attached. */
   hero_image_source?: { provider: "pexels"; id: number; query: string };
+  /** Set by the server after the inline-image endpoint attaches a photo. Never from a payload. */
+  inline_image_attached?: boolean;
+  /** Server-attached inline photos, in reading order. At most one today. */
+  inline_images?: EditorialInlineImage[];
   /** Accepted but never honoured on create — see DRAFT_FIRST below. */
   publish_status?: PublishStatus;
 }
@@ -363,6 +389,14 @@ export function validateSubmission(
   delete b.submitted_via;
   delete b.hero_image_attached;
   delete b.hero_image_source;
+  delete b.inline_image_attached;
+  delete b.inline_images;
+
+  if (b.inline_image_brief !== undefined && b.inline_image_brief !== null) {
+    if (typeof b.inline_image_brief !== "string" || b.inline_image_brief.length > 600) {
+      errors.push({ field: "inline_image_brief", message: "Must be a string of at most 600 characters." });
+    }
+  }
 
   let factCheckStatus: FactCheckStatus | undefined;
   if (b.fact_check_status !== undefined && b.fact_check_status !== null) {

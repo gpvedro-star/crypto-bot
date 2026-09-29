@@ -73,3 +73,15 @@ test("plain next dev off Netlify → local stand-in, and no Blobs store is opene
   assert.equal(resolveBlobScope(), "local");
   assert.equal(openScopedBlobStore("nuvora-editorial").store, null);
 });
+
+test("hero and inline media use the same resolver as records (global in production)", async () => {
+  const { readFile } = await import("node:fs/promises");
+  for (const file of ["src/lib/editorial/image-store.ts", "src/lib/editorial/store.ts"]) {
+    const src = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
+    assert.match(src, /openScopedBlobStore\(/, `${file} opens its store through blob-scope`);
+    assert.doesNotMatch(src, /\bgetStore\(|\bgetDeployStore\(|process\.env\.CONTEXT/, `${file} never picks a store itself`);
+  }
+  // Inline photos live in the same image store under their own key.
+  const img = await readFile(new URL("../src/lib/editorial/image-store.ts", import.meta.url), "utf8");
+  assert.match(img, /articles\/\$\{contentId\}\/\$\{slot\}/);
+});

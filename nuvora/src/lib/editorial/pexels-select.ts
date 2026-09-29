@@ -21,6 +21,7 @@ export interface QueryFields {
   summary?: string | null;
   category?: string | null;
   image_brief?: string | null;
+  inline_image_brief?: string | null;
 }
 
 /** Target width of the stored hero. Photos narrower than this are skipped. */
@@ -99,6 +100,21 @@ export function buildPexelsQuery(fields: QueryFields): string {
   return CATEGORY_SCENES[section] ?? DEFAULT_SCENE;
 }
 
+/**
+ * The single search query for the inline photo. The writer's inline brief is
+ * written for exactly this job, so it wins; without one the summary comes
+ * before the headline, so the search leans towards the body rather than
+ * repeating the hero's framing. Never the hero's own brief.
+ */
+export function buildInlinePexelsQuery(fields: QueryFields): string {
+  for (const source of [fields.inline_image_brief, fields.summary, fields.final_headline]) {
+    const w = words(source);
+    if (w.length >= 2) return w.slice(0, MAX_QUERY_WORDS).join(" ");
+  }
+  const section = (fields.category ?? "").toLowerCase().trim();
+  return CATEGORY_SCENES[section] ?? DEFAULT_SCENE;
+}
+
 function isExcluded(photo: PexelsPhoto): boolean {
   const alt = (photo.alt ?? "").toLowerCase();
   return EXCLUDED_TERMS.some((term) => alt.includes(term));
@@ -109,9 +125,12 @@ function isExcluded(photo: PexelsPhoto): boolean {
  * in the landscape band, has a photographer to credit, and whose description
  * doesn't match the excluded imagery. No scoring, no randomness.
  */
-export function selectPexelsPhoto(photos: PexelsPhoto[]): PexelsPhoto | null {
+export function selectPexelsPhoto(photos: PexelsPhoto[], options: { excludeIds?: number[] } = {}): PexelsPhoto | null {
+  const excluded = new Set(options.excludeIds ?? []);
   for (const photo of photos) {
     if (!photo || !photo.src?.original || !photo.url || !photo.photographer?.trim()) continue;
+    // Already used on this article (the inline photo is never the hero).
+    if (excluded.has(photo.id)) continue;
     if (!(photo.width >= HERO_WIDTH) || !(photo.height > 0)) continue;
     const ratio = photo.width / photo.height;
     if (ratio < MIN_RATIO || ratio > MAX_RATIO) continue;

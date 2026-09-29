@@ -236,8 +236,11 @@ describe("Restricted image endpoint", () => {
 });
 
 describe("Publication with a hero image", () => {
-  test("9. Fact Check PASS after a successful image causes publication", async (t) => {
+  test("9. Fact Check PASS after hero + inline images causes publication", async (t) => {
     if (imageConfigured !== true) return t.skip("no image was attached");
+    // New articles need the inline photo too (INLINE_IMAGE_MISSING otherwise).
+    const inline = await call("POST", `/api/v1/editorial/articles/${ID}/inline-image`, DRAFT);
+    if (inline.status !== 200) return t.skip(`no inline image attached (${inline.json?.image_status ?? inline.status})`);
     const r = await factCheck(pass);
     assert.equal(r.status, 200);
     assert.equal(r.json.auto_publish.published, true, JSON.stringify(r.json.auto_publish));
