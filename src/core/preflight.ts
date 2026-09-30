@@ -37,25 +37,28 @@ export function preflight(p: ProviderSet): { ok: boolean; problems: string[]; pr
   return { ok: problems.length === 0, problems, providers };
 }
 
-export interface Probe { service: string; url: string; reachable: boolean; detail: string }
+/** `required` = a real run cannot succeed without this host. Others reduce quality (fonts, video) and are reported as warnings. */
+export interface Probe { service: string; url: string; reachable: boolean; detail: string; required: boolean }
 
 /** Checks that this machine can reach each provider host. Any HTTP response counts as reachable (auth is checked later). */
-export async function probeConnectivity(p: ProviderSet, urls?: Partial<Record<"llm" | "media" | "mediaCdn" | "video", string>>): Promise<Probe[]> {
-  const targets: [string, string][] = [
-    [`LLM (${p.llm.name === "openai" ? "OpenAI" : "Anthropic"})`, urls?.llm ?? (p.llm.name === "openai" ? "https://api.openai.com/v1/models" : env("ANTHROPIC_BASE_URL") ?? "https://api.anthropic.com")],
-    ["Pexels API", urls?.media ?? "https://api.pexels.com/v1/search?query=test&per_page=1"],
-    ["Pexels image CDN", urls?.mediaCdn ?? "https://images.pexels.com/"],
-    ["Higgsfield API", urls?.video ?? env("HIGGSFIELD_BASE_URL") ?? "https://api.higgsfield.ai"],
+export async function probeConnectivity(p: ProviderSet, urls?: Partial<Record<"llm" | "media" | "mediaCdn" | "mediaVideoCdn" | "fonts" | "video", string>>): Promise<Probe[]> {
+  const targets: [string, string, boolean][] = [
+    [`LLM (${p.llm.name === "openai" ? "OpenAI" : "Anthropic"})`, urls?.llm ?? (p.llm.name === "openai" ? "https://api.openai.com/v1/models" : env("ANTHROPIC_BASE_URL") ?? "https://api.anthropic.com"), true],
+    ["Pexels API", urls?.media ?? "https://api.pexels.com/v1/search?query=test&per_page=1", true],
+    ["Pexels image CDN", urls?.mediaCdn ?? "https://images.pexels.com/", true],
+    ["Pexels video CDN", urls?.mediaVideoCdn ?? "https://videos.pexels.com/", false],
+    ["Google Fonts (browser QA + site typography)", urls?.fonts ?? "https://fonts.googleapis.com/css2?family=Sora", false],
+    ["Higgsfield API", urls?.video ?? env("HIGGSFIELD_BASE_URL") ?? "https://api.higgsfield.ai", false],
   ];
-  return Promise.all(targets.map(async ([service, url]) => {
+  return Promise.all(targets.map(async ([service, url, required]): Promise<Probe> => {
     try {
       const res = await fetch(url, { method: "GET", signal: AbortSignal.timeout(8000) });
       const body = res.status === 403 || res.headers.has("x-deny-reason") ? (await res.text()).slice(0, 200) : "";
       // A network policy / egress proxy denial answers with HTTP 403 too: that is NOT the provider being reachable.
-      if (res.headers.has("x-deny-reason") || /not in allowlist|egress/i.test(body)) return { service, url: new URL(url).origin, reachable: false, detail: `BLOCKED by network policy: ${body}` };
-      return { service, url: new URL(url).origin, reachable: true, detail: `HTTP ${res.status}` };
+      if (res.headers.has("x-deny-reason") || /not in allowlist|egress/i.test(body)) return { service, url: new URL(url).origin, reachable: false, detail: `BLOCKED by network policy: ${body}`, required };
+      return { service, url: new URL(url).origin, reachable: true, detail: `HTTP ${res.status}`, required };
     } catch (e) {
-      return { service, url: new URL(url).origin, reachable: false, detail: `${(e as Error).message}${(e as { cause?: Error }).cause ? `: ${(e as { cause?: Error }).cause?.message}` : ""}` };
+      return { service, url: new URL(url).origin, reachable: false, detail: `${(e as Error).message}${(e as { cause?: Error }).cause ? `: ${(e as { cause?: Error }).cause?.message}` : ""}`, required };
     }
   }));
 }

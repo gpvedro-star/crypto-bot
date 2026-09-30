@@ -36,7 +36,9 @@ npm run dev                       # dashboard on http://localhost:3000
 | `PEXELS_API_KEY` | real photos/videos | required for REAL mode |
 | `HIGGSFIELD_API_KEY` + `HIGGSFIELD_API_SECRET` (or `HF_KEY=key:secret`), `HIGGSFIELD_MODEL_PATH` | generated video | optional; approval-gated |
 
-The machine running the Studio must be able to reach `api.anthropic.com` (or `api.openai.com`), `api.pexels.com`, `images.pexels.com`, `videos.pexels.com`, and `api.higgsfield.ai` plus Higgsfield's output CDN. `npm run preflight` tests this.
+The machine running the Studio must be able to reach `api.anthropic.com` (or `api.openai.com`), `api.pexels.com` and `images.pexels.com` (required), plus `videos.pexels.com`, `fonts.googleapis.com` / `fonts.gstatic.com` (site typography; browser QA reports it if missing) and `api.higgsfield.ai` with Higgsfield's output CDN (video only). `npm run preflight` tests this and distinguishes a network-policy denial ("Host not in allowlist") from a reachable host.
+
+**Browser QA behind a TLS-inspecting proxy** (e.g. a corporate or sandbox egress proxy): headless Chromium does not read `SSL_CERT_FILE`/`NODE_EXTRA_CA_CERTS`; import the proxy CA into its NSS store once, with verification left on: `certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n proxy-ca -i /path/to/proxy-ca.crt` (package `libnss3-tools`). Without it Chromium reports `ERR_CERT_AUTHORITY_INVALID` for fonts and QA lists it as a warning instead of hiding it.
 
 ## Commands
 

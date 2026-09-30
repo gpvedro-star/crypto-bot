@@ -81,6 +81,10 @@ export class NextJsEngine implements WebsiteEngine {
     write("content/site.json", JSON.stringify(content, null, 2));
     write("design-system.json", JSON.stringify(memory["design-system"], null, 2));
     write("app/tokens.css", renderTokensCss(memory["design-system"]));
+    // Favicon: Next's `app/icon.svg` file convention emits <link rel="icon">, so browsers never request a missing /favicon.ico.
+    const c = memory["design-system"].colors;
+    const initial = (memory.copy.brandName.match(/[A-Za-z0-9]/)?.[0] ?? "S").toUpperCase();
+    write("app/icon.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="${c["bg-deep"]}"/><rect x="4" y="4" width="56" height="56" rx="9" fill="none" stroke="${c.accent}" stroke-width="3"/><text x="32" y="44" text-anchor="middle" font-family="Georgia, serif" font-size="34" font-weight="600" fill="${c.accent}">${initial}</text></svg>\n`);
     write("app/page.tsx", renderPage(content.sections as { id: string; component: ComponentName }[]));
 
     for (const a of memory.media.assets) {

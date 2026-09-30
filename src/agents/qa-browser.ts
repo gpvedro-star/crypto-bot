@@ -66,12 +66,14 @@ export async function runBrowserQa(ctx: AgentContext, siteDir: string): Promise<
     for (const vp of [{ name: "desktop", width: 1440, height: 900, mobile: false }, { name: "mobile", width: 390, height: 844, mobile: true }]) {
       const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.mobile, hasTouch: vp.mobile, deviceScaleFactor: 1 });
       const page = await context.newPage();
-      const errors: string[] = [], failed: string[] = [], external: string[] = [];
-      page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-      page.on("pageerror", (e) => errors.push(e.message));
-      page.on("requestfailed", (r) => failed.push(r.url()));
+      const consoleErrors: { text: string; url: string }[] = [], pageErrors: string[] = [], failedReqs: { url: string; reason: string }[] = [], external: string[] = [];
+      page.on("console", (m) => { if (m.type() === "error") consoleErrors.push({ text: m.text(), url: m.location().url ?? "" }); });
+      page.on("pageerror", (e) => pageErrors.push(e.message));
+      page.on("requestfailed", (r) => failedReqs.push({ url: r.url(), reason: r.failure()?.errorText ?? "request failed" }));
+      page.on("response", (r) => { if (r.status() >= 400) failedReqs.push({ url: r.url(), reason: `HTTP ${r.status()}` }); });
       page.on("request", (r) => { const u = new URL(r.url()); if (u.origin !== new URL(url).origin && !/fonts\.(googleapis|gstatic)\.com$/.test(u.hostname) && !u.protocol.startsWith("data")) external.push(r.url()); });
       await page.goto(url, { waitUntil: "load" });
+      await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => { /* long-polling pages: continue */ });
       // Scroll through so lazy images and reveals trigger.
       const total = await page.evaluate(() => document.documentElement.scrollHeight);
       for (let y = 0; y < total; y += vp.height * 0.8) { await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: 'instant' }), y); await page.waitForTimeout(120); }
@@ -91,9 +93,31 @@ export async function runBrowserQa(ctx: AgentContext, siteDir: string): Promise<
 
       checks.push({ name: `[${vp.name}] No external media/network dependencies (fonts excepted)`, passed: external.length === 0, detail: external.slice(0, 2).join(", ") });
       if (external.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] Site loads resources from other origins: ${external.slice(0, 2).join(", ")}` });
-      const realErrors = errors.filter((e) => !/fonts\.(googleapis|gstatic)|pexels|ERR_(NAME_NOT_RESOLVED|INTERNET_DISCONNECTED|CONNECTION|TUNNEL|PROXY|CERT)|Failed to load resource/i.test(e));
+      // Nothing is filtered away: every failed request, HTTP >= 400, CORS/mixed-content/CSP message and page error is reported.
+      const isFont = (u: string) => /^https?:\/\/fonts\.(googleapis|gstatic)\.com\//.test(u);
+      const otherFailed = failedReqs.filter((f) => !isFont(f.url));
+      const fontFailed = failedReqs.filter((f) => isFont(f.url));
+      const failedUrls = new Set(failedReqs.map((f) => f.url));
+      const realErrors = [
+        ...pageErrors,
+        ...consoleErrors.filter((c) => !isFont(c.url) && !(failedUrls.has(c.url) && /Failed to load resource/i.test(c.text))).map((c) => c.text),
+      ];
+      const security = realErrors.filter((e) => /CORS|Cross-Origin|Mixed Content|Content Security Policy|blocked by|ERR_BLOCKED/i.test(e));
+      checks.push({ name: `[${vp.name}] Every request succeeds (Google Fonts reported separately)`, passed: otherFailed.length === 0, detail: otherFailed.slice(0, 3).map((f) => `${f.url} — ${f.reason}`).join(" | ") });
+      if (otherFailed.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] ${otherFailed.length} request(s) failed: ${otherFailed.slice(0, 3).map((f) => `${f.url} — ${f.reason}`).join(" | ")}`, fix: { agent: "developer", action: "regenerate" } });
+      checks.push({ name: `[${vp.name}] Google Fonts load`, passed: fontFailed.length === 0, detail: fontFailed.slice(0, 2).map((f) => `${new URL(f.url).host} — ${f.reason}`).join(" | ") });
+      if (fontFailed.length && vp.name === "desktop") issues.push({ category: "design", severity: "minor", message: `Google Fonts could not be loaded in the test browser (${fontFailed.slice(0, 2).map((f) => `${new URL(f.url).host} — ${f.reason}`).join(" | ")}). The site falls back to system fonts, so typography was NOT verified as designed. Allow fonts.googleapis.com and fonts.gstatic.com and re-run.` });
+      checks.push({ name: `[${vp.name}] No CORS / mixed-content / CSP errors`, passed: security.length === 0, detail: security.slice(0, 2).join(" | ") });
+      if (security.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] Security/CORS console errors: ${security.slice(0, 2).join(" | ")}` });
       checks.push({ name: `[${vp.name}] No console/page errors`, passed: realErrors.length === 0, detail: realErrors.slice(0, 2).join(" | ") });
       if (realErrors.length) issues.push({ category: "technical", severity: "major", message: `[${vp.name}] Console errors: ${realErrors.slice(0, 2).join(" | ")}`, fix: { agent: "developer", action: "regenerate" } });
+      const ds = ctx.memory.get("design-system");
+      if (ds) {
+        const want = [ds.typography.fontDisplay, ds.typography.fontBody].map((f) => f.split(",")[0].replace(/["']/g, "").trim());
+        const loaded = await page.evaluate(async () => { await document.fonts.ready; return [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family.replace(/["']/g, "")); });
+        const missingFonts = want.filter((w) => !loaded.includes(w));
+        checks.push({ name: `[${vp.name}] Design fonts actually loaded in the browser`, passed: missingFonts.length === 0, detail: missingFonts.length ? `not loaded: ${missingFonts.join(", ")}` : want.join(", ") });
+      }
       checks.push({ name: `[${vp.name}] No horizontal overflow`, passed: m.overflow <= 1, detail: `${m.overflow}px` });
       if (m.overflow > 1) issues.push({ category: vp.mobile ? "mobile" : "technical", severity: "major", message: `[${vp.name}] Horizontal overflow of ${m.overflow}px.` });
       checks.push({ name: `[${vp.name}] Single H1`, passed: m.h1 === 1, detail: `${m.h1}` });

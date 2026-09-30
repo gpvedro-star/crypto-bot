@@ -37,7 +37,7 @@ async function printPreflight(studio: ReturnType<typeof createStudio>) {
   console.log(`  Video: ${p.video.available ? "Higgsfield (generation is approval-gated)" : `not configured (optional) — missing ${p.video.missing.join("; ")}`}`);
   console.log("Connectivity from this machine:");
   const probes = await probeConnectivity(studio);
-  for (const pr of probes) console.log(`  ${pr.reachable ? "✓" : "✗"} ${pr.service} (${pr.url}): ${pr.detail}`);
+  for (const pr of probes) console.log(`  ${pr.reachable ? "✓" : pr.required ? "✗" : "!"} ${pr.service} (${pr.url}): ${pr.detail}${!pr.reachable && !pr.required ? "  [optional: quality/video only]" : ""}`);
   return { pf, probes };
 }
 
@@ -57,7 +57,7 @@ async function main() {
   if (flag("check")) {
     const { pf, probes } = await printPreflight(studio);
     if (!pf.ok) console.log(`\nNot ready for a real run:\n- ${pf.problems.join("\n- ")}\n\n${ENV_HELP}`);
-    process.exit(pf.ok && probes.every((x) => x.reachable || x.service.startsWith("Higgsfield")) ? 0 : 2);
+    process.exit(pf.ok && probes.every((x) => x.reachable || !x.required) ? 0 : 2);
   }
 
   if (flag("video-action")) {
@@ -92,11 +92,11 @@ async function main() {
   console.log("DynaTech AI Studio");
   const { pf, probes } = await printPreflight(studio);
   if (real) {
-    const unreachable = probes.filter((x) => !x.reachable && !x.service.startsWith("Higgsfield") && !(x.service.startsWith("LLM") && !pf.providers.llm.available) && !(x.service.startsWith("Pexels") && !pf.providers.media.available));
+    const unreachable = probes.filter((x) => !x.reachable && x.required);
     if (!pf.ok || unreachable.length) {
       console.error("\n✗ REAL MODE CANNOT START. Nothing was generated and no placeholders or templates were substituted.");
       if (!pf.ok) console.error(`\nMissing configuration:\n- ${new PreflightError(pf.problems).problems.join("\n- ")}\n\n${ENV_HELP}`);
-      if (unreachable.length) console.error(`\nUnreachable hosts (network/egress policy on this machine must allow them):\n${unreachable.map((x) => `- ${x.url}: ${x.detail}`).join("\n")}`);
+      if (unreachable.length) console.error(`\nBlocked/unreachable REQUIRED hosts (allow them in the environment's Network access settings):\n${unreachable.map((x) => `- ${x.url}: ${x.detail}`).join("\n")}`);
       process.exit(2);
     }
   }
