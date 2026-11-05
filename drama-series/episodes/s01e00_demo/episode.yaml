@@ -1,0 +1,35 @@
+# פרק דמו: תמונות זמניות שצוירו בקוד, רק כדי לראות את העיצוב.
+season: 1
+episode: 1
+title: "הלילה שבו הכל התחיל"
+
+# 3 השניות הראשונות: "פלאש-פורוורד" מסוף הפרק, כדי לתפוס את הצופה
+hook: "שלוש דקות. זה כל מה שנשאר לו *לפני שהדלת נפתחה.*"
+hook_image: 04_corridor.png
+
+scenes:
+  - image: 01_city.png
+    stamp: "תל אביב · 03:17"
+    text: "העיר ישנה.\nרק הוא *לא.*"
+    effect: rain
+
+  - image: 02_phone.png
+    move: push
+    message:
+      from: "מספר חסוי"
+      time: "03:19"
+      text: "אני יודע מה עשית בשבת."
+    effect: heartbeat
+
+  - card: "72 שעות קודם"
+
+  - image: 03_alley.png
+    effect: [flashback, rain]
+    text: "הכל התחיל *בפגישה אחת*\nשלא הייתה אמורה לקרות."
+
+  - image: 04_corridor.png
+    transition: flash
+    effect: [flicker, shake]
+    text: "ומישהו כבר חיכה לו\n*מאחורי הדלת.*"
+
+next: "פרק 2 · מחר ב־20:00"
