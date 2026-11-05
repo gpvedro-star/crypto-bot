@@ -324,6 +324,7 @@ class Episode:
         for s in self.shots:
             s.resolve()
         self.blackout = A(c.get("blackout", self.nar.end + 0.05))
+        self.blackout_fade = float(c.get("blackout_fade", 0.0))  # 0 = hard cut to black
         for a, b in zip(self.shots, self.shots[1:]):
             a.end = b.start
         self.shots[-1].end = self.blackout
@@ -568,6 +569,9 @@ class Episode:
             if g is not None:
                 cy = s.caption_y or self.cap["cy"]
                 g.draw(f, T, self.cap["cx"], cy, g.t1)
+            bf = self.blackout_fade
+            if bf > 0 and T > self.blackout - bf:
+                f = f * ease_in_out((self.blackout - T) / bf)
         elif self.logo and T >= self.logo["t"]:
             self.draw_logo(f, T)
             return (np.clip(f, 0, 1) * 255 + 0.5).astype(np.uint8)  # logo shown as is (no grain)
@@ -681,9 +685,9 @@ class Episode:
         bed = mus * (float(mc.get("gain", 0.3)) * duck_m * extra)[:, None] + amb * (duck_a * extra)[:, None]
         # hard silence between the blackout and the end card
         b0, b1 = int(self.blackout * SR), int(self.end_t * SR)
-        f = int(0.01 * SR)
+        f = int(max(0.01, self.blackout_fade) * SR)
         for buf in (bed, hits):
-            buf[b0 - f:b0] *= np.linspace(1, 0, f)[:, None]
+            buf[b0 - f:b0] *= np.linspace(1, 0, f)[:, None] ** 1.6
             buf[b0:b1] = 0
         # end card: a quiet warm pad under the reading time
         pad_end = self.logo["t"] if self.logo else self.total
