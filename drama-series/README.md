@@ -25,7 +25,11 @@
 python3 engine/reel.py episodes/s01e02 --timing-only   # בדיקת זמנים מהירה (שנייה)
 python3 engine/reel.py episodes/s01e02 --frame 12.5    # פריים בודד לבדיקה
 python3 engine/reel.py episodes/s01e02 --preview       # הכול + דף תמונות
+python3 engine/reel.py episodes/s01e02 --remix         # רק סאונד חדש על התמונה הקיימת (~20 שנ׳)
 ```
+
+### לוגו בסוף הפרק
+`outro_logo` בקובץ הפרק (או ב-`series.yaml` כדי שיופיע בכל הפרקים): הלוגו מ-`assets/logo-hayerukim.png`, במרכז על שחור, 3 שניות, מכה מוזיקלית נמוכה בכניסה ודעיכה לשחור. הלוגו מוצג כמו שהוא, בלי גרעין ובלי שינויים.
 
 ### זמנים
 `"L3:נתלים"` הרגע שהמילה נאמרת · `"L3:נתלים.end"` סוף המילה · `"L1:start"` / `"L1:end"` · `"S02"` תחילת שוט · `"+0.3"` / `"-0.2"` היסט · שמות מ-`marks`.

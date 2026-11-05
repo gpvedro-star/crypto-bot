@@ -185,3 +185,15 @@ def low_boom(d=2.2):
     t = _t(d)
     y = _sine_sweep(38 + 40 * np.exp(-t / 0.05)) * (1 - np.exp(-t / 0.004)) * np.exp(-t / 0.6)
     return norm(reverb(y, decay=2.0, wet=0.3), 1.0)
+
+
+def logo_hit(d=3.4):
+    """Low musical hit for the series logo (A minor, matches the score)."""
+    t = _t(d)
+    rng = _rng(21)
+    sub = _sine_sweep(55 + 32 * np.exp(-t / 0.04)) * (1 - np.exp(-t / 0.003)) * np.exp(-t / 0.95)
+    chord = sum(a * _saw(f, t, 20) for f, a in [(55.0, 1.0), (82.41, 0.6), (110.0, 0.45), (130.81, 0.22)])
+    chord = fft_filter(chord, hi=420) * (1 - np.exp(-t / 0.01)) * np.exp(-t / 1.15)
+    click = fft_filter(rng.standard_normal(len(t)) * np.exp(-t / 0.01), lo=200, hi=3000)
+    y = norm(sub) + 0.55 * norm(chord) + 0.12 * norm(click)
+    return norm(reverb(np.tanh(1.3 * y), decay=2.4, wet=0.35), 1.0)

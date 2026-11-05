@@ -1,8 +1,9 @@
 {
  "episode": "episode-01",
- "total": 56.46,
+ "total": 59.46,
  "blackout": 50.16,
  "endcard": 50.86,
+ "outro_logo": 56.46,
  "shots": [
   {
    "id": "S01",

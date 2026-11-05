@@ -331,6 +331,23 @@ class Episode:
         self.end_t = A(ec.get("at", self.blackout + 0.6))
         self.end_dur = float(ec.get("dur", 5.6))
         self.total = self.end_t + self.end_dur
+        # ---- outro logo: centred on black after the end card
+        lg = c.get("outro_logo") or ser.get("outro_logo")
+        self.logo = None
+        if lg:
+            im = Image.open(self.path(lg["image"])).convert("RGB")
+            wpx = int(lg.get("width", 900))
+            im = im.resize((wpx, round(wpx * im.height / im.width)), Image.LANCZOS)
+            a = np.asarray(im, np.float32) / 255.0
+            fe = int(lg.get("feather", 40))  # melt the (near-black) image edge into the black frame
+            yy, xx = np.mgrid[0:a.shape[0], 0:a.shape[1]].astype(np.float32)
+            d = np.minimum(np.minimum(xx, a.shape[1] - 1 - xx), np.minimum(yy, a.shape[0] - 1 - yy))
+            a = a * np.clip(d / max(fe, 1), 0, 1)[..., None]
+            self.logo = {"img": Image.fromarray((a * 255 + 0.5).astype(np.uint8)), "t": self.total,
+                         "dur": float(lg.get("dur", 3.0)), "cy": float(lg.get("cy", 930)),
+                         "push": float(lg.get("push", 0.02)), "hit": float(lg.get("hit_gain", 0.55)),
+                         "fade": float(lg.get("fade_out", 0.6))}
+            self.total += self.logo["dur"]
         self.n_frames = int(math.ceil(self.total * FPS))
         self.vignette = look.make_vignette()
         self.grain = look.make_grain()
@@ -479,6 +496,21 @@ class Episode:
             cx, cy = p0[0] + 10, p0[1] - 70
             blit(f, L, cx - L.w / 2, cy - L.h / 2, min(1, v * 3))
 
+    def draw_logo(self, f, T):
+        lg = self.logo
+        u = T - lg["t"]
+        a = ease_out(u / 0.22) * (1 - ease_in_out((u - (lg["dur"] - lg["fade"])) / lg["fade"]))
+        k = 1 + lg["push"] * min(u / lg["dur"], 1)
+        im = lg["img"]
+        if k != 1:
+            im = im.resize((round(im.width * k), round(im.height * k)), Image.BICUBIC)
+        arr = np.asarray(im, np.float32) / 255.0
+        x0, y0 = round(W / 2 - im.width / 2), round(lg["cy"] - im.height / 2)
+        sx0, sy0 = max(0, -x0), max(0, -y0)
+        x0c, y0c = max(0, x0), max(0, y0)
+        x1c, y1c = min(W, x0 + im.width), min(H, y0 + im.height)
+        f[y0c:y1c, x0c:x1c] = arr[sy0:sy0 + (y1c - y0c), sx0:sx0 + (x1c - x0c)] * a
+
     def draw_endcard(self, f, T):
         u = T - self.end_t
         y = [860, 972, 1062]
@@ -536,6 +568,9 @@ class Episode:
             if g is not None:
                 cy = s.caption_y or self.cap["cy"]
                 g.draw(f, T, self.cap["cx"], cy, g.t1)
+        elif self.logo and T >= self.logo["t"]:
+            self.draw_logo(f, T)
+            return (np.clip(f, 0, 1) * 255 + 0.5).astype(np.uint8)  # logo shown as is (no grain)
         elif T >= self.end_t:
             self.draw_endcard(f, T)
         f = f + self.grain[(fi // 2) % len(self.grain)] * 0.026
@@ -651,9 +686,15 @@ class Episode:
             buf[b0 - f:b0] *= np.linspace(1, 0, f)[:, None]
             buf[b0:b1] = 0
         # end card: a quiet warm pad under the reading time
-        pad = music.section("freeze", self.end_t, self.total, self.end_t, 92)
+        pad_end = self.logo["t"] if self.logo else self.total
+        pad = music.section("freeze", self.end_t, pad_end, self.end_t, 92)
         put(bed, self.end_t, pad, 0.09)
+        if self.logo:  # low musical hit as the logo lands
+            put(hits, self.logo["t"] + 0.02, sfx.logo_hit(), self.logo["hit"])
         mix = vo_st + bed + hits * duck_h[:, None]
+        if self.logo:  # fade the tail with the picture
+            fo = int(self.logo["fade"] * SR)
+            mix[n - fo:] *= np.linspace(1, 0, fo)[:, None] ** 1.5
         mix = sound.norm(mix, 0.95)
         sound_write(out_wav, mix)
         sound_write(vo_wav, vo_st * 0.95)
@@ -703,6 +744,7 @@ def write_srt(ep, path):
 def write_timing(ep, path):
     data = {
         "episode": ep.code, "total": round(ep.total, 3), "blackout": round(ep.blackout, 3), "endcard": round(ep.end_t, 3),
+        "outro_logo": round(ep.logo["t"], 3) if ep.logo else None,
         "shots": [{"id": s.id, "image": s.cfg["image"], "start": round(s.start, 3), "end": round(s.end, 3),
                    "transition": s.trans} for s in ep.shots],
         "words": [{"line": w["line"] + 1, "word": w["word"], "start": round(w["t0"], 3), "end": round(w["t1"], 3)}
@@ -769,6 +811,7 @@ def main():
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--timing-only", action="store_true")
     ap.add_argument("--frame", type=float, action="append")
+    ap.add_argument("--remix", action="store_true", help="redo only the sound, reuse the rendered picture")
     args = ap.parse_args()
     t0 = time.time()
     ep = Episode(args.episode_dir)
@@ -792,6 +835,19 @@ def main():
             p = f"{base}_t{T:05.2f}.png"
             Image.fromarray(ep.frame(int(round(T * FPS)))).save(p)
             print("frame ->", p)
+        return
+    if args.remix:
+        tmp = tempfile.mkdtemp(prefix="reel_")
+        try:
+            wav = os.path.join(tmp, "mix.wav")
+            ep.audio(wav, base + "_narration.wav")
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", base + ".mp4", "-i", wav, "-map", "0:v", "-map", "1:a",
+                            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", f"{ep.n_frames / FPS:.3f}",
+                            "-movflags", "+faststart", os.path.join(tmp, "out.mp4")], check=True)
+            shutil.move(os.path.join(tmp, "out.mp4"), base + ".mp4")
+            print(f"remixed -> {base}.mp4 ({time.time() - t0:.0f}s)")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
         return
     render_cover(ep, base + "_cover.jpg")
     if args.preview:
@@ -818,7 +874,7 @@ def main():
             fh.writelines(f"file '{p}'\n" for p in parts)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-i", wav,
                         "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
-                        "-shortest", "-movflags", "+faststart", base + ".mp4"], check=True)
+                        "-t", f"{ep.n_frames / FPS:.3f}", "-movflags", "+faststart", base + ".mp4"], check=True)
         print(f"done -> {base}.mp4 ({time.time() - t0:.0f}s)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
