@@ -1,0 +1,201 @@
+# הירוקים | פרק 01 | הכול התחיל בנתניה
+# מרנדרים:  python3 engine/reel.py episodes/s01e01
+# זמנים: "L3:נתלים" = הרגע שבו המילה נאמרת · "L1:end+0.6" = 0.6 שנ׳ אחרי סוף שורה 1 · "S02" = תחילת שוט 2
+
+season: 1
+episode: 1
+title: "הכול התחיל בנתניה"
+output_name: "episode-01"
+
+# ------------------------------------------------------------------ קריינות
+narration:
+  voice: {provider: "Higgsfield · ElevenLabs v4", name: "Callum", voice_id: "858499d9-fef5-40e1-bc29-b4dc661dc283"}
+  start: 0.75          # הקריינות נכנסת אחרי נשימה קצרה של מנוע
+  gap: 0.4
+  # text: הטקסט המדויק, " / " = גבול משפט בהקלטה.  captions: חלוקה לכתוביות, "|" = כתובית חדשה, *מילה* = הדגשה
+  lines:
+    - id: L1
+      audio: voice_raw/line1.mp3
+      text: "היי, / נעים מאוד. / אני דין, / והחיים שלי סובבים סביב הירוק."
+      captions: "היי, נעים *מאוד.* | אני *דין,* | והחיים שלי *סובבים* | סביב *הירוק.*"
+
+    - id: L2
+      audio: voice_raw/line2.mp3
+      gap: 1.15        # "הירוק" נשאר באוויר, ואז קאט מהגלגל לגלגל
+      text: "הכול התחיל בשנות התשעים, / בנתניה. / שם גדלתי. / גדלנו בתקופה הכי טובה שיש."
+      captions: "הכול *התחיל* | בשנות *התשעים,* בנתניה. | שם *גדלתי.* | גדלנו בתקופה | הכי *טובה* שיש."
+
+    - id: L3
+      audio: voice_raw/line3.mp3
+      gap: 0.3
+      text: "היינו נתלים על עצים, / גונבים מסטיקים, / פורצים לבר, / ורק עושים שטויות כל היום."
+      captions: "היינו *נתלים* על עצים, | *גונבים* מסטיקים, | *פורצים* לבר, | ורק עושים *שטויות* כל היום."
+
+    - id: L4
+      audio: voice_raw/line4.mp3
+      gap: 0.45
+      text: "מכות? / כן, / היינו גם הולכים מכות כל היום. / יותר נכון… / מקבלים מכות."
+      captions: "*מכות?* | כן, היינו גם *הולכים* | *מכות* כל היום. | יותר *נכון…* | *מקבלים* מכות."
+      pause_before: {"מקבלים": 0.33}   # חצי פעימה לפני הפאנץ׳
+
+    - id: L5
+      audio: voice_raw/line5.mp3
+      gap: 0.55
+      text: "אה, ודרך אגב, / זה החבר הכי טוב שלי, / שלב. / היום שלב חזר בתשובה. / הוא רב מצליח, / ואני די גאה בו."
+      captions: "אה, ודרך *אגב,* | זה החבר הכי *טוב* שלי, | *שלב.* | *היום* שלב חזר בתשובה. | הוא רב *מצליח,* | ואני די *גאה* בו."
+
+    - id: L6
+      audio: voice_raw/line6.mp3
+      gap: 0.7
+      text: "ההיכרות הראשונה שלי עם הירוק… / יותר נכון, / חום… / הייתה בבית נטוש ומסריח."
+      captions: "ההיכרות *הראשונה* שלי | עם *הירוק…* | יותר נכון, | *חום…* | הייתה בבית *נטוש* ומסריח."
+      splits: [2.48, 3.44, 4.30]      # נבדק ידנית: הפסקה של 50ms בין "נכון," ל"חום"
+      pause_before: {"חום": 0.45}      # להחזיק את הרגע לפני "חום"
+
+    - id: L7
+      audio: voice_raw/line7.mp3
+      gap: 0.55
+      text: "ישבנו שם כמה חברים. / הם נתנו לי לעשן באנג בפעם הראשונה."
+      captions: "ישבנו שם כמה *חברים.* | הם נתנו לי *לעשן* | *באנג* | בפעם *הראשונה.*"
+
+marks:
+  freeze: "L5:start-0.08"        # פריים קפוא על שלב
+  blackout: "L7:end+0.05"        # קאט לשחור מיד אחרי "הראשונה"
+
+blackout: blackout
+
+title_card: {at: 0.25, until: "L1:end-1.1"}
+
+# ------------------------------------------------------------------ שוטים
+# c = מרכז המצלמה בתמונה (0..1), z = זום (1 = כל הפריים)
+shots:
+  - id: S01
+    image: images/01-monte-carlo.png
+    at: 0
+    grade: cool
+    cam:
+      - {t: 0, c: [0.50, 0.42], z: 1.0}
+      - {t: "L1:end+0.3", c: [0.50, 0.43], z: 1.06}
+      - {t: S02, c: [0.24, 0.895], z: 1.9, ease: in}      # דחיפה לגלגל של הפרארי
+
+  - id: S02
+    image: images/02-bike.png
+    at: "L1:end+0.95"
+    grade: warm
+    haze: 0.25
+    cam:
+      - {t: S02, c: [0.76, 0.88], z: 1.9}                  # נפתח מהגלגל של האופניים (באותו מקום במסך)
+      - {t: "S02+0.8", c: [0.55, 0.50], z: 1.10, ease: out}
+      - {t: S03, c: [0.53, 0.46], z: 1.15}
+    stamp: {text: "נתניה, שנות ה־90", at: "S02+0.9", until: S03}
+
+  - id: S03
+    image: images/03-tree.png
+    at: "L3:נתלים"
+    grade: warm
+    haze: 0.25
+    cam:
+      - {t: S03, c: [0.50, 0.42], z: 1.06}
+      - {t: S04, c: [0.50, 0.36], z: 1.13, ease: linear}
+
+  - id: S04
+    image: images/04-gum.png
+    at: "L3:גונבים"
+    grade: warm
+    haze: 0.2
+    caption_y: 1150
+    cam:
+      - {t: S04, c: [0.45, 0.55], z: 1.03}
+      - {t: S05, c: [0.45, 0.56], z: 1.09, ease: linear}
+
+  - id: S05
+    image: images/05-bar.png
+    at: "L3:פורצים"
+    grade: warm
+    haze: 0.2
+    cam:
+      - {t: S05, c: [0.55, 0.47], z: 1.04}
+      - {t: S06, c: [0.56, 0.43], z: 1.15}
+
+  - id: S06
+    image: images/06-chase.png
+    at: "L4:start-0.02"
+    grade: warm
+    haze: 0.15
+    effects: [handheld]
+    cam:
+      - {t: S06, c: [0.52, 0.50], z: 1.08}
+      - {t: freeze, c: [0.50, 0.47], z: 1.13, ease: linear}
+    freeze: {at: freeze, target: [0.367, 0.33], label: "שלב", label_at: "L5:שלב", arrow_from: [270, -300]}
+
+  - id: S07
+    image: images/07-rabbi.png
+    at: "L5:היום"
+    transition: "fade:0.25"
+    grade: warm_clean
+    cam:
+      - {t: "S07-0.25", c: [0.47, 0.40], z: 1.03}
+      - {t: S08, c: [0.46, 0.33], z: 1.10}
+
+  - id: S08
+    image: images/08-abandoned-house.png
+    at: "L6:start-0.3"
+    transition: "dip:0.4"
+    grade: green
+    exposure: 1.12
+    cam:
+      - {t: "S08-0.2", c: [0.50, 0.50], z: 1.02}
+      - {t: S09, c: [0.60, 0.43], z: 1.16}
+
+  - id: S09
+    image: images/09-first-time.png
+    at: "L7:start-0.25"
+    grade: green
+    exposure: 1.45
+    caption_y: 1555
+    cam:
+      - {t: S09, c: [0.55, 0.45], z: 1.04}
+      - {t: blackout, c: [0.57, 0.41], z: 1.14}
+
+# ------------------------------------------------------------------ סאונד
+music:
+  bpm: 92
+  gain: 0.25
+  sections:
+    - {style: intro,   from: 0,              to: S02}
+    - {style: groove,  from: S02,            to: "L4:start", grid: S02}            # המוזיקה קופאת על "מכות?"
+    - {style: tension, from: "L4:כן-0.08",   to: "freeze+0.5", grid: "L4:כן-0.08", tapestop: freeze, tapestop_dur: 0.5}
+    - {style: freeze,  from: "freeze+0.45",  to: S07, gain: 0.5}
+    - {style: warm,    from: S07,            to: S08, gain: 0.5}                   # הפוגה חמה אצל הרב
+    - {style: dark,    from: S08,            to: blackout, gain: 0.9}
+  events:
+    - {kind: stop, at: "L4:מקבלים-0.36", until: "L4:מקבלים-0.02"}                # חצי פעימה של שקט
+
+sfx:
+  - {kind: engine,      at: 0,                 until: S02, rev_from: "L1:end+0.3", gain: 0.32}
+  - {kind: freewheel,   at: S02,               dur: 2.6, gain: 0.45}
+  - {kind: rustle,      at: "S03-0.05",        gain: 0.3}
+  - {kind: crinkle,     at: "S04+0.1",         gain: 0.35}
+  - {kind: creak,       at: "S05-0.05",        gain: 0.4}
+  - {kind: steps_light, at: "L4:כן",           until: freeze, gain: 0.12}
+  - {kind: steps_heavy, at: "L4:יותר-0.5",     until: freeze, gain: 0.34}
+  - {kind: boom,        at: "L4:מקבלים",       gain: 0.35}
+  - {kind: shutter,     at: freeze,            gain: 0.45}
+  - {kind: room_tone,   at: S08,               until: blackout, gain: 0.3}
+  - {kind: drips,       at: "S08+0.9",         until: blackout, every: 1.7, gain: 0.12}
+  - {kind: lighter,     at: "S09+0.05",        gain: 0.3}
+  - {kind: bubbles,     at: "L7:באנג.end+0.05", dur: 1.6, gain: 0.14}
+
+duck:
+  - {from: "L7:באנג-0.1", to: "L7:באנג.end+0.45", level: 0.15}   # הרקע יורד כדי שהגילוי יחזיק
+
+endcard:
+  at: "L7:end+0.75"     # פעימה קצרה של שקט ושחור לפני
+  dur: 5.6
+  lines:
+    - "מבוסס על סיפור אמיתי."
+    - "השמות שונו כדי לא לפגוע באף אחד."
+    - "חלקים מהעלילה הוגזמו לצורכי בידור."
+  footer: "הירוקים · סוף פרק 01"
+
+cover: {shot: S01, time: 2.0}

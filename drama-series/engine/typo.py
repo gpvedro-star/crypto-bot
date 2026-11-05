@@ -11,6 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_FILES = {
     "serif": os.path.join(HERE, "fonts", "FrankRuhlLibre.ttf"),  # titles
     "sans": os.path.join(HERE, "fonts", "Heebo.ttf"),            # captions / UI
+    "hand": os.path.join(HERE, "fonts", "AmaticSC-Bold.ttf"),    # hand-written notes
 }
 HEB = re.compile(r"[֐-׿]")
 LAT = re.compile(r"[A-Za-z]")
@@ -19,7 +20,10 @@ LAT = re.compile(r"[A-Za-z]")
 @lru_cache(maxsize=None)
 def font(family, size, weight):
     f = ImageFont.truetype(FONT_FILES[family], int(size))
-    f.set_variation_by_axes([weight])
+    try:
+        f.set_variation_by_axes([weight])
+    except Exception:  # static font
+        pass
     return f
 
 

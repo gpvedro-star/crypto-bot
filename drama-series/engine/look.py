@@ -102,3 +102,57 @@ def red_tint(f, k=1.0):
     lum = (f @ LUMA)[..., None]
     red = lum * np.array([1.35, 0.32, 0.32], np.float32)
     return f * (1 - 0.6 * k) + red * 0.6 * k
+
+
+def grade_variant(a, kind="noir"):
+    """Per-world looks. noir = series default; cool = Monte Carlo; warm = Netanya childhood;
+    warm_clean = present-day warm interior; green = the abandoned house."""
+    if kind in (None, "noir"):
+        return grade(a)
+    a = np.clip(a, 0, 1)
+    lum = (a @ LUMA)[..., None]
+    if kind == "cool":
+        a = lum + (a - lum) * 0.9
+        s = a * a * (3 - 2 * a)
+        a = a * 0.62 + s * 0.38
+        lum = (a @ LUMA)[..., None]
+        a = a + (1 - lum) ** 2 * np.array([-0.02, 0.008, 0.035], np.float32) + lum ** 2 * np.array([0.0, 0.01, 0.02], np.float32)
+        a = 0.01 + a * 0.97
+    elif kind == "warm":
+        a = lum + (a - lum) * 0.9
+        s = a * a * (3 - 2 * a)
+        a = a * 0.8 + s * 0.2
+        a = a * np.array([1.04, 1.0, 0.9], np.float32) + np.array([0.012, 0.006, -0.006], np.float32)
+        a = 0.035 + a * 0.94                       # dusty, lifted blacks
+    elif kind == "warm_clean":
+        a = lum + (a - lum) * 0.95
+        s = a * a * (3 - 2 * a)
+        a = a * 0.7 + s * 0.3
+        a = a * np.array([1.03, 1.0, 0.93], np.float32)
+        a = 0.015 + a * 0.97
+    elif kind == "green":
+        a = lum + (a - lum) * 0.72
+        s = a * a * (3 - 2 * a)
+        a = a * 0.6 + s * 0.4
+        lum = (a @ LUMA)[..., None]
+        a = a + (1 - lum) ** 2 * np.array([-0.025, 0.03, -0.005], np.float32) + np.array([-0.01, 0.012, -0.012], np.float32)
+        a = (0.012 + a * 0.95) * 0.95
+    return np.clip(a, 0, 1).astype(np.float32)
+
+
+def load_source(path, scale=1.5, kind="noir", haze=0.0, exposure=1.0):
+    """Cover-fit to (W, H) * scale, graded with a per-world look. Returns PIL RGB."""
+    im = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
+    tw, th = int(W * scale), int(H * scale)
+    k = max(tw / im.width, th / im.height)
+    im = im.resize((max(tw, int(im.width * k + 0.5)), max(th, int(im.height * k + 0.5))), Image.LANCZOS)
+    arr = np.asarray(im, np.float32) / 255.0
+    if exposure != 1.0:  # lift in linear light, roll off highlights
+        lin = arr ** 2.2 * exposure
+        arr = (lin / (1 + 0.15 * lin)) ** (1 / 2.2) * (1.15 ** (1 / 2.2))
+        arr = np.clip(arr, 0, 1)
+    if haze > 0:
+        bl = np.asarray(im.filter(ImageFilter.GaussianBlur(28)), np.float32) / 255.0
+        arr = arr * (1 - haze) + np.maximum(arr, bl) * haze
+    arr = grade_variant(arr, kind)
+    return Image.fromarray((arr * 255 + 0.5).astype(np.uint8))
