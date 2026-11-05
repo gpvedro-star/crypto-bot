@@ -1,71 +1,71 @@
 {
  "episode": "episode-01",
- "total": 59.46,
- "blackout": 50.16,
- "endcard": 50.86,
- "outro_logo": 56.46,
+ "total": 59.765,
+ "blackout": 49.165,
+ "endcard": 49.965,
+ "outro_logo": 55.565,
  "shots": [
   {
    "id": "S01",
    "image": "images/01-monte-carlo.png",
    "start": 0.0,
-   "end": 6.565,
+   "end": 6.42,
    "transition": "cut"
   },
   {
    "id": "S02",
    "image": "images/02-bike.png",
-   "start": 6.565,
-   "end": 14.42,
+   "start": 6.42,
+   "end": 13.63,
    "transition": "cut"
   },
   {
    "id": "S03",
    "image": "images/03-tree.png",
-   "start": 14.42,
-   "end": 15.585,
+   "start": 13.63,
+   "end": 14.73,
    "transition": "cut"
   },
   {
    "id": "S04",
    "image": "images/04-gum.png",
-   "start": 15.585,
-   "end": 16.89,
+   "start": 14.73,
+   "end": 16.065,
    "transition": "cut"
   },
   {
    "id": "S05",
    "image": "images/05-bar.png",
-   "start": 16.89,
-   "end": 20.265,
+   "start": 16.065,
+   "end": 19.36,
    "transition": "cut"
   },
   {
    "id": "S06",
    "image": "images/06-chase.png",
-   "start": 20.265,
-   "end": 32.08,
+   "start": 19.36,
+   "end": 30.775,
    "transition": "cut"
   },
   {
    "id": "S07",
    "image": "images/07-rabbi.png",
-   "start": 32.08,
-   "end": 37.4,
+   "start": 30.775,
+   "end": 35.47,
    "transition": "fade:0.25"
   },
   {
    "id": "S08",
    "image": "images/08-abandoned-house.png",
-   "start": 37.4,
-   "end": 45.25,
+   "start": 35.47,
+   "end": 42.85,
    "transition": "dip:0.4"
   },
   {
    "id": "S09",
    "image": "images/09-first-time.png",
-   "start": 45.25,
-   "end": 50.16,
+   "start": 42.85,
+   "end": 49.165,
    "transition": "cut"
   }
  ],
@@ -74,779 +74,779 @@
    "line": 1,
    "word": "היי,",
    "start": 0.82,
-   "end": 1.18
+   "end": 1.22
   },
   {
    "line": 1,
    "word": "נעים",
    "start": 1.4,
-   "end": 1.64
+   "end": 1.71
   },
   {
    "line": 1,
    "word": "מאוד.",
-   "start": 1.64,
+   "start": 1.71,
    "end": 2.06
   },
   {
    "line": 1,
    "word": "אני",
-   "start": 2.415,
-   "end": 2.68
+   "start": 2.48,
+   "end": 2.71
   },
   {
    "line": 1,
    "word": "דין,",
-   "start": 2.68,
-   "end": 2.995
+   "start": 2.71,
+   "end": 3.06
   },
   {
    "line": 1,
    "word": "והחיים",
-   "start": 3.305,
-   "end": 3.86
+   "start": 3.28,
+   "end": 3.84
   },
   {
    "line": 1,
    "word": "שלי",
-   "start": 3.86,
-   "end": 4.21
+   "start": 3.84,
+   "end": 4.17
   },
   {
    "line": 1,
    "word": "סובבים",
-   "start": 4.21,
-   "end": 4.78
+   "start": 4.17,
+   "end": 4.69
   },
   {
    "line": 1,
    "word": "סביב",
-   "start": 4.78,
-   "end": 5.22
+   "start": 4.69,
+   "end": 5.1
   },
   {
    "line": 1,
    "word": "הירוק.",
-   "start": 5.22,
-   "end": 5.615
+   "start": 5.1,
+   "end": 5.47
   },
   {
    "line": 2,
    "word": "הכול",
-   "start": 6.765,
-   "end": 7.155
+   "start": 6.62,
+   "end": 7.01
   },
   {
    "line": 2,
    "word": "התחיל",
-   "start": 7.155,
-   "end": 7.565
+   "start": 7.01,
+   "end": 7.29
   },
   {
    "line": 2,
    "word": "בשנות",
-   "start": 7.565,
-   "end": 7.935
+   "start": 7.29,
+   "end": 7.68
   },
   {
    "line": 2,
    "word": "התשעים,",
-   "start": 7.935,
-   "end": 8.455
+   "start": 7.68,
+   "end": 8.17
   },
   {
    "line": 2,
    "word": "בנתניה.",
-   "start": 8.71,
-   "end": 9.35
+   "start": 8.445,
+   "end": 9.045
   },
   {
    "line": 2,
    "word": "שם",
-   "start": 9.84,
-   "end": 10.075
+   "start": 9.56,
+   "end": 9.8
   },
   {
    "line": 2,
    "word": "גדלתי.",
-   "start": 10.075,
-   "end": 10.57
+   "start": 9.8,
+   "end": 10.31
   },
   {
    "line": 2,
    "word": "גדלנו",
-   "start": 11.16,
-   "end": 11.755
+   "start": 10.87,
+   "end": 11.4
   },
   {
    "line": 2,
    "word": "בתקופה",
-   "start": 11.755,
-   "end": 12.425
+   "start": 11.4,
+   "end": 11.99
   },
   {
    "line": 2,
    "word": "הכי",
-   "start": 12.425,
-   "end": 12.835
+   "start": 11.99,
+   "end": 12.13
   },
   {
    "line": 2,
    "word": "טובה",
-   "start": 12.835,
-   "end": 13.195
+   "start": 12.13,
+   "end": 12.71
   },
   {
    "line": 2,
    "word": "שיש.",
-   "start": 13.195,
-   "end": 13.62
+   "start": 12.71,
+   "end": 12.93
   },
   {
    "line": 3,
    "word": "היינו",
-   "start": 13.92,
-   "end": 14.42
+   "start": 13.23,
+   "end": 13.63
   },
   {
    "line": 3,
    "word": "נתלים",
-   "start": 14.42,
-   "end": 14.89
+   "start": 13.63,
+   "end": 14.13
   },
   {
    "line": 3,
    "word": "על",
-   "start": 14.89,
-   "end": 14.92
+   "start": 14.13,
+   "end": 14.17
   },
   {
    "line": 3,
    "word": "עצים,",
-   "start": 14.92,
-   "end": 15.37
+   "start": 14.17,
+   "end": 14.61
   },
   {
    "line": 3,
    "word": "גונבים",
-   "start": 15.585,
-   "end": 16.19
+   "start": 14.73,
+   "end": 15.34
   },
   {
    "line": 3,
    "word": "מסטיקים,",
-   "start": 16.19,
-   "end": 16.795
+   "start": 15.34,
+   "end": 15.85
   },
   {
    "line": 3,
    "word": "פורצים",
-   "start": 16.89,
-   "end": 17.51
+   "start": 16.065,
+   "end": 16.62
   },
   {
    "line": 3,
    "word": "לבר,",
-   "start": 17.51,
-   "end": 17.88
+   "start": 16.62,
+   "end": 16.965
   },
   {
    "line": 3,
    "word": "ורק",
-   "start": 18.075,
-   "end": 18.35
+   "start": 17.22,
+   "end": 17.48
   },
   {
    "line": 3,
    "word": "עושים",
-   "start": 18.35,
-   "end": 18.86
+   "start": 17.48,
+   "end": 17.97
   },
   {
    "line": 3,
    "word": "שטויות",
-   "start": 18.86,
-   "end": 19.33
+   "start": 17.97,
+   "end": 18.38
   },
   {
    "line": 3,
    "word": "כל",
-   "start": 19.33,
-   "end": 19.39
+   "start": 18.38,
+   "end": 18.61
   },
   {
    "line": 3,
    "word": "היום.",
-   "start": 19.39,
-   "end": 19.835
+   "start": 18.61,
+   "end": 18.93
   },
   {
    "line": 4,
    "word": "מכות?",
-   "start": 20.285,
-   "end": 20.955
+   "start": 19.38,
+   "end": 19.94
   },
   {
    "line": 4,
    "word": "כן,",
-   "start": 21.295,
-   "end": 21.675
+   "start": 20.335,
+   "end": 20.725
   },
   {
    "line": 4,
    "word": "היינו",
-   "start": 22.13,
-   "end": 22.475
+   "start": 21.0,
+   "end": 21.34
   },
   {
    "line": 4,
    "word": "גם",
-   "start": 22.475,
-   "end": 22.705
+   "start": 21.34,
+   "end": 21.59
   },
   {
    "line": 4,
    "word": "הולכים",
-   "start": 22.705,
-   "end": 23.105
+   "start": 21.59,
+   "end": 22.05
   },
   {
    "line": 4,
    "word": "מכות",
-   "start": 23.105,
-   "end": 23.365
+   "start": 22.05,
+   "end": 22.18
   },
   {
    "line": 4,
    "word": "כל",
-   "start": 23.365,
-   "end": 23.595
+   "start": 22.18,
+   "end": 22.52
   },
   {
    "line": 4,
    "word": "היום.",
-   "start": 23.595,
-   "end": 23.84
+   "start": 22.52,
+   "end": 22.74
   },
   {
    "line": 4,
    "word": "יותר",
-   "start": 24.35,
-   "end": 24.765
+   "start": 23.275,
+   "end": 23.69
   },
   {
    "line": 4,
    "word": "נכון…",
-   "start": 24.765,
-   "end": 25.11
+   "start": 23.69,
+   "end": 24.225
   },
   {
    "line": 4,
    "word": "מקבלים",
-   "start": 25.95,
-   "end": 26.735
+   "start": 24.91,
+   "end": 25.53
   },
   {
    "line": 4,
    "word": "מכות.",
-   "start": 26.735,
-   "end": 27.13
+   "start": 25.53,
+   "end": 25.89
   },
   {
    "line": 5,
    "word": "אה,",
-   "start": 27.68,
-   "end": 28.07
+   "start": 26.44,
+   "end": 26.86
   },
   {
    "line": 5,
    "word": "ודרך",
-   "start": 28.07,
-   "end": 28.49
+   "start": 26.86,
+   "end": 27.38
   },
   {
    "line": 5,
    "word": "אגב,",
-   "start": 28.49,
-   "end": 29.01
+   "start": 27.38,
+   "end": 27.87
   },
   {
    "line": 5,
    "word": "זה",
-   "start": 29.225,
-   "end": 29.46
+   "start": 28.05,
+   "end": 28.33
   },
   {
    "line": 5,
    "word": "החבר",
-   "start": 29.46,
-   "end": 29.84
+   "start": 28.33,
+   "end": 28.69
   },
   {
    "line": 5,
    "word": "הכי",
-   "start": 29.84,
-   "end": 30.1
+   "start": 28.69,
+   "end": 28.95
   },
   {
    "line": 5,
    "word": "טוב",
-   "start": 30.1,
-   "end": 30.4
+   "start": 28.95,
+   "end": 29.12
   },
   {
    "line": 5,
    "word": "שלי,",
-   "start": 30.4,
-   "end": 30.605
+   "start": 29.12,
+   "end": 29.43
   },
   {
    "line": 5,
    "word": "שלב.",
-   "start": 30.995,
-   "end": 31.485
+   "start": 29.705,
+   "end": 30.185
   },
   {
    "line": 5,
    "word": "היום",
-   "start": 32.08,
-   "end": 32.6
+   "start": 30.775,
+   "end": 31.21
   },
   {
    "line": 5,
    "word": "שלב",
-   "start": 32.6,
-   "end": 32.97
+   "start": 31.21,
+   "end": 31.5
   },
   {
    "line": 5,
    "word": "חזר",
-   "start": 32.97,
-   "end": 33.18
+   "start": 31.5,
+   "end": 31.81
   },
   {
    "line": 5,
    "word": "בתשובה.",
-   "start": 33.18,
-   "end": 33.88
+   "start": 31.81,
+   "end": 32.355
   },
   {
    "line": 5,
    "word": "הוא",
-   "start": 34.46,
-   "end": 34.76
+   "start": 32.83,
+   "end": 33.1
   },
   {
    "line": 5,
    "word": "רב",
-   "start": 34.76,
-   "end": 34.92
+   "start": 33.1,
+   "end": 33.25
   },
   {
    "line": 5,
    "word": "מצליח,",
-   "start": 34.92,
-   "end": 35.47
+   "start": 33.25,
+   "end": 33.78
   },
   {
    "line": 5,
    "word": "ואני",
-   "start": 35.73,
-   "end": 36.16
+   "start": 33.96,
+   "end": 34.41
   },
   {
    "line": 5,
    "word": "די",
-   "start": 36.16,
-   "end": 36.32
+   "start": 34.41,
+   "end": 34.56
   },
   {
    "line": 5,
    "word": "גאה",
-   "start": 36.32,
-   "end": 36.84
+   "start": 34.56,
+   "end": 34.88
   },
   {
    "line": 5,
    "word": "בו.",
-   "start": 36.84,
-   "end": 37.0
+   "start": 34.88,
+   "end": 35.07
   },
   {
    "line": 6,
    "word": "ההיכרות",
-   "start": 37.7,
-   "end": 38.31
+   "start": 35.77,
+   "end": 36.26
   },
   {
    "line": 6,
    "word": "הראשונה",
-   "start": 38.31,
-   "end": 38.91
+   "start": 36.26,
+   "end": 36.87
   },
   {
    "line": 6,
    "word": "שלי",
-   "start": 38.91,
-   "end": 39.18
+   "start": 36.87,
+   "end": 37.3
   },
   {
    "line": 6,
    "word": "עם",
-   "start": 39.18,
-   "end": 39.45
+   "start": 37.3,
+   "end": 37.36
   },
   {
    "line": 6,
    "word": "הירוק…",
-   "start": 39.45,
-   "end": 39.93
+   "start": 37.36,
+   "end": 37.85
   },
   {
    "line": 6,
    "word": "יותר",
-   "start": 40.29,
-   "end": 40.65
+   "start": 38.2,
+   "end": 38.61
   },
   {
    "line": 6,
    "word": "נכון,",
-   "start": 40.65,
-   "end": 41.03
+   "start": 38.61,
+   "end": 39.0
   },
   {
    "line": 6,
    "word": "חום…",
-   "start": 41.56,
-   "end": 42.1
+   "start": 39.44,
+   "end": 40.01
   },
   {
    "line": 6,
    "word": "הייתה",
-   "start": 42.65,
-   "end": 43.19
+   "start": 40.48,
+   "end": 40.95
   },
   {
    "line": 6,
    "word": "בבית",
-   "start": 43.19,
-   "end": 43.73
+   "start": 40.95,
+   "end": 41.4
   },
   {
    "line": 6,
    "word": "נטוש",
-   "start": 43.73,
-   "end": 44.33
+   "start": 41.4,
+   "end": 41.95
   },
   {
    "line": 6,
    "word": "ומסריח.",
-   "start": 44.33,
-   "end": 44.95
+   "start": 41.95,
+   "end": 42.55
   },
   {
    "line": 7,
    "word": "ישבנו",
-   "start": 45.5,
-   "end": 46.05
+   "start": 43.1,
+   "end": 43.62
   },
   {
    "line": 7,
    "word": "שם",
-   "start": 46.05,
-   "end": 46.28
+   "start": 43.62,
+   "end": 43.85
   },
   {
    "line": 7,
    "word": "כמה",
-   "start": 46.28,
-   "end": 46.62
+   "start": 43.85,
+   "end": 44.17
   },
   {
    "line": 7,
    "word": "חברים.",
-   "start": 46.62,
-   "end": 47.12
+   "start": 44.17,
+   "end": 44.69
   },
   {
    "line": 7,
    "word": "הם",
-   "start": 47.64,
-   "end": 47.88
+   "start": 45.165,
+   "end": 45.43
   },
   {
    "line": 7,
    "word": "נתנו",
-   "start": 47.88,
-   "end": 48.15
+   "start": 45.43,
+   "end": 45.7
   },
   {
    "line": 7,
    "word": "לי",
-   "start": 48.15,
-   "end": 48.44
+   "start": 45.7,
+   "end": 45.97
   },
   {
    "line": 7,
    "word": "לעשן",
-   "start": 48.44,
-   "end": 48.79
+   "start": 45.97,
+   "end": 46.19
   },
   {
    "line": 7,
    "word": "באנג",
-   "start": 48.79,
-   "end": 49.15
+   "start": 46.19,
+   "end": 46.65
   },
   {
    "line": 7,
    "word": "בפעם",
-   "start": 49.15,
-   "end": 49.59
+   "start": 46.65,
+   "end": 46.95
   },
   {
    "line": 7,
    "word": "הראשונה.",
-   "start": 49.59,
-   "end": 50.11
+   "start": 46.95,
+   "end": 47.465
   }
  ],
  "captions": [
   {
    "start": 0.76,
-   "end": 2.355,
+   "end": 2.42,
    "text": "היי, נעים מאוד.",
    "emphasis": "מאוד."
   },
   {
-   "start": 2.355,
-   "end": 3.245,
+   "start": 2.42,
+   "end": 3.22,
    "text": "אני דין,",
    "emphasis": "דין,"
   },
   {
-   "start": 3.245,
-   "end": 4.72,
+   "start": 3.22,
+   "end": 4.63,
    "text": "והחיים שלי סובבים",
    "emphasis": "סובבים"
   },
   {
-   "start": 4.72,
-   "end": 6.215,
+   "start": 4.63,
+   "end": 6.07,
    "text": "סביב הירוק.",
    "emphasis": "הירוק."
   },
   {
-   "start": 6.705,
-   "end": 7.505,
+   "start": 6.56,
+   "end": 7.23,
    "text": "הכול התחיל",
    "emphasis": "התחיל"
   },
   {
-   "start": 7.505,
-   "end": 9.78,
+   "start": 7.23,
+   "end": 9.5,
    "text": "בשנות התשעים, בנתניה.",
    "emphasis": "התשעים,"
   },
   {
-   "start": 9.78,
-   "end": 11.1,
+   "start": 9.5,
+   "end": 10.81,
    "text": "שם גדלתי.",
    "emphasis": "גדלתי."
   },
   {
-   "start": 11.1,
-   "end": 12.365,
+   "start": 10.81,
+   "end": 11.93,
    "text": "גדלנו בתקופה",
    "emphasis": null
   },
   {
-   "start": 12.365,
-   "end": 13.86,
+   "start": 11.93,
+   "end": 13.17,
    "text": "הכי טובה שיש.",
    "emphasis": "טובה"
   },
   {
-   "start": 13.86,
-   "end": 15.525,
+   "start": 13.17,
+   "end": 14.67,
    "text": "היינו נתלים על עצים,",
    "emphasis": "נתלים"
   },
   {
-   "start": 15.525,
-   "end": 16.83,
+   "start": 14.67,
+   "end": 16.005,
    "text": "גונבים מסטיקים,",
    "emphasis": "גונבים"
   },
   {
-   "start": 16.83,
-   "end": 18.015,
+   "start": 16.005,
+   "end": 17.16,
    "text": "פורצים לבר,",
    "emphasis": "פורצים"
   },
   {
-   "start": 18.015,
-   "end": 20.225,
+   "start": 17.16,
+   "end": 19.32,
    "text": "ורק עושים שטויות כל היום.",
    "emphasis": "שטויות"
   },
   {
-   "start": 20.225,
-   "end": 21.235,
+   "start": 19.32,
+   "end": 20.275,
    "text": "מכות?",
    "emphasis": "מכות?"
   },
   {
-   "start": 21.235,
-   "end": 23.045,
+   "start": 20.275,
+   "end": 21.99,
    "text": "כן, היינו גם הולכים",
    "emphasis": "הולכים"
   },
   {
-   "start": 23.045,
-   "end": 24.29,
+   "start": 21.99,
+   "end": 23.215,
    "text": "מכות כל היום.",
    "emphasis": "מכות"
   },
   {
-   "start": 24.29,
-   "end": 25.71,
+   "start": 23.215,
+   "end": 24.825,
    "text": "יותר נכון…",
    "emphasis": "נכון…"
   },
   {
-   "start": 25.89,
-   "end": 27.62,
+   "start": 24.85,
+   "end": 26.38,
    "text": "מקבלים מכות.",
    "emphasis": "מקבלים"
   },
   {
-   "start": 27.62,
-   "end": 29.165,
+   "start": 26.38,
+   "end": 27.99,
    "text": "אה, ודרך אגב,",
    "emphasis": "אגב,"
   },
   {
-   "start": 29.165,
-   "end": 30.935,
+   "start": 27.99,
+   "end": 29.645,
    "text": "זה החבר הכי טוב שלי,",
    "emphasis": "טוב"
   },
   {
-   "start": 30.935,
-   "end": 32.02,
+   "start": 29.645,
+   "end": 30.715,
    "text": "שלב.",
    "emphasis": "שלב."
   },
   {
-   "start": 32.02,
-   "end": 34.4,
+   "start": 30.715,
+   "end": 32.77,
    "text": "היום שלב חזר בתשובה.",
    "emphasis": "היום"
   },
   {
-   "start": 34.4,
-   "end": 35.67,
+   "start": 32.77,
+   "end": 33.9,
    "text": "הוא רב מצליח,",
    "emphasis": "מצליח,"
   },
   {
-   "start": 35.67,
-   "end": 37.6,
+   "start": 33.9,
+   "end": 35.67,
    "text": "ואני די גאה בו.",
    "emphasis": "גאה"
   },
   {
-   "start": 37.64,
-   "end": 39.12,
+   "start": 35.71,
+   "end": 37.24,
    "text": "ההיכרות הראשונה שלי",
    "emphasis": "הראשונה"
   },
   {
-   "start": 39.12,
-   "end": 40.23,
+   "start": 37.24,
+   "end": 38.14,
    "text": "עם הירוק…",
    "emphasis": "הירוק…"
   },
   {
-   "start": 40.23,
-   "end": 41.5,
+   "start": 38.14,
+   "end": 39.38,
    "text": "יותר נכון,",
    "emphasis": null
   },
   {
-   "start": 41.5,
-   "end": 42.59,
+   "start": 39.38,
+   "end": 40.42,
    "text": "חום…",
    "emphasis": "חום…"
   },
   {
-   "start": 42.59,
-   "end": 45.44,
+   "start": 40.42,
+   "end": 43.04,
    "text": "הייתה בבית נטוש ומסריח.",
    "emphasis": "נטוש"
   },
   {
-   "start": 45.44,
-   "end": 47.58,
+   "start": 43.04,
+   "end": 45.105,
    "text": "ישבנו שם כמה חברים.",
    "emphasis": "חברים."
   },
   {
-   "start": 47.58,
-   "end": 48.73,
+   "start": 45.105,
+   "end": 46.13,
    "text": "הם נתנו לי לעשן",
    "emphasis": "לעשן"
   },
   {
-   "start": 48.73,
-   "end": 49.09,
+   "start": 46.13,
+   "end": 46.59,
    "text": "באנג",
    "emphasis": "באנג"
   },
   {
-   "start": 49.09,
-   "end": 50.16,
+   "start": 46.59,
+   "end": 48.065,
    "text": "בפעם הראשונה.",
    "emphasis": "הראשונה."
   }
  ],
  "phrase_splits": {
   "L1": [
-   0.54,
-   1.485,
-   2.395
+   0.56,
+   1.52,
+   2.42
   ],
   "L2": [
-   1.875,
-   2.885,
-   4.155
+   1.755,
+   2.75,
+   4.04
   ],
   "L3": [
-   1.615,
-   2.98,
-   4.115
+   1.51,
+   2.795,
+   3.93
   ],
   "L4": [
-   0.9,
-   1.675,
-   3.865,
-   5.135
+   0.815,
+   1.54,
+   3.685,
+   5.08
   ],
   "L5": [
-   1.485,
-   3.165,
-   4.15,
-   6.54,
-   7.97
+   1.58,
+   3.185,
+   4.095,
+   6.21,
+   7.49
   ],
   "L6": [
-   2.48,
-   3.44,
-   4.3
+   2.32,
+   3.29,
+   4.1
   ],
   "L7": [
-   1.98
+   1.895
   ]
  }
 }
