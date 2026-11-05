@@ -239,7 +239,7 @@ class Shot:
 # =========================================================================== captions
 
 class Group:
-    def __init__(self, ep, words, emph, y_default):
+    def __init__(self, ep, words, emph, y_default, strong=None, green=None):
         self.words = words  # list of dict(word, t0, t1, display)
         self.emph = emph    # index into words or None
         self.t0 = words[0]["t0"] - 0.06
@@ -249,8 +249,9 @@ class Group:
         space = f.getlength(" ", direction="rtl")
         self.items = []
         for i, w in enumerate(words):
-            col = ep.word_color(w["display"], emphasized=(i == emph))
-            wt = weight + (100 if i == emph else 0)
+            strong_i = i == emph or (strong is not None and i in strong)
+            col = ep.green if (green and i in green) else ep.word_color(w["display"], emphasized=strong_i)
+            wt = weight + (100 if strong_i else 0)
             lay = text_layer(w["display"], "sans", min(900, wt), size, tuple(col), shadow=0.9, blur=11)
             self.items.append(lay)
         # wrap into <= 2 lines inside the safe width
@@ -416,16 +417,19 @@ class Episode:
             k = 0
             for ch in chunks:
                 toks = ch.split()
-                ws, emph = [], None
+                ws, emph, strong, green = [], None, set(), set()
                 for j, tok in enumerate(toks):
-                    if "*" in tok:
-                        emph = j
-                    disp = tok.replace("*", "")
+                    if "*" in tok:          # *word* = emphasised (first one pops); several allowed
+                        strong.add(j)
+                        emph = j if emph is None else emph
+                    if "^" in tok:          # ^word^ = series green for this occurrence only
+                        green.add(j)
+                    disp = tok.replace("*", "").replace("^", "")
                     if k >= len(words) or clean_word(words[k]["word"]) != clean_word(disp):
                         raise SystemExit(f"captions of line {li + 1} do not match its text at '{disp}'")
                     ws.append(dict(words[k], display=disp))
                     k += 1
-                self.groups.append(Group(self, ws, emph, self.cap["cy"]))
+                self.groups.append(Group(self, ws, emph, self.cap["cy"], strong=strong, green=green))
             if k != len(words):
                 raise SystemExit(f"captions of line {li + 1} are missing words")
         for a, b in zip(self.groups, self.groups[1:]):
@@ -715,6 +719,8 @@ class Episode:
                 if fo:
                     x[-fo:] *= np.linspace(1, 0, fo)[:, None]
                 put(amb if k in ("street", "waves") else hits, t, x, g)
+            elif k in ("scooter_start", "register", "clank", "keys"):
+                put(hits, t, getattr(sfx, k)(), g)
             elif k == "clink":
                 put(hits, t, sfx.clink(), g)
             elif k == "clock_click":

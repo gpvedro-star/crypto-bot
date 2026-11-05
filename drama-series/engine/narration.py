@@ -118,12 +118,20 @@ class Narration:
             gap = float(lc.get("gap", cfg.get("gap", 0.4)))
             if prev_end is not None:
                 t = prev_end + gap - line.v0
-            pauses = {clean_word(k): float(v) for k, v in (lc.get("pause_before") or {}).items()}
+            # pause_before: {"word": secs} before every phrase starting with it, {"word#3": secs} only the 3rd
+            pauses = {}
+            for k, v in (lc.get("pause_before") or {}).items():
+                w_, _, nth = str(k).partition("#")
+                pauses[(clean_word(w_), int(nth) if nth else None)] = float(v)
+            seen = {}
             offs, extra = [], 0.0
             for ph in line.phrases:
                 first = clean_word(ph["words"][0][0])
-                if first in pauses:
-                    extra += pauses[first]
+                seen[first] = seen.get(first, 0) + 1
+                for key in ((first, seen[first]), (first, None)):
+                    if key in pauses:
+                        extra += pauses[key]
+                        break
                 offs.append(t + extra)
             self.place.append(offs)
             prev_end = offs[-1] + line.phrases[-1]["v1"]

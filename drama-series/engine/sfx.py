@@ -285,3 +285,68 @@ def handle():
         y += on * amp * (np.sin(2 * np.pi * f * tt) * np.exp(-tt / 0.018) + 0.5 * rng.standard_normal(len(t)) * np.exp(-tt / 0.004))
     y += 0.4 * np.sin(2 * np.pi * 110 * t) * np.exp(-np.maximum(t - 0.16, 0) / 0.05) * (t >= 0.16)
     return stereo(norm(reverb(fft_filter(y, lo=90), decay=0.6, wet=0.2), 1.0))
+
+
+def scooter_start():
+    """Small two-stroke delivery scooter: kick/starter, then idle."""
+    t = _t(2.6)
+    rng = _rng(51)
+    starter = np.sin(2 * np.pi * np.cumsum(170 + 90 * (t / 0.45)) / SR) * (t < 0.45) * (0.6 + 0.4 * np.sin(2 * np.pi * 23 * t))
+    f0 = np.where(t < 0.5, 30, 46 + 14 * np.exp(-(t - 0.5) / 0.35))
+    ph = np.cumsum(f0) / SR
+    pulses = (np.diff(np.floor(ph), prepend=0) > 0).astype(float)
+    n = int(0.02 * SR)
+    tt = np.arange(n) / SR
+    pop = np.exp(-tt / 0.006) * np.sin(2 * np.pi * 140 * tt)
+    idle = np.convolve(pulses, pop)[: len(t)] + 0.35 * fft_filter(rng.standard_normal(len(t)), lo=200, hi=2500) * pulses.cumsum().clip(0, 1)
+    idle = fft_filter(idle, lo=40, hi=3000) * (t > 0.42)
+    env = np.clip((2.6 - t) / 0.8, 0, 1)
+    y = 0.5 * norm(fft_filter(starter, hi=1500)) + norm(idle)
+    return stereo(norm(np.tanh(1.5 * y) * env, 1.0), pan=-0.1)
+
+
+def register():
+    """Mechanical cash register: key, bell, drawer slides out, coins."""
+    t = _t(1.1)
+    rng = _rng(52)
+    y = np.zeros(len(t))
+    def at(d0):
+        tt = np.maximum(t - d0, 0)
+        return tt, (t >= d0).astype(float)
+    tt, on = at(0.0)
+    y += on * fft_filter(rng.standard_normal(len(t)) * np.exp(-tt / 0.004), lo=800, hi=6000) * 0.5
+    tt, on = at(0.08)
+    y += on * (np.sin(2 * np.pi * 2093 * tt) + 0.5 * np.sin(2 * np.pi * 4186 * tt) + 0.25 * np.sin(2 * np.pi * 5274 * tt)) * np.exp(-tt / 0.35)
+    tt, on = at(0.12)
+    slide = fft_filter(rng.standard_normal(len(t)), lo=300, hi=2500) * on * np.exp(-tt / 0.12) * (tt < 0.3)
+    y += 0.5 * slide
+    for d0 in (0.32, 0.36, 0.41, 0.47):
+        tt, on = at(d0)
+        y += 0.25 * on * np.sin(2 * np.pi * rng.uniform(3500, 6000) * tt) * np.exp(-tt / 0.03)
+    return stereo(norm(reverb(y, decay=0.5, wet=0.15), 1.0), pan=0.15)
+
+
+def clank():
+    """Muffled metallic knock from the dark side of the room."""
+    t = _t(1.6)
+    rng = _rng(53)
+    y = np.zeros(len(t))
+    for f, dec, a in ((310, 0.25, 1.0), (743, 0.18, 0.6), (1290, 0.12, 0.35), (2110, 0.08, 0.2)):
+        y += a * np.sin(2 * np.pi * f * t) * np.exp(-t / dec)
+    y += 0.6 * fft_filter(rng.standard_normal(len(t)) * np.exp(-t / 0.01), lo=100, hi=2000)
+    y = fft_filter(y, hi=1400)
+    return stereo(norm(reverb(y, decay=1.6, wet=0.45), 1.0), pan=0.35)
+
+
+def keys():
+    """Car keys jingle."""
+    t = _t(0.8)
+    rng = _rng(54)
+    y = np.zeros(len(t))
+    for _ in range(14):
+        d0 = rng.uniform(0, 0.45)
+        tt = np.maximum(t - d0, 0)
+        on = (t >= d0).astype(float)
+        for f in (rng.uniform(3000, 4200), rng.uniform(5200, 7400)):
+            y += on * rng.uniform(0.2, 1.0) * np.sin(2 * np.pi * f * tt) * np.exp(-tt / rng.uniform(0.02, 0.07))
+    return stereo(norm(fft_filter(y, lo=1500), 1.0), pan=0.2)
