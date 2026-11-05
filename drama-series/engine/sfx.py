@@ -197,3 +197,91 @@ def logo_hit(d=3.4):
     click = fft_filter(rng.standard_normal(len(t)) * np.exp(-t / 0.01), lo=200, hi=3000)
     y = norm(sub) + 0.55 * norm(chord) + 0.12 * norm(click)
     return norm(reverb(np.tanh(1.3 * y), decay=2.4, wet=0.35), 1.0)
+
+
+def street(d, seed=31):
+    """Daytime street: traffic rumble, distant voices, a car passing now and then."""
+    rng = _rng(seed)
+    n = int(d * SR)
+    t = _t(d)
+    traffic = norm(fft_filter(np.cumsum(rng.standard_normal(n)), lo=40, hi=380)) * (0.75 + 0.25 * np.sin(2 * np.pi * 0.07 * t))
+    syl = np.clip(fft_filter(rng.standard_normal(n), hi=5), 0, None)
+    voices = norm(fft_filter(rng.standard_normal(n), lo=350, hi=2200)) * norm(syl)
+    cars = np.zeros(n)
+    tt = rng.uniform(0.5, 3.0)
+    while tt < d - 1:
+        L = int(2.6 * SR)
+        i = int(tt * SR)
+        car = fft_filter(rng.standard_normal(L), lo=120, hi=1400) * np.hanning(L) ** 1.5
+        cars[i:i + L] += car[: n - i] * rng.uniform(0.5, 1.0)
+        tt += rng.uniform(3.5, 7.0)
+    y = 0.6 * traffic + 0.22 * voices + 0.45 * norm(cars)
+    return stereo(norm(y, 1.0))
+
+
+def waves(d, seed=32):
+    """Mediterranean surf + sea wind, stereo."""
+    t = _t(d)
+    out = []
+    for ch in range(2):
+        rng = _rng(seed + ch)
+        surf = fft_filter(rng.standard_normal(len(t)), lo=70, hi=1700)
+        ph = rng.uniform(0, 6.28)
+        swell = 0.3 + 0.7 * (0.5 + 0.5 * np.sin(2 * np.pi * t / 6.8 + ph)) ** 2.2
+        wash = fft_filter(rng.standard_normal(len(t)), lo=1500, hi=6000) * swell ** 3 * 0.35
+        wind = fft_filter(rng.standard_normal(len(t)), lo=250, hi=1100) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.09 * t + ph))
+        out.append(norm(surf * swell) + norm(wash) * 0.4 + norm(wind) * 0.35)
+    return norm(np.stack(out, 1), 1.0)
+
+
+def breath(d, rate=1.7, seed=33):
+    """Out-of-breath panting after a run."""
+    rng = _rng(seed)
+    n = int(d * SR)
+    out = np.zeros(n)
+    tt = 0.0
+    while tt < d:
+        for kind, L, g in (("in", 0.22, 0.6), ("out", 0.3, 1.0)):
+            m = int(L * SR)
+            env = np.sin(np.pi * np.linspace(0, 1, m)) ** 1.5
+            x = fft_filter(rng.standard_normal(m), lo=500 if kind == "in" else 300, hi=3200 if kind == "in" else 2400)
+            i = int(tt * SR)
+            if i < n:
+                seg = (x * env * g)[: n - i]
+                out[i:i + len(seg)] += seg
+            tt += L + 0.03
+        tt += max(0.0, 1 / rate - 0.58) * rng.uniform(0.8, 1.2)
+    return stereo(norm(out, 1.0))
+
+
+def clink():
+    """Glass bottle clink."""
+    t = _t(0.9)
+    y = np.zeros(len(t))
+    for d0, amp in ((0.0, 1.0), (0.075, 0.45)):
+        tt = np.maximum(t - d0, 0)
+        on = (t >= d0).astype(float)
+        for f, dec, a in ((2650, 0.32, 1.0), (4130, 0.22, 0.6), (5920, 0.14, 0.4), (7810, 0.09, 0.25)):
+            y += on * amp * a * np.sin(2 * np.pi * f * tt) * np.exp(-tt / dec)
+    return stereo(norm(reverb(y, decay=0.7, wet=0.18), 1.0), pan=0.1)
+
+
+def clock_click():
+    t = _t(0.12)
+    rng = _rng(41)
+    y = fft_filter(rng.standard_normal(len(t)) * np.exp(-t / 0.0015), lo=1500, hi=9000)
+    y += 0.5 * np.sin(2 * np.pi * 1850 * t) * np.exp(-t / 0.012)
+    return stereo(norm(y, 1.0))
+
+
+def handle():
+    """Door handle pressed down + latch release, quietly."""
+    t = _t(0.7)
+    rng = _rng(42)
+    y = np.zeros(len(t))
+    for d0, amp, f in ((0.0, 0.7, 2300), (0.16, 1.0, 3100), (0.42, 0.5, 1700)):
+        tt = np.maximum(t - d0, 0)
+        on = (t >= d0).astype(float)
+        y += on * amp * (np.sin(2 * np.pi * f * tt) * np.exp(-tt / 0.018) + 0.5 * rng.standard_normal(len(t)) * np.exp(-tt / 0.004))
+    y += 0.4 * np.sin(2 * np.pi * 110 * t) * np.exp(-np.maximum(t - 0.16, 0) / 0.05) * (t >= 0.16)
+    return stereo(norm(reverb(fft_filter(y, lo=90), decay=0.6, wet=0.2), 1.0))

@@ -163,6 +163,15 @@ def score(total, sections, events, bpm=92):
         seg = section(s["style"], s["t0"], s["t1"], s.get("grid0", s["t0"]), bpm, seed=k)
         if s.get("tapestop") is not None:  # slow this section to a halt (freeze-frame gag)
             tapestop(seg, int((s["tapestop"] - s["t0"]) * SR), s.get("tapestop_dur", 0.5))
+        if s.get("highpass"):
+            seg = fft_filter(seg, lo=s["highpass"], order=3)
+        for key, ramp in (("fade_in", lambda n: np.linspace(0, 1, n)), ("fade_out", lambda n: np.linspace(1, 0, n))):
+            n = min(int(s.get(key, 0) * SR), len(seg))
+            if n > 1:
+                if key == "fade_in":
+                    seg[:n] *= ramp(n)[:, None]
+                else:
+                    seg[-n:] *= ramp(n)[:, None]
         i = int(s["t0"] * SR)
         out[i:i + len(seg)] += seg[: len(out) - i] * s.get("gain", 1.0)
     for e in sorted(events, key=lambda e: e["t"]):

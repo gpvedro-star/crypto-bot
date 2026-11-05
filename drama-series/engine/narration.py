@@ -21,6 +21,14 @@ def clean_word(w):
     return re.sub(r"[*{}֑-ׇ]", "", w).strip(PUNCT + " ")
 
 
+def _atempo(x, tempo):
+    import subprocess
+    p = subprocess.run(["ffmpeg", "-v", "error", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", "-",
+                        "-af", f"atempo={tempo}", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-"],
+                       input=np.asarray(x, np.float32).tobytes(), capture_output=True, check=True)
+    return np.frombuffer(p.stdout, np.float32).astype(np.float64)
+
+
 def _energy_db(x):
     n = int(HOP * SR)
     m = len(x) // n
@@ -53,7 +61,11 @@ class Line:
         self.words_display = [w for p in self.phrase_texts for w in p.split()]
         self.audio_path = path_fn(cfg["audio"])
         a = sound.load_audio(self.audio_path).mean(1)
+        tempo = float(cfg.get("tempo", 1.0))   # <1 = slower delivery (pitch kept)
+        if abs(tempo - 1.0) > 1e-3:
+            a = _atempo(a, tempo)
         a = sound.fft_filter(a, lo=70)  # clean rumble, keep the voice
+        a = a * 10 ** (float(cfg.get("gain_db", 0.0)) / 20)
         self.audio = a
         self.dur = len(a) / SR
         db = _energy_db(a)
@@ -62,8 +74,8 @@ class Line:
         self.v0, self.v1 = idx_act[0] * HOP, (idx_act[-1] + 1) * HOP
         inner = [g for g in gaps if g[0] > self.v0 + 0.05 and g[1] < self.v1 - 0.05]
         n = len(self.phrase_texts)
-        if cfg.get("splits"):
-            splits = [float(s) for s in cfg["splits"]]
+        if cfg.get("splits"):  # given in seconds of the original take
+            splits = [float(s) / tempo for s in cfg["splits"]]
         else:
             best = sorted(inner, key=lambda g: g[1] - g[0], reverse=True)[: n - 1]
             splits = sorted((a_ + b_) / 2 for a_, b_ in best)

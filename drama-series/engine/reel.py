@@ -114,12 +114,17 @@ class Anchors:
 
 # =========================================================================== shots
 
+_SRC_CACHE = {}
+
+
 class Shot:
     def __init__(self, ep, cfg, A):
         self.cfg, self.id = cfg, cfg["id"]
         self.start = A(cfg["at"])
-        self.src = look.load_source(ep.path(cfg["image"]), SCALE, cfg.get("grade", "noir"),
-                                    cfg.get("haze", 0.0), cfg.get("exposure", 1.0))
+        key = (ep.path(cfg["image"]), cfg.get("grade", "noir"), cfg.get("haze", 0.0), cfg.get("exposure", 1.0))
+        if key not in _SRC_CACHE:
+            _SRC_CACHE[key] = look.load_source(key[0], SCALE, key[1], key[2], key[3])
+        self.src = _SRC_CACHE[key]
         self.trans = cfg.get("transition", "cut")  # cut | fade:0.25 | dip:0.3
         self.fx = set(cfg.get("effects", []) or [])
         self.caption_y = cfg.get("caption_y")
@@ -130,13 +135,18 @@ class Shot:
         A = self.A
         self.keys = []
         for k in self.cfg.get("cam", [{"t": self.id, "c": [0.5, 0.5], "z": 1.0}]):
-            self.keys.append((A(k["t"]), k["c"][0], k["c"][1], float(k["z"]), k.get("ease", "inout")))
+            self.keys.append((A(k["t"]), k["c"][0], k["c"][1], float(k["z"]), k.get("ease", "inout"), float(k.get("r", 0.0))))
         self.keys.sort(key=lambda k: k[0])
         fz = self.cfg.get("freeze")
         self.freeze = None
         if fz:
             self.freeze = {"t": A(fz["at"]), "target": fz["target"], "label": fz.get("label"),
                            "label_t": A(fz.get("label_at", fz["at"])), "arrow_from": fz.get("arrow_from", [300, -330])}
+        nt = self.cfg.get("note")
+        self.note = None
+        if nt:
+            self.note = {"text": nt["text"], "t": A(nt.get("at", self.id + "+0.15")), "y": float(nt.get("y", 330)),
+                         "size": int(nt.get("size", 92))}
         st = self.cfg.get("stamp")
         self.stamp = None
         if st:
@@ -144,10 +154,11 @@ class Shot:
 
     def cam(self, T):
         ks = self.keys
+        r = 0.0
         if T <= ks[0][0]:
-            _, cx, cy, z, _ = ks[0]
+            _, cx, cy, z, _, r = ks[0]
         elif T >= ks[-1][0]:
-            _, cx, cy, z, _ = ks[-1]
+            _, cx, cy, z, _, r = ks[-1]
         else:
             for a, b in zip(ks, ks[1:]):
                 if a[0] <= T <= b[0]:
@@ -155,10 +166,11 @@ class Shot:
                     cx = a[1] + (b[1] - a[1]) * u
                     cy = a[2] + (b[2] - a[2]) * u
                     z = math.exp(math.log(a[3]) + (math.log(b[3]) - math.log(a[3])) * u)
+                    r = a[5] + (b[5] - a[5]) * u
                     break
-        return cx, cy, z
+        return cx, cy, z, r
 
-    def window(self, T):
+    def window(self, T, zmul=1.0):
         sw, sh = self.src.size
         Tc = T
         extra_z, pull = 1.0, 0.0
@@ -166,7 +178,7 @@ class Shot:
             Tc = self.freeze["t"]
             u = ease((T - Tc) / 3.5, "out")
             extra_z, pull = 1 + 0.06 * u, 0.25 * u
-        cx, cy, z = self.cam(Tc)
+        cx, cy, z, _ = self.cam(Tc)
         if self.freeze and T >= self.freeze["t"]:
             tx, ty = self.freeze["target"]
             cx, cy = cx + (tx - cx) * pull, cy + (ty - cy) * pull
@@ -177,6 +189,7 @@ class Shot:
             z *= 1.04
             dx = 7 * SCALE * (math.sin(2 * math.pi * 1.9 * Th) + 0.6 * math.sin(2 * math.pi * 4.7 * Th + 1.3))
             dy = 6 * SCALE * (math.sin(2 * math.pi * 2.3 * Th + 0.7) + 0.5 * math.sin(2 * math.pi * 5.3 * Th + 2.1))
+        z *= zmul
         ww, wh = W * SCALE / z, H * SCALE / z
         x = min(max(cx * sw + dx, ww / 2), sw - ww / 2)
         y = min(max(cy * sh + dy, wh / 2), sh - wh / 2)
@@ -188,7 +201,17 @@ class Shot:
         return ((p[0] * sw - x0) / (x1 - x0) * W, (p[1] * sh - y0) / (y1 - y0) * H)
 
     def render(self, T, ep, fi):
-        f = look.to_float(self.src.resize((W, H), Image.BICUBIC, box=self.window(T)))
+        Tr = min(T, self.freeze["t"]) if self.freeze else T
+        rot = self.cam(Tr)[3]
+        if abs(rot) > 0.01:  # tilted frame: render a larger window, rotate, crop the centre
+            th = math.radians(abs(rot))
+            m = math.cos(th) + (H / W) * math.sin(th)
+            big = self.src.resize((round(W * m), round(H * m)), Image.BICUBIC, box=self.window(T, 1 / m))
+            big = big.rotate(rot, resample=Image.BICUBIC)
+            l, t = (big.width - W) // 2, (big.height - H) // 2
+            f = look.to_float(big.crop((l, t, l + W, t + H)))
+        else:
+            f = look.to_float(self.src.resize((W, H), Image.BICUBIC, box=self.window(T)))
         f *= ep.vignette
         fz = self.freeze
         if fz and T >= fz["t"]:
@@ -206,6 +229,8 @@ class Shot:
             if u < 0.14:
                 f = f + (1 - f) * 0.65 * (1 - u / 0.14)
             ep.draw_arrow(f, fz, u, T)
+        if self.note and self.note["t"] <= T < self.end:
+            ep.draw_note(f, self.note, T, self.end)
         if self.stamp and self.stamp["t"] <= T < self.stamp["until"]:
             ep.draw_stamp(f, self.stamp, T)
         return f
@@ -231,7 +256,9 @@ class Group:
         # wrap into <= 2 lines inside the safe width
         maxw = ep.cap["max_w"]
         lines, cur, cw = [], [], 0.0
+        self.emph_room = 1.13  # the emphasised word gets room to "pop" without touching its neighbours
         for i, (lay, pad, adv, asc) in enumerate(self.items):
+            adv = self.slot(i)
             add = adv + (space if cur else 0)
             if cur and cw + add > maxw:
                 lines.append(cur)
@@ -248,6 +275,10 @@ class Group:
         self.line_h = size * 1.24
         self.size = size
 
+    def slot(self, i):
+        adv = self.items[i][2]
+        return adv * self.emph_room if i == self.emph else adv
+
     def text_lines(self):
         return [" ".join(self.words[i]["display"] for i in l) for l in self.lines]
 
@@ -262,17 +293,18 @@ class Group:
         top_base = cy - (nl - 1) * self.line_h / 2
         rise = (1 - a_in) * 10
         for li, idxs in enumerate(self.lines):
-            lw = sum(self.items[i][2] for i in idxs) + self.space * (len(idxs) - 1)
+            lw = sum(self.slot(i) for i in idxs) + self.space * (len(idxs) - 1)
             xr = cx + lw / 2
             base = top_base + li * self.line_h + self.size * 0.36
             for i in idxs:
                 lay, pad, adv, asc = self.items[i]
-                xl = xr - adv
-                x, y = xl - pad, base - asc - pad + rise
+                sl = self.slot(i)
+                xl = xr - sl
+                x, y = xl + (sl - adv) / 2 - pad, base - asc - pad + rise
                 if i == self.emph:
                     te = self.words[i]["t0"]
                     v = (T - te) / 0.28
-                    k = 1 + 0.17 * math.sin(math.pi * v) if 0 <= v <= 1 else 1.0
+                    k = 1 + 0.12 * math.sin(math.pi * v) if 0 <= v <= 1 else 1.0
                     if k != 1.0:
                         L = lay.scaled(k)
                         x, y = x + lay.w / 2 - L.w / 2, y + lay.h / 2 - L.h / 2
@@ -298,7 +330,11 @@ class Episode:
         self.season, self.number = int(c.get("season", 1)), int(c.get("episode", 1))
         self.code = c.get("output_name", f"episode-{self.number:02d}")
         st = dict(ser.get("style") or {})
-        st.update(c.get("style") or {})
+        ep_st = c.get("style") or {}
+        wc = dict(st.get("word_colors") or {})
+        wc.update(ep_st.get("word_colors") or {})
+        st.update(ep_st)
+        st["word_colors"] = wc
         ec_ser = ser.get("endcard") or {}
         ec_ep = dict(c.get("endcard") or {})
         for key in ("lines", "footer", "dur"):
@@ -512,6 +548,13 @@ class Episode:
         x1c, y1c = min(W, x0 + im.width), min(H, y0 + im.height)
         f[y0c:y1c, x0c:x1c] = arr[sy0:sy0 + (y1c - y0c), sx0:sx0 + (x1c - x0c)] * a
 
+    def draw_note(self, f, nt, T, end):
+        if "lay" not in nt:
+            nt["lay"] = text_layer(nt["text"], "hand", 700, nt["size"], tuple(self.cream), shadow=0.9, blur=10)
+        lay, pad, adv, asc = nt["lay"]
+        a = ease_out((T - nt["t"]) / 0.3) * (1 - ease_in_out((T - (end - 0.2)) / 0.2))
+        blit(f, lay, W / 2 - adv / 2 - pad, nt["y"] - asc - pad + (1 - ease_out((T - nt["t"]) / 0.3)) * 8, a)
+
     def draw_endcard(self, f, T):
         u = T - self.end_t
         y = [860, 972, 1062]
@@ -600,6 +643,9 @@ class Episode:
             d = {"style": s["style"], "t0": A(s["from"]), "t1": A(s["to"]), "gain": s.get("gain", 1.0)}
             if "grid" in s:
                 d["grid0"] = A(s["grid"])
+            for key in ("fade_in", "fade_out", "highpass"):
+                if key in s:
+                    d[key] = float(s[key])
             if "tapestop" in s:
                 d["tapestop"], d["tapestop_dur"] = A(s["tapestop"]), s.get("tapestop_dur", 0.5)
             secs.append(d)
@@ -657,6 +703,24 @@ class Episode:
                 put(hits, t, sfx.lighter(), g)
             elif k == "bubbles":
                 put(hits, t, sfx.bubbles(e.get("dur", 1.8)), g)
+            elif k in ("street", "waves", "breath", "steps_run"):
+                d = until - t
+                x = {"street": lambda: sfx.street(d), "waves": lambda: sfx.waves(d),
+                     "breath": lambda: sfx.breath(d, float(e.get("rate", 1.7))),
+                     "steps_run": lambda: sfx.footsteps(d, float(e.get("rate", 3.2)), seed=7, pan=0.05)}[k]()
+                x = sound.stereo(np.asarray(x, float))[: int(d * SR)]
+                fi, fo = int(float(e.get("fade_in", 0.05)) * SR), int(float(e.get("fade_out", 0.05)) * SR)
+                if fi:
+                    x[:fi] *= np.linspace(0, 1, fi)[:, None]
+                if fo:
+                    x[-fo:] *= np.linspace(1, 0, fo)[:, None]
+                put(amb if k in ("street", "waves") else hits, t, x, g)
+            elif k == "clink":
+                put(hits, t, sfx.clink(), g)
+            elif k == "clock_click":
+                put(hits, t, sfx.clock_click(), g)
+            elif k == "handle":
+                put(hits, t, sfx.handle(), g)
             elif k == "tick":
                 put(hits, t, sfx.soft_tick(), g)
         # typewriter ticks for stamps + end-card ticks

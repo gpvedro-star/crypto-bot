@@ -130,6 +130,12 @@ def grade_variant(a, kind="noir"):
         a = a * 0.7 + s * 0.3
         a = a * np.array([1.03, 1.0, 0.93], np.float32)
         a = 0.015 + a * 0.97
+    elif kind == "amber":  # the hotel flash: rich amber, soft blacks
+        a = lum + (a - lum) * 0.95
+        s = a * a * (3 - 2 * a)
+        a = a * 0.65 + s * 0.35
+        a = a * np.array([1.08, 0.97, 0.78], np.float32) + np.array([0.015, 0.006, -0.004], np.float32)
+        a = 0.02 + a * 0.95
     elif kind == "green":
         a = lum + (a - lum) * 0.72
         s = a * a * (3 - 2 * a)
