@@ -350,3 +350,86 @@ def keys():
         for f in (rng.uniform(3000, 4200), rng.uniform(5200, 7400)):
             y += on * rng.uniform(0.2, 1.0) * np.sin(2 * np.pi * f * tt) * np.exp(-tt / rng.uniform(0.02, 0.07))
     return stereo(norm(fft_filter(y, lo=1500), 1.0), pan=0.2)
+
+
+def ringtone(reps=2):
+    """Generic keypad-phone ringtone (original arpeggio), through a tiny speaker."""
+    notes = [81, 88, 81, 88, 85, 88, 93]
+    nd, gap = 0.085, 0.025
+    out = []
+    for _ in range(reps):
+        for m in notes:
+            t = _t(nd)
+            f = 440 * 2 ** ((m - 69) / 12)
+            sq = 0.6 * np.sign(np.sin(2 * np.pi * f * t)) + 0.4 * np.sign(np.sin(4 * np.pi * f * t))
+            env = np.minimum(1, t / 0.004) * np.minimum(1, (nd - t) / 0.01)
+            out += [sq * env, np.zeros(int(gap * SR))]
+        out.append(np.zeros(int(0.32 * SR)))
+    y = fft_filter(np.concatenate(out), lo=500, hi=4200)
+    return stereo(norm(reverb(y, decay=0.4, wet=0.12), 1.0), pan=0.1)
+
+
+def crowd(d, muffled=False, seed=61):
+    """Friends talking and laughing around a table (or heard through a wall when muffled)."""
+    rng = _rng(seed)
+    n = int(d * SR)
+    out = np.zeros(n)
+    for _ in range(7):
+        f1, f2 = rng.uniform(450, 800), rng.uniform(1100, 1900)
+        voice = fft_filter(rng.standard_normal(n), lo=f1 * 0.6, hi=f2 * 1.3)
+        syl = np.clip(fft_filter(rng.standard_normal(n), hi=rng.uniform(3, 6)), 0, None)
+        turn = np.clip(fft_filter(rng.standard_normal(n), hi=0.3), 0, None)
+        out += norm(voice) * norm(syl) * (0.3 + norm(turn))
+    for _ in range(max(1, int(d / 4))):
+        i = int(rng.uniform(0, max(0.1, d - 1.5)) * SR)
+        L, f0 = int(rng.integers(4, 7)), rng.uniform(170, 260)
+        for j in range(L):
+            m = int(0.09 * SR)
+            tt = np.arange(m) / SR
+            burst = fft_filter(_saw(np.full(m, f0 * (1 - 0.04 * j)), tt, 20) * np.sin(np.pi * tt / tt[-1]) ** 2, lo=300, hi=2500)
+            s0 = i + int(j * 0.15 * SR)
+            if s0 + m < n:
+                out[s0:s0 + m] += norm(burst) * 0.5 * (1 - j / L)
+    if muffled:
+        out = fft_filter(out, hi=550)
+    return stereo(norm(out, 1.0))
+
+
+def crickets(d, seed=62):
+    rng = _rng(seed)
+    n = int(d * SR)
+    L, R = np.zeros(n), np.zeros(n)
+    for _ in range(3):
+        f, pan, per = rng.uniform(4200, 5200), rng.uniform(-0.7, 0.7), rng.uniform(0.45, 0.8)
+        t0 = rng.uniform(0, per)
+        while t0 < d:
+            for p in range(3):
+                m = int(0.014 * SR)
+                tt = np.arange(m) / SR
+                ch = np.sin(2 * np.pi * f * tt) * np.sin(np.pi * tt / tt[-1])
+                s0 = int((t0 + p * 0.028) * SR)
+                if s0 + m < n:
+                    g = rng.uniform(0.5, 1.0)
+                    L[s0:s0 + m] += ch * g * np.sqrt(0.5 * (1 - pan))
+                    R[s0:s0 + m] += ch * g * np.sqrt(0.5 * (1 + pan))
+            t0 += per * rng.uniform(0.9, 1.1)
+    return norm(np.stack([L, R], 1), 1.0)
+
+
+def taxi(d, seed=63):
+    """Inside an old taxi: engine hum + road rumble."""
+    rng = _rng(seed)
+    road = stereo(norm(fft_filter(rng.standard_normal(int(d * SR)), lo=60, hi=500)))
+    y = engine(d, seed=seed)[: len(road)] * 0.6 + road * 0.5
+    return norm(fft_filter(y, hi=2500), 1.0)
+
+
+def steps_echo(d, rate=2.8, seed=64):
+    """Hurried steps down a marble hotel corridor."""
+    x = footsteps(d, rate, seed=seed)
+    return norm(reverb(x, decay=1.5, wet=0.55), 1.0)
+
+
+def step_stop():
+    """A last step, then standing still."""
+    return stereo(norm(reverb(step(False, 3), decay=0.6, wet=0.25), 1.0))

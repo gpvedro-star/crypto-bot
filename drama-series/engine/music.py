@@ -76,6 +76,13 @@ def tick(rng, gain=1.0):
     return gain * x
 
 
+def stab(notes, dur, gain=1.0):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = sum(_saw(MIDI(m), t, 16) for m in notes)
+    return gain * norm(fft_filter(x, hi=2300)) * _env(n, 0.004, 0.11, 0.0, 0.02)
+
+
 def pad(notes, dur, gain=1.0, bright=900):
     n = int(dur * SR)
     t = np.arange(n) / SR
@@ -135,6 +142,26 @@ def section(style, t0, t1, grid0, bpm, seed=0):
                     _add(L, i + int(s * beat / 4 * SR), bass_note(root, beat * 0.22, 0.5))
             if eighth == 0:
                 _add(L, i, pad(chord, bar, 0.12 if style == "groove" else 0.16, 800))
+    elif style == "party":  # late-2000s club / house: four on the floor, offbeat hats and bass, chord stabs
+        prog = PROGS["groove"]
+        k0 = int(np.floor((t0 - grid0) / (beat / 2))) - 1
+        k1 = int(np.ceil((t1 - grid0) / (beat / 2))) + 1
+        for k in range(k0, k1):
+            tb = grid0 + k * beat / 2
+            i = int((tb - t0) * SR)
+            if i < -SR or tb >= t1:
+                continue
+            eighth = k % 8
+            root, chord = prog[int(np.floor((tb - grid0) / bar)) % len(prog)]
+            if eighth % 2 == 0:
+                _add(L, i, kick(0.9))
+            else:
+                _add(L, i, hat(rng, 0.24))
+                _add(L, i, bass_note(root, beat * 0.42, 0.55))
+            if eighth in (2, 6):
+                _add(L, i, rim(rng, 0.32))
+            if eighth in (1, 4, 7):
+                _add(L, i, stab([m + 12 for m in chord], beat * 0.35, 0.17))
     elif style == "pulse":  # dark driving undercurrent: sub pulse, ticks, a drone that slowly opens
         roots = [33, 33, 29, 31]  # A1 A1 F1 G1
         k0 = int(np.floor((t0 - grid0) / (beat / 2))) - 1
@@ -197,7 +224,7 @@ def score(total, sections, events, bpm=92):
     for k, s in enumerate(sections):
         if s["style"] == "none" or s["t1"] <= s["t0"]:
             continue
-        seg = section(s["style"], s["t0"], s["t1"], s.get("grid0", s["t0"]), bpm, seed=k)
+        seg = section(s["style"], s["t0"], s["t1"], s.get("grid0", s["t0"]), s.get("bpm", bpm), seed=k)
         if s.get("tapestop") is not None:  # slow this section to a halt (freeze-frame gag)
             tapestop(seg, int((s["tapestop"] - s["t0"]) * SR), s.get("tapestop_dur", 0.5))
         if s.get("highpass"):

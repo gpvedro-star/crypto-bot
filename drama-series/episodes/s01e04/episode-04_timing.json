@@ -1,0 +1,1782 @@
+{
+ "episode": "episode-04",
+ "total": 115.45,
+ "blackout": 105.85,
+ "endcard": 106.85,
+ "outro_logo": 112.25,
+ "shots": [
+  {
+   "id": "S01",
+   "image": "images/01-alex-hand.png",
+   "start": 0.0,
+   "end": 9.92,
+   "transition": "cut"
+  },
+  {
+   "id": "S02",
+   "image": "images/02-alex-gibbush.png",
+   "start": 9.92,
+   "end": 19.09,
+   "transition": "cut"
+  },
+  {
+   "id": "S03",
+   "image": "images/10-desert-road.png",
+   "start": 19.09,
+   "end": 21.49,
+   "transition": "cut"
+  },
+  {
+   "id": "S04",
+   "image": "images/03-villa-cake.png",
+   "start": 21.49,
+   "end": 23.7,
+   "transition": "cut"
+  },
+  {
+   "id": "S05",
+   "image": "images/12-poolside-toast.png",
+   "start": 23.7,
+   "end": 26.625,
+   "transition": "cut"
+  },
+  {
+   "id": "S06",
+   "image": "images/11-villa-pool-wide.png",
+   "start": 26.625,
+   "end": 29.08,
+   "transition": "cut"
+  },
+  {
+   "id": "S07",
+   "image": "images/03-villa-cake.png",
+   "start": 29.08,
+   "end": 37.075,
+   "transition": "cut"
+  },
+  {
+   "id": "S08",
+   "image": "images/04-din-phone-villa.png",
+   "start": 37.075,
+   "end": 44.6,
+   "transition": "cut"
+  },
+  {
+   "id": "S09",
+   "image": "images/05-taxi.png",
+   "start": 44.6,
+   "end": 47.58,
+   "transition": "cut"
+  },
+  {
+   "id": "S10",
+   "image": "images/06-suite-enter.png",
+   "start": 47.58,
+   "end": 54.46,
+   "transition": "cut"
+  },
+  {
+   "id": "S11",
+   "image": "images/07-balcony-empty-chairs.png",
+   "start": 54.46,
+   "end": 65.2,
+   "transition": "cut"
+  },
+  {
+   "id": "S12",
+   "image": "images/13-champagne-closeup.png",
+   "start": 65.2,
+   "end": 71.32,
+   "transition": "cut"
+  },
+  {
+   "id": "S13",
+   "image": "images/06-suite-enter.png",
+   "start": 71.32,
+   "end": 81.302,
+   "transition": "cut"
+  },
+  {
+   "id": "S14",
+   "image": "(black)",
+   "start": 81.302,
+   "end": 82.127,
+   "transition": "cut"
+  },
+  {
+   "id": "S15",
+   "image": "images/14-din-rushes-out.png",
+   "start": 82.127,
+   "end": 85.1,
+   "transition": "cut"
+  },
+  {
+   "id": "S16",
+   "image": "images/09-alex-between-men.png",
+   "start": 85.1,
+   "end": 96.331,
+   "transition": "cut"
+  },
+  {
+   "id": "S17",
+   "image": "(black)",
+   "start": 96.331,
+   "end": 97.85,
+   "transition": "cut"
+  },
+  {
+   "id": "S18",
+   "image": "images/15-ambulance-gate.png",
+   "start": 97.85,
+   "end": 101.85,
+   "transition": "cut"
+  },
+  {
+   "id": "S19",
+   "image": "images/16-stretcher.png",
+   "start": 101.85,
+   "end": 105.85,
+   "transition": "cut"
+  }
+ ],
+ "words": [
+  {
+   "line": 1,
+   "word": "תכירו",
+   "start": 0.54,
+   "end": 0.95
+  },
+  {
+   "line": 1,
+   "word": "את",
+   "start": 0.95,
+   "end": 1.04
+  },
+  {
+   "line": 1,
+   "word": "חבר",
+   "start": 1.04,
+   "end": 1.38
+  },
+  {
+   "line": 1,
+   "word": "שלי,",
+   "start": 1.38,
+   "end": 1.62
+  },
+  {
+   "line": 1,
+   "word": "אלכס.",
+   "start": 1.815,
+   "end": 2.365
+  },
+  {
+   "line": 1,
+   "word": "אלכס",
+   "start": 2.86,
+   "end": 3.19
+  },
+  {
+   "line": 1,
+   "word": "היה",
+   "start": 3.19,
+   "end": 3.55
+  },
+  {
+   "line": 1,
+   "word": "אחד",
+   "start": 3.55,
+   "end": 3.89
+  },
+  {
+   "line": 1,
+   "word": "הילדים",
+   "start": 3.89,
+   "end": 4.42
+  },
+  {
+   "line": 1,
+   "word": "הכי",
+   "start": 4.42,
+   "end": 4.59
+  },
+  {
+   "line": 1,
+   "word": "חזקים",
+   "start": 4.59,
+   "end": 5.13
+  },
+  {
+   "line": 1,
+   "word": "והכי",
+   "start": 5.13,
+   "end": 5.47
+  },
+  {
+   "line": 1,
+   "word": "איכותיים",
+   "start": 5.47,
+   "end": 6.19
+  },
+  {
+   "line": 1,
+   "word": "שפגשתי.",
+   "start": 6.19,
+   "end": 6.66
+  },
+  {
+   "line": 1,
+   "word": "תמיד",
+   "start": 7.315,
+   "end": 7.58
+  },
+  {
+   "line": 1,
+   "word": "היה",
+   "start": 7.58,
+   "end": 7.89
+  },
+  {
+   "line": 1,
+   "word": "הראשון",
+   "start": 7.89,
+   "end": 8.35
+  },
+  {
+   "line": 1,
+   "word": "לבוא",
+   "start": 8.35,
+   "end": 8.67
+  },
+  {
+   "line": 1,
+   "word": "לעזור.",
+   "start": 8.67,
+   "end": 8.985
+  },
+  {
+   "line": 1,
+   "word": "הוא",
+   "start": 9.595,
+   "end": 9.92
+  },
+  {
+   "line": 1,
+   "word": "עבר",
+   "start": 9.92,
+   "end": 10.06
+  },
+  {
+   "line": 1,
+   "word": "גיבוש",
+   "start": 10.06,
+   "end": 10.48
+  },
+  {
+   "line": 1,
+   "word": "ליחידה",
+   "start": 10.48,
+   "end": 10.91
+  },
+  {
+   "line": 1,
+   "word": "סודית",
+   "start": 10.91,
+   "end": 11.18
+  },
+  {
+   "line": 1,
+   "word": "בצבא.",
+   "start": 11.18,
+   "end": 11.575
+  },
+  {
+   "line": 1,
+   "word": "כולם",
+   "start": 12.025,
+   "end": 12.36
+  },
+  {
+   "line": 1,
+   "word": "היו",
+   "start": 12.36,
+   "end": 12.64
+  },
+  {
+   "line": 1,
+   "word": "תופסים",
+   "start": 12.64,
+   "end": 13.08
+  },
+  {
+   "line": 1,
+   "word": "ממנו.",
+   "start": 13.08,
+   "end": 13.315
+  },
+  {
+   "line": 1,
+   "word": "וכולם",
+   "start": 13.85,
+   "end": 14.32
+  },
+  {
+   "line": 1,
+   "word": "גם",
+   "start": 14.32,
+   "end": 14.33
+  },
+  {
+   "line": 1,
+   "word": "היו",
+   "start": 14.33,
+   "end": 14.7
+  },
+  {
+   "line": 1,
+   "word": "מפחדים",
+   "start": 14.7,
+   "end": 15.21
+  },
+  {
+   "line": 1,
+   "word": "ממנו.",
+   "start": 15.21,
+   "end": 15.47
+  },
+  {
+   "line": 2,
+   "word": "אני",
+   "start": 16.42,
+   "end": 16.74
+  },
+  {
+   "line": 2,
+   "word": "זוכר,",
+   "start": 16.74,
+   "end": 17.24
+  },
+  {
+   "line": 2,
+   "word": "כשאלכס",
+   "start": 17.24,
+   "end": 17.82
+  },
+  {
+   "line": 2,
+   "word": "חגג",
+   "start": 17.82,
+   "end": 18.05
+  },
+  {
+   "line": 2,
+   "word": "שמונה",
+   "start": 18.05,
+   "end": 18.65
+  },
+  {
+   "line": 2,
+   "word": "עשרה,",
+   "start": 18.65,
+   "end": 19.09
+  },
+  {
+   "line": 2,
+   "word": "נסענו",
+   "start": 19.09,
+   "end": 19.6
+  },
+  {
+   "line": 2,
+   "word": "כל",
+   "start": 19.6,
+   "end": 19.65
+  },
+  {
+   "line": 2,
+   "word": "החברים",
+   "start": 19.65,
+   "end": 20.43
+  },
+  {
+   "line": 2,
+   "word": "לאילת.",
+   "start": 20.43,
+   "end": 20.85
+  },
+  {
+   "line": 2,
+   "word": "גם",
+   "start": 21.225,
+   "end": 21.49
+  },
+  {
+   "line": 2,
+   "word": "לחגוג",
+   "start": 21.49,
+   "end": 21.71
+  },
+  {
+   "line": 2,
+   "word": "לו",
+   "start": 21.71,
+   "end": 22.08
+  },
+  {
+   "line": 2,
+   "word": "יום",
+   "start": 22.08,
+   "end": 22.27
+  },
+  {
+   "line": 2,
+   "word": "הולדת",
+   "start": 22.27,
+   "end": 22.55
+  },
+  {
+   "line": 2,
+   "word": "וגם",
+   "start": 22.55,
+   "end": 22.81
+  },
+  {
+   "line": 2,
+   "word": "לחגוג",
+   "start": 22.81,
+   "end": 23.33
+  },
+  {
+   "line": 2,
+   "word": "איתו",
+   "start": 23.33,
+   "end": 23.7
+  },
+  {
+   "line": 2,
+   "word": "לפני",
+   "start": 23.7,
+   "end": 23.93
+  },
+  {
+   "line": 2,
+   "word": "הגיוס.",
+   "start": 23.93,
+   "end": 24.355
+  },
+  {
+   "line": 2,
+   "word": "ידענו",
+   "start": 24.78,
+   "end": 25.19
+  },
+  {
+   "line": 2,
+   "word": "שלא",
+   "start": 25.19,
+   "end": 25.25
+  },
+  {
+   "line": 2,
+   "word": "נראה",
+   "start": 25.25,
+   "end": 25.69
+  },
+  {
+   "line": 2,
+   "word": "אותו",
+   "start": 25.69,
+   "end": 25.87
+  },
+  {
+   "line": 2,
+   "word": "תקופה.",
+   "start": 25.87,
+   "end": 26.24
+  },
+  {
+   "line": 2,
+   "word": "סגרנו",
+   "start": 26.625,
+   "end": 27.21
+  },
+  {
+   "line": 2,
+   "word": "וילה",
+   "start": 27.21,
+   "end": 27.62
+  },
+  {
+   "line": 2,
+   "word": "מטורפת",
+   "start": 27.62,
+   "end": 28.12
+  },
+  {
+   "line": 2,
+   "word": "באילת.",
+   "start": 28.12,
+   "end": 28.745
+  },
+  {
+   "line": 2,
+   "word": "הבאנו",
+   "start": 29.08,
+   "end": 29.65
+  },
+  {
+   "line": 2,
+   "word": "אוכל,",
+   "start": 29.65,
+   "end": 30.08
+  },
+  {
+   "line": 2,
+   "word": "שתייה,",
+   "start": 30.08,
+   "end": 30.63
+  },
+  {
+   "line": 2,
+   "word": "אלכוהול",
+   "start": 30.63,
+   "end": 31.31
+  },
+  {
+   "line": 2,
+   "word": "בהרמות",
+   "start": 31.31,
+   "end": 32.13
+  },
+  {
+   "line": 2,
+   "word": "וכמובן",
+   "start": 32.13,
+   "end": 32.6
+  },
+  {
+   "line": 2,
+   "word": "סמים.",
+   "start": 32.6,
+   "end": 33.15
+  },
+  {
+   "line": 2,
+   "word": "מלא",
+   "start": 33.49,
+   "end": 33.95
+  },
+  {
+   "line": 2,
+   "word": "סמים.",
+   "start": 33.95,
+   "end": 34.43
+  },
+  {
+   "line": 3,
+   "word": "בזמן",
+   "start": 35.13,
+   "end": 35.55
+  },
+  {
+   "line": 3,
+   "word": "שאנחנו",
+   "start": 35.55,
+   "end": 35.95
+  },
+  {
+   "line": 3,
+   "word": "חוגגים",
+   "start": 35.95,
+   "end": 36.46
+  },
+  {
+   "line": 3,
+   "word": "בווילה,",
+   "start": 36.46,
+   "end": 36.92
+  },
+  {
+   "line": 3,
+   "word": "קיבלתי",
+   "start": 37.075,
+   "end": 37.5
+  },
+  {
+   "line": 3,
+   "word": "טלפון",
+   "start": 37.5,
+   "end": 37.98
+  },
+  {
+   "line": 3,
+   "word": "מאחד",
+   "start": 37.98,
+   "end": 38.24
+  },
+  {
+   "line": 3,
+   "word": "האנשים",
+   "start": 38.24,
+   "end": 38.75
+  },
+  {
+   "line": 3,
+   "word": "שלי",
+   "start": 38.75,
+   "end": 39.03
+  },
+  {
+   "line": 3,
+   "word": "מצפון",
+   "start": 39.03,
+   "end": 39.31
+  },
+  {
+   "line": 3,
+   "word": "תל",
+   "start": 39.31,
+   "end": 39.52
+  },
+  {
+   "line": 3,
+   "word": "אביב.",
+   "start": 39.52,
+   "end": 39.825
+  },
+  {
+   "line": 3,
+   "word": "הוא",
+   "start": 40.52,
+   "end": 40.71
+  },
+  {
+   "line": 3,
+   "word": "ביקש",
+   "start": 40.71,
+   "end": 41.01
+  },
+  {
+   "line": 3,
+   "word": "שאני",
+   "start": 41.01,
+   "end": 41.31
+  },
+  {
+   "line": 3,
+   "word": "אעזור",
+   "start": 41.31,
+   "end": 41.69
+  },
+  {
+   "line": 3,
+   "word": "לחבר",
+   "start": 41.69,
+   "end": 42.11
+  },
+  {
+   "line": 3,
+   "word": "שלו",
+   "start": 42.11,
+   "end": 42.21
+  },
+  {
+   "line": 3,
+   "word": "באילת.",
+   "start": 42.21,
+   "end": 42.62
+  },
+  {
+   "line": 3,
+   "word": "כמובן",
+   "start": 43.1,
+   "end": 43.51
+  },
+  {
+   "line": 3,
+   "word": "שהסכמתי.",
+   "start": 43.51,
+   "end": 44.06
+  },
+  {
+   "line": 3,
+   "word": "עליתי",
+   "start": 44.6,
+   "end": 44.98
+  },
+  {
+   "line": 3,
+   "word": "על",
+   "start": 44.98,
+   "end": 45.1
+  },
+  {
+   "line": 3,
+   "word": "מונית",
+   "start": 45.1,
+   "end": 45.38
+  },
+  {
+   "line": 3,
+   "word": "ונסעתי",
+   "start": 45.38,
+   "end": 45.91
+  },
+  {
+   "line": 3,
+   "word": "אליו.",
+   "start": 45.91,
+   "end": 46.18
+  },
+  {
+   "line": 4,
+   "word": "הוא",
+   "start": 47.68,
+   "end": 47.95
+  },
+  {
+   "line": 4,
+   "word": "הכניס",
+   "start": 47.95,
+   "end": 48.25
+  },
+  {
+   "line": 4,
+   "word": "אותי",
+   "start": 48.25,
+   "end": 48.73
+  },
+  {
+   "line": 4,
+   "word": "לסוויטה",
+   "start": 48.73,
+   "end": 49.15
+  },
+  {
+   "line": 4,
+   "word": "מלכותית",
+   "start": 49.15,
+   "end": 49.84
+  },
+  {
+   "line": 4,
+   "word": "במלון",
+   "start": 49.84,
+   "end": 50.15
+  },
+  {
+   "line": 4,
+   "word": "הכי",
+   "start": 50.15,
+   "end": 50.4
+  },
+  {
+   "line": 4,
+   "word": "מפואר",
+   "start": 50.4,
+   "end": 50.89
+  },
+  {
+   "line": 4,
+   "word": "באילת.",
+   "start": 50.89,
+   "end": 51.24
+  },
+  {
+   "line": 4,
+   "word": "שם",
+   "start": 51.815,
+   "end": 52.14
+  },
+  {
+   "line": 4,
+   "word": "הבנתי,",
+   "start": 52.14,
+   "end": 52.635
+  },
+  {
+   "line": 4,
+   "word": "בפעם",
+   "start": 52.74,
+   "end": 53.13
+  },
+  {
+   "line": 4,
+   "word": "הראשונה,",
+   "start": 53.13,
+   "end": 53.69
+  },
+  {
+   "line": 4,
+   "word": "מה",
+   "start": 53.97,
+   "end": 54.25
+  },
+  {
+   "line": 4,
+   "word": "זה",
+   "start": 54.25,
+   "end": 54.46
+  },
+  {
+   "line": 4,
+   "word": "עושר",
+   "start": 54.46,
+   "end": 54.69
+  },
+  {
+   "line": 4,
+   "word": "אמיתי.",
+   "start": 54.69,
+   "end": 55.25
+  },
+  {
+   "line": 4,
+   "word": "מה",
+   "start": 55.74,
+   "end": 56.05
+  },
+  {
+   "line": 4,
+   "word": "זה",
+   "start": 56.05,
+   "end": 56.1
+  },
+  {
+   "line": 4,
+   "word": "כמויות",
+   "start": 56.1,
+   "end": 56.81
+  },
+  {
+   "line": 4,
+   "word": "של",
+   "start": 56.81,
+   "end": 57.07
+  },
+  {
+   "line": 4,
+   "word": "כסף.",
+   "start": 57.07,
+   "end": 57.33
+  },
+  {
+   "line": 4,
+   "word": "הבחורות",
+   "start": 57.865,
+   "end": 58.51
+  },
+  {
+   "line": 4,
+   "word": "הכי",
+   "start": 58.51,
+   "end": 58.71
+  },
+  {
+   "line": 4,
+   "word": "יפות",
+   "start": 58.71,
+   "end": 58.93
+  },
+  {
+   "line": 4,
+   "word": "שראיתי",
+   "start": 58.93,
+   "end": 59.56
+  },
+  {
+   "line": 4,
+   "word": "ישבו",
+   "start": 59.56,
+   "end": 59.83
+  },
+  {
+   "line": 4,
+   "word": "בבגדי",
+   "start": 59.83,
+   "end": 60.34
+  },
+  {
+   "line": 4,
+   "word": "ים",
+   "start": 60.34,
+   "end": 60.51
+  },
+  {
+   "line": 4,
+   "word": "על",
+   "start": 60.51,
+   "end": 60.56
+  },
+  {
+   "line": 4,
+   "word": "כיסאות",
+   "start": 60.56,
+   "end": 61.1
+  },
+  {
+   "line": 4,
+   "word": "השיזוף",
+   "start": 61.1,
+   "end": 61.67
+  },
+  {
+   "line": 4,
+   "word": "במרפסת",
+   "start": 61.67,
+   "end": 62.19
+  },
+  {
+   "line": 4,
+   "word": "הענקית",
+   "start": 62.19,
+   "end": 62.53
+  },
+  {
+   "line": 4,
+   "word": "שמשקיפה",
+   "start": 62.53,
+   "end": 63.17
+  },
+  {
+   "line": 4,
+   "word": "על",
+   "start": 63.17,
+   "end": 63.31
+  },
+  {
+   "line": 4,
+   "word": "כל",
+   "start": 63.31,
+   "end": 63.5
+  },
+  {
+   "line": 4,
+   "word": "הטיילת.",
+   "start": 63.5,
+   "end": 64.015
+  },
+  {
+   "line": 4,
+   "word": "בקבוקים",
+   "start": 64.45,
+   "end": 64.94
+  },
+  {
+   "line": 4,
+   "word": "של",
+   "start": 64.94,
+   "end": 65.2
+  },
+  {
+   "line": 4,
+   "word": "האלכוהול",
+   "start": 65.2,
+   "end": 65.79
+  },
+  {
+   "line": 4,
+   "word": "הכי",
+   "start": 65.79,
+   "end": 65.99
+  },
+  {
+   "line": 4,
+   "word": "יוקרתי",
+   "start": 65.99,
+   "end": 66.59
+  },
+  {
+   "line": 4,
+   "word": "שיש.",
+   "start": 66.59,
+   "end": 66.8
+  },
+  {
+   "line": 4,
+   "word": "ביקשו",
+   "start": 67.31,
+   "end": 67.71
+  },
+  {
+   "line": 4,
+   "word": "ממני",
+   "start": 67.71,
+   "end": 68.05
+  },
+  {
+   "line": 4,
+   "word": "לעזור",
+   "start": 68.05,
+   "end": 68.39
+  },
+  {
+   "line": 4,
+   "word": "להם",
+   "start": 68.39,
+   "end": 68.64
+  },
+  {
+   "line": 4,
+   "word": "עם",
+   "start": 68.64,
+   "end": 68.71
+  },
+  {
+   "line": 4,
+   "word": "משהו",
+   "start": 68.71,
+   "end": 69.06
+  },
+  {
+   "line": 4,
+   "word": "לעשן.",
+   "start": 69.06,
+   "end": 69.32
+  },
+  {
+   "line": 4,
+   "word": "כמובן",
+   "start": 69.82,
+   "end": 70.29
+  },
+  {
+   "line": 4,
+   "word": "שהסכמתי.",
+   "start": 70.29,
+   "end": 70.87
+  },
+  {
+   "line": 5,
+   "word": "ותוך",
+   "start": 73.62,
+   "end": 74.06
+  },
+  {
+   "line": 5,
+   "word": "כדי",
+   "start": 74.06,
+   "end": 74.51
+  },
+  {
+   "line": 5,
+   "word": "אני",
+   "start": 74.51,
+   "end": 74.78
+  },
+  {
+   "line": 5,
+   "word": "מקבל",
+   "start": 74.78,
+   "end": 75.43
+  },
+  {
+   "line": 5,
+   "word": "טלפון,",
+   "start": 75.43,
+   "end": 75.93
+  },
+  {
+   "line": 5,
+   "word": "מהחבר׳ה",
+   "start": 76.07,
+   "end": 76.8
+  },
+  {
+   "line": 5,
+   "word": "שלי.",
+   "start": 76.8,
+   "end": 77.16
+  },
+  {
+   "line": 6,
+   "word": "דין,",
+   "start": 77.51,
+   "end": 77.76
+  },
+  {
+   "line": 6,
+   "word": "בוא",
+   "start": 77.76,
+   "end": 78.01
+  },
+  {
+   "line": 6,
+   "word": "מהר!",
+   "start": 78.01,
+   "end": 78.26
+  },
+  {
+   "line": 6,
+   "word": "אלכס",
+   "start": 78.51,
+   "end": 78.843
+  },
+  {
+   "line": 6,
+   "word": "נרצח!",
+   "start": 78.843,
+   "end": 79.177
+  },
+  {
+   "line": 7,
+   "word": "באותו",
+   "start": 79.777,
+   "end": 80.354
+  },
+  {
+   "line": 7,
+   "word": "רגע",
+   "start": 80.354,
+   "end": 80.725
+  },
+  {
+   "line": 7,
+   "word": "ראיתי",
+   "start": 80.725,
+   "end": 81.302
+  },
+  {
+   "line": 7,
+   "word": "שחור.",
+   "start": 81.302,
+   "end": 81.777
+  },
+  {
+   "line": 7,
+   "word": "לא",
+   "start": 82.877,
+   "end": 83.138
+  },
+  {
+   "line": 7,
+   "word": "הבנתי.",
+   "start": 83.138,
+   "end": 83.7
+  },
+  {
+   "line": 8,
+   "word": "בזמן",
+   "start": 85.3,
+   "end": 85.705
+  },
+  {
+   "line": 8,
+   "word": "שהייתי",
+   "start": 85.705,
+   "end": 86.287
+  },
+  {
+   "line": 8,
+   "word": "במלון",
+   "start": 86.287,
+   "end": 86.78
+  },
+  {
+   "line": 8,
+   "word": "עם",
+   "start": 86.78,
+   "end": 87.009
+  },
+  {
+   "line": 8,
+   "word": "הבחורים",
+   "start": 87.009,
+   "end": 87.678
+  },
+  {
+   "line": 8,
+   "word": "מתל",
+   "start": 87.678,
+   "end": 87.995
+  },
+  {
+   "line": 8,
+   "word": "אביב,",
+   "start": 87.995,
+   "end": 88.4
+  },
+  {
+   "line": 8,
+   "word": "החבר׳ה",
+   "start": 88.85,
+   "end": 89.436
+  },
+  {
+   "line": 8,
+   "word": "שלי",
+   "start": 89.436,
+   "end": 89.755
+  },
+  {
+   "line": 8,
+   "word": "הסתכסכו",
+   "start": 89.755,
+   "end": 90.429
+  },
+  {
+   "line": 8,
+   "word": "עם",
+   "start": 90.429,
+   "end": 90.66
+  },
+  {
+   "line": 8,
+   "word": "השכנים",
+   "start": 90.66,
+   "end": 91.245
+  },
+  {
+   "line": 8,
+   "word": "בווילה",
+   "start": 91.245,
+   "end": 91.831
+  },
+  {
+   "line": 8,
+   "word": "ליד.",
+   "start": 91.831,
+   "end": 92.15
+  },
+  {
+   "line": 8,
+   "word": "כשאלכס",
+   "start": 92.6,
+   "end": 93.187
+  },
+  {
+   "line": 8,
+   "word": "בא",
+   "start": 93.187,
+   "end": 93.418
+  },
+  {
+   "line": 8,
+   "word": "להרגיע",
+   "start": 93.418,
+   "end": 94.005
+  },
+  {
+   "line": 8,
+   "word": "את",
+   "start": 94.005,
+   "end": 94.236
+  },
+  {
+   "line": 8,
+   "word": "העניינים,",
+   "start": 94.236,
+   "end": 95.0
+  },
+  {
+   "line": 8,
+   "word": "אחד",
+   "start": 95.45,
+   "end": 95.761
+  },
+  {
+   "line": 8,
+   "word": "השכנים",
+   "start": 95.761,
+   "end": 96.331
+  },
+  {
+   "line": 8,
+   "word": "דקר",
+   "start": 96.331,
+   "end": 96.642
+  },
+  {
+   "line": 8,
+   "word": "אותו",
+   "start": 96.642,
+   "end": 97.039
+  },
+  {
+   "line": 8,
+   "word": "בלב.",
+   "start": 97.039,
+   "end": 97.35
+  }
+ ],
+ "captions": [
+  {
+   "start": 0.48,
+   "end": 2.8,
+   "text": "תכירו את חבר שלי, אלכס.",
+   "emphasis": "אלכס."
+  },
+  {
+   "start": 2.8,
+   "end": 4.36,
+   "text": "אלכס היה אחד הילדים",
+   "emphasis": "אלכס"
+  },
+  {
+   "start": 4.36,
+   "end": 5.07,
+   "text": "הכי חזקים",
+   "emphasis": "חזקים"
+  },
+  {
+   "start": 5.07,
+   "end": 7.255,
+   "text": "והכי איכותיים שפגשתי.",
+   "emphasis": null
+  },
+  {
+   "start": 7.255,
+   "end": 8.29,
+   "text": "תמיד היה הראשון",
+   "emphasis": null
+  },
+  {
+   "start": 8.29,
+   "end": 9.535,
+   "text": "לבוא לעזור.",
+   "emphasis": "לעזור."
+  },
+  {
+   "start": 9.535,
+   "end": 10.42,
+   "text": "הוא עבר גיבוש",
+   "emphasis": "גיבוש"
+  },
+  {
+   "start": 10.42,
+   "end": 11.965,
+   "text": "ליחידה סודית בצבא.",
+   "emphasis": null
+  },
+  {
+   "start": 11.965,
+   "end": 13.79,
+   "text": "כולם היו תופסים ממנו.",
+   "emphasis": "תופסים"
+  },
+  {
+   "start": 13.79,
+   "end": 14.64,
+   "text": "וכולם גם היו",
+   "emphasis": null
+  },
+  {
+   "start": 14.64,
+   "end": 16.07,
+   "text": "מפחדים ממנו.",
+   "emphasis": "מפחדים"
+  },
+  {
+   "start": 16.36,
+   "end": 17.18,
+   "text": "אני זוכר,",
+   "emphasis": null
+  },
+  {
+   "start": 17.18,
+   "end": 17.99,
+   "text": "כשאלכס חגג",
+   "emphasis": null
+  },
+  {
+   "start": 17.99,
+   "end": 19.03,
+   "text": "שמונה עשרה,",
+   "emphasis": "שמונה"
+  },
+  {
+   "start": 19.03,
+   "end": 21.165,
+   "text": "נסענו כל החברים לאילת.",
+   "emphasis": "נסענו"
+  },
+  {
+   "start": 21.165,
+   "end": 22.02,
+   "text": "גם לחגוג לו",
+   "emphasis": null
+  },
+  {
+   "start": 22.02,
+   "end": 22.49,
+   "text": "יום הולדת",
+   "emphasis": "יום"
+  },
+  {
+   "start": 22.49,
+   "end": 23.64,
+   "text": "וגם לחגוג איתו",
+   "emphasis": null
+  },
+  {
+   "start": 23.64,
+   "end": 24.72,
+   "text": "לפני הגיוס.",
+   "emphasis": "הגיוס."
+  },
+  {
+   "start": 24.72,
+   "end": 25.63,
+   "text": "ידענו שלא נראה",
+   "emphasis": null
+  },
+  {
+   "start": 25.63,
+   "end": 26.565,
+   "text": "אותו תקופה.",
+   "emphasis": "תקופה."
+  },
+  {
+   "start": 26.565,
+   "end": 29.02,
+   "text": "סגרנו וילה מטורפת באילת.",
+   "emphasis": "מטורפת"
+  },
+  {
+   "start": 29.02,
+   "end": 30.57,
+   "text": "הבאנו אוכל, שתייה,",
+   "emphasis": null
+  },
+  {
+   "start": 30.57,
+   "end": 32.07,
+   "text": "אלכוהול בהרמות",
+   "emphasis": null
+  },
+  {
+   "start": 32.07,
+   "end": 33.43,
+   "text": "וכמובן סמים.",
+   "emphasis": "סמים."
+  },
+  {
+   "start": 33.43,
+   "end": 35.03,
+   "text": "מלא סמים.",
+   "emphasis": "סמים."
+  },
+  {
+   "start": 35.07,
+   "end": 35.89,
+   "text": "בזמן שאנחנו",
+   "emphasis": null
+  },
+  {
+   "start": 35.89,
+   "end": 37.015,
+   "text": "חוגגים בווילה,",
+   "emphasis": "בווילה,"
+  },
+  {
+   "start": 37.015,
+   "end": 37.92,
+   "text": "קיבלתי טלפון",
+   "emphasis": "קיבלתי"
+  },
+  {
+   "start": 37.92,
+   "end": 38.97,
+   "text": "מאחד האנשים שלי",
+   "emphasis": null
+  },
+  {
+   "start": 38.97,
+   "end": 40.425,
+   "text": "מצפון תל אביב.",
+   "emphasis": "מצפון"
+  },
+  {
+   "start": 40.46,
+   "end": 41.63,
+   "text": "הוא ביקש שאני אעזור",
+   "emphasis": null
+  },
+  {
+   "start": 41.63,
+   "end": 43.04,
+   "text": "לחבר שלו באילת.",
+   "emphasis": "באילת."
+  },
+  {
+   "start": 43.04,
+   "end": 44.54,
+   "text": "כמובן שהסכמתי.",
+   "emphasis": "שהסכמתי."
+  },
+  {
+   "start": 44.54,
+   "end": 45.32,
+   "text": "עליתי על מונית",
+   "emphasis": "מונית"
+  },
+  {
+   "start": 45.32,
+   "end": 46.78,
+   "text": "ונסעתי אליו.",
+   "emphasis": null
+  },
+  {
+   "start": 47.62,
+   "end": 48.67,
+   "text": "הוא הכניס אותי",
+   "emphasis": null
+  },
+  {
+   "start": 48.67,
+   "end": 49.78,
+   "text": "לסוויטה מלכותית",
+   "emphasis": "מלכותית"
+  },
+  {
+   "start": 49.78,
+   "end": 51.755,
+   "text": "במלון הכי מפואר באילת.",
+   "emphasis": "מפואר"
+  },
+  {
+   "start": 51.755,
+   "end": 52.68,
+   "text": "שם הבנתי,",
+   "emphasis": null
+  },
+  {
+   "start": 52.68,
+   "end": 53.91,
+   "text": "בפעם הראשונה,",
+   "emphasis": null
+  },
+  {
+   "start": 53.91,
+   "end": 55.68,
+   "text": "מה זה עושר אמיתי.",
+   "emphasis": "עושר"
+  },
+  {
+   "start": 55.68,
+   "end": 56.75,
+   "text": "מה זה כמויות",
+   "emphasis": null
+  },
+  {
+   "start": 56.75,
+   "end": 57.805,
+   "text": "של כסף.",
+   "emphasis": "כסף."
+  },
+  {
+   "start": 57.805,
+   "end": 58.87,
+   "text": "הבחורות הכי יפות",
+   "emphasis": null
+  },
+  {
+   "start": 58.87,
+   "end": 59.77,
+   "text": "שראיתי ישבו",
+   "emphasis": null
+  },
+  {
+   "start": 59.77,
+   "end": 60.45,
+   "text": "בבגדי ים",
+   "emphasis": null
+  },
+  {
+   "start": 60.45,
+   "end": 61.61,
+   "text": "על כיסאות השיזוף",
+   "emphasis": null
+  },
+  {
+   "start": 61.61,
+   "end": 62.47,
+   "text": "במרפסת הענקית",
+   "emphasis": "הענקית"
+  },
+  {
+   "start": 62.47,
+   "end": 64.39,
+   "text": "שמשקיפה על כל הטיילת.",
+   "emphasis": null
+  },
+  {
+   "start": 64.39,
+   "end": 65.73,
+   "text": "בקבוקים של האלכוהול",
+   "emphasis": null
+  },
+  {
+   "start": 65.73,
+   "end": 67.25,
+   "text": "הכי יוקרתי שיש.",
+   "emphasis": "יוקרתי"
+  },
+  {
+   "start": 67.25,
+   "end": 68.58,
+   "text": "ביקשו ממני לעזור להם",
+   "emphasis": null
+  },
+  {
+   "start": 68.58,
+   "end": 69.76,
+   "text": "עם משהו לעשן.",
+   "emphasis": "לעשן."
+  },
+  {
+   "start": 69.76,
+   "end": 71.47,
+   "text": "כמובן שהסכמתי.",
+   "emphasis": "שהסכמתי."
+  },
+  {
+   "start": 73.56,
+   "end": 74.45,
+   "text": "ותוך כדי",
+   "emphasis": null
+  },
+  {
+   "start": 74.45,
+   "end": 76.01,
+   "text": "אני מקבל טלפון,",
+   "emphasis": "טלפון,"
+  },
+  {
+   "start": 76.01,
+   "end": 77.45,
+   "text": "מהחבר׳ה שלי.",
+   "emphasis": null
+  },
+  {
+   "start": 77.45,
+   "end": 78.45,
+   "text": "דין, בוא מהר!",
+   "emphasis": null
+  },
+  {
+   "start": 78.45,
+   "end": 79.717,
+   "text": "אלכס נרצח!",
+   "emphasis": null
+  },
+  {
+   "start": 79.717,
+   "end": 80.665,
+   "text": "באותו רגע",
+   "emphasis": null
+  },
+  {
+   "start": 80.665,
+   "end": 82.377,
+   "text": "ראיתי שחור.",
+   "emphasis": "שחור."
+  },
+  {
+   "start": 82.817,
+   "end": 84.3,
+   "text": "לא הבנתי.",
+   "emphasis": "הבנתי."
+  },
+  {
+   "start": 85.24,
+   "end": 86.72,
+   "text": "בזמן שהייתי במלון",
+   "emphasis": null
+  },
+  {
+   "start": 86.72,
+   "end": 88.79,
+   "text": "עם הבחורים מתל אביב,",
+   "emphasis": "מתל"
+  },
+  {
+   "start": 88.79,
+   "end": 90.369,
+   "text": "החבר׳ה שלי הסתכסכו",
+   "emphasis": "הסתכסכו"
+  },
+  {
+   "start": 90.369,
+   "end": 92.54,
+   "text": "עם השכנים בווילה ליד.",
+   "emphasis": null
+  },
+  {
+   "start": 92.54,
+   "end": 93.945,
+   "text": "כשאלכס בא להרגיע",
+   "emphasis": "להרגיע"
+  },
+  {
+   "start": 93.945,
+   "end": 95.39,
+   "text": "את העניינים,",
+   "emphasis": null
+  },
+  {
+   "start": 95.39,
+   "end": 96.271,
+   "text": "אחד השכנים",
+   "emphasis": null
+  },
+  {
+   "start": 96.271,
+   "end": 97.95,
+   "text": "דקר אותו בלב.",
+   "emphasis": "דקר"
+  }
+ ],
+ "placeholder_lines": [
+  "L6",
+  "L7",
+  "L8"
+ ],
+ "phrase_splits": {
+  "L1": [
+   1.315,
+   2.21,
+   6.585,
+   8.885,
+   11.395,
+   13.18
+  ],
+  "L2": [
+   4.745,
+   8.27,
+   10.135,
+   12.62,
+   17.03
+  ],
+  "L3": [
+   1.985,
+   5.16,
+   7.85,
+   9.32
+  ],
+  "L4": [
+   3.965,
+   5.13,
+   6.27,
+   7.94,
+   10.035,
+   16.67,
+   19.49,
+   22.01
+  ],
+  "L5": [
+   2.5
+  ],
+  "L6": [
+   0.975
+  ],
+  "L7": [
+   2.35
+  ],
+  "L8": [
+   3.425,
+   7.175,
+   10.025
+  ]
+ }
+}

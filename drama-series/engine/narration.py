@@ -59,13 +59,24 @@ class Line:
         self.text = cfg["text"]
         self.phrase_texts = [p.strip() for p in self.text.split(" / ") if p.strip()]
         self.words_display = [w for p in self.phrase_texts for w in p.split()]
-        self.audio_path = path_fn(cfg["audio"])
+        self.placeholder = False
+        try:
+            self.audio_path = path_fn(cfg["audio"])
+        except FileNotFoundError:
+            if cfg.get("placeholder") is None:
+                raise
+            self._make_placeholder(cfg)   # no recording yet: time it from the text
+            return
         a = sound.load_audio(self.audio_path).mean(1)
         tempo = float(cfg.get("tempo", 1.0))   # <1 = slower delivery (pitch kept)
         if abs(tempo - 1.0) > 1e-3:
             a = _atempo(a, tempo)
         a = sound.fft_filter(a, lo=70)  # clean rumble, keep the voice
         a = a * 10 ** (float(cfg.get("gain_db", 0.0)) / 20)
+        if cfg.get("filter") == "phone":       # voice heard through a phone
+            a = sound.fft_filter(a, lo=380, hi=3300, order=3)
+            m = np.max(np.abs(a)) + 1e-9
+            a = np.tanh(2.2 * a / m) * m * 0.8
         self.audio = a
         self.dur = len(a) / SR
         db = _energy_db(a)
@@ -103,6 +114,35 @@ class Line:
             edges = np.maximum.accumulate(edges)
             ws = [(w, float(edges[j]), float(edges[j + 1])) for j, w in enumerate(words)]
             self.phrases.append({"text": ptxt, "cut0": s0, "cut1": s1, "v0": p0, "v1": p1, "words": ws})
+
+
+def _placeholder(self, cfg):
+    """Estimate phrase/word timing from the text (silent audio) so the edit can be built before recording."""
+    ph = cfg.get("placeholder") or {}
+    cps, pause, lead = float(ph.get("cps", 10)), float(ph.get("pause", 0.45)), 0.1
+    self.placeholder, self.audio_path = True, None
+    t, splits, self.phrases = lead, [], []
+    for k, ptxt in enumerate(self.phrase_texts):
+        words = ptxt.split()
+        weights = np.array([max(1, len(clean_word(w))) for w in words], float)
+        d = weights.sum() / cps
+        if k:
+            splits.append(t - pause / 2)
+        w2 = weights + 0.6
+        edges = t + d * np.concatenate([[0], np.cumsum(w2) / w2.sum()])
+        ws = [(w, float(edges[j]), float(edges[j + 1])) for j, w in enumerate(words)]
+        self.phrases.append({"text": ptxt, "cut0": 0.0, "cut1": 0.0, "v0": t, "v1": t + d, "words": ws})
+        t += d + pause
+    total = t - pause + lead
+    bounds = [0.0] + splits + [total]
+    for k, p_ in enumerate(self.phrases):
+        p_["cut0"], p_["cut1"] = bounds[k], bounds[k + 1]
+    self.splits, self.dur = splits, total
+    self.audio = np.zeros(int(total * SR))
+    self.v0, self.v1 = lead, total - lead
+
+
+Line._make_placeholder = _placeholder
 
 
 class Narration:

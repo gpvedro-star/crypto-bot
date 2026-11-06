@@ -121,11 +121,13 @@ class Shot:
     def __init__(self, ep, cfg, A):
         self.cfg, self.id = cfg, cfg["id"]
         self.start = A(cfg["at"])
-        key = (ep.path(cfg["image"]), cfg.get("grade", "noir"), cfg.get("haze", 0.0), cfg.get("exposure", 1.0),
-               float(cfg.get("punch", getattr(ep, "punch", 0.0))))
-        if key not in _SRC_CACHE:
-            _SRC_CACHE[key] = look.load_source(key[0], SCALE, key[1], key[2], key[3], punch=key[4])
-        self.src = _SRC_CACHE[key]
+        self.src = None
+        if not cfg.get("black"):        # black: a cut to black in the middle of the episode
+            key = (ep.path(cfg["image"]), cfg.get("grade", "noir"), cfg.get("haze", 0.0), cfg.get("exposure", 1.0),
+                   float(cfg.get("punch", getattr(ep, "punch", 0.0))))
+            if key not in _SRC_CACHE:
+                _SRC_CACHE[key] = look.load_source(key[0], SCALE, key[1], key[2], key[3], punch=key[4])
+            self.src = _SRC_CACHE[key]
         self.trans = cfg.get("transition", "cut")  # cut | fade:0.25 | dip:0.3
         self.fx = set(cfg.get("effects", []) or [])
         self.caption_y = cfg.get("caption_y")
@@ -206,6 +208,8 @@ class Shot:
         return ((p[0] * sw - x0) / (x1 - x0) * W, (p[1] * sh - y0) / (y1 - y0) * H)
 
     def render(self, T, ep, fi):
+        if self.src is None:
+            return np.zeros((H, W, 3), np.float32)
         Tr = min(T, self.freeze["t"]) if self.freeze else T
         rot = self.cam(Tr)[3]
         if abs(rot) > 0.01:  # tilted frame: render a larger window, rotate, crop the centre
@@ -218,6 +222,10 @@ class Shot:
         else:
             f = look.to_float(self.src.resize((W, H), Image.BICUBIC, box=self.window(T)))
         f *= ep.vignette
+        if "siren" in self.fx:  # red emergency light pulsing over the scene
+            k = max(0.0, math.sin(2 * math.pi * 1.6 * T)) ** 2 * 0.13
+            f[..., 0] *= 1 + k
+            f[..., 1:] *= 1 - 0.35 * k
         fz = self.freeze
         if fz and T >= fz["t"]:
             u = T - fz["t"]
@@ -244,7 +252,8 @@ class Shot:
 # =========================================================================== captions
 
 class Group:
-    def __init__(self, ep, words, emph, y_default, strong=None, green=None):
+    def __init__(self, ep, words, emph, y_default, strong=None, green=None, base=None, still=False):
+        self.still = still
         self.words = words  # list of dict(word, t0, t1, display)
         self.emph = emph    # index into words or None
         self.t0 = words[0]["t0"] - 0.06
@@ -255,7 +264,8 @@ class Group:
         self.items = []
         for i, w in enumerate(words):
             strong_i = i == emph or (strong is not None and i in strong)
-            col = ep.green if (green and i in green) else ep.word_color(w["display"], emphasized=strong_i)
+            col = ep.green if (green and i in green) else (
+                base if (base is not None and not strong_i) else ep.word_color(w["display"], emphasized=strong_i))
             wt = weight + (100 if strong_i else 0)
             lay = text_layer(w["display"], "sans", min(900, wt), size, tuple(col), shadow=0.9, blur=11)
             self.items.append(lay)
@@ -297,7 +307,7 @@ class Group:
             return
         nl = len(self.lines)
         top_base = cy - (nl - 1) * self.line_h / 2
-        rise = (1 - a_in) * 10
+        rise = 0.0 if self.still else (1 - a_in) * 10
         for li, idxs in enumerate(self.lines):
             lw = sum(self.slot(i) for i in idxs) + self.space * (len(idxs) - 1)
             xr = cx + lw / 2
@@ -307,7 +317,7 @@ class Group:
                 sl = self.slot(i)
                 xl = xr - sl
                 x, y = xl + (sl - adv) / 2 - pad, base - asc - pad + rise
-                if i == self.emph:
+                if i == self.emph and not self.still:
                     te = self.words[i]["t0"]
                     v = (T - te) / 0.28
                     k = 1 + 0.12 * math.sin(math.pi * v) if 0 <= v <= 1 else 1.0
@@ -359,6 +369,9 @@ class Episode:
                     "cy": st.get("caption_y", 1470)}
         t0 = time.time()
         self.nar = Narration(c["narration"], self.path)
+        self.placeholders = [ln.id for ln in self.nar.lines if getattr(ln, "placeholder", False)]
+        if self.placeholders:
+            print("!! NO RECORDING YET for", ", ".join(self.placeholders), "- timing estimated from the text, silent in the mix")
         self.A = A = Anchors(self.nar, c.get("marks"))
         self.shots = []
         for sc in c["shots"]:
@@ -436,7 +449,9 @@ class Episode:
                         raise SystemExit(f"captions of line {li + 1} do not match its text at '{disp}'")
                     ws.append(dict(words[k], display=disp))
                     k += 1
-                self.groups.append(Group(self, ws, emph, self.cap["cy"], strong=strong, green=green))
+                self.groups.append(Group(self, ws, emph, self.cap["cy"], strong=strong, green=green,
+                                         base=hexcol(lc["caption_color"]) if lc.get("caption_color") else None,
+                                         still=bool(lc.get("caption_still"))))
             if k != len(words):
                 raise SystemExit(f"captions of line {li + 1} are missing words")
         for a, b in zip(self.groups, self.groups[1:]):
@@ -633,6 +648,16 @@ class Episode:
             return (np.clip(f, 0, 1) * 255 + 0.5).astype(np.uint8)  # logo shown as is (no grain)
         elif T >= self.end_t:
             self.draw_endcard(f, T)
+        if self.placeholders and T < self.blackout:  # draft marker while a recording is missing
+            for li, ln in enumerate(self.nar.lines):
+                if ln.id in self.placeholders:
+                    a0, a1 = self.nar.line_span(li)
+                    if a0 - 0.3 <= T <= a1 + 0.3:
+                        if not hasattr(self, "_draft_lay"):
+                            self._draft_lay = text_layer("טיוטה: הקלטה חסרה", "sans", 700, 34, (1.0, 0.35, 0.35), shadow=0.9)
+                        lay, pad, adv, asc = self._draft_lay
+                        blit(f, lay, W / 2 - adv / 2 - pad, 160 - asc - pad, 0.9)
+                        break
         f = f + self.grain[(fi // 2) % len(self.grain)] * 0.026
         return (np.clip(f, 0, 1) * 255 + 0.5).astype(np.uint8)
 
@@ -656,7 +681,7 @@ class Episode:
             d = {"style": s["style"], "t0": A(s["from"]), "t1": A(s["to"]), "gain": s.get("gain", 1.0)}
             if "grid" in s:
                 d["grid0"] = A(s["grid"])
-            for key in ("fade_in", "fade_out", "highpass"):
+            for key in ("fade_in", "fade_out", "highpass", "bpm"):
                 if key in s:
                     d[key] = float(s[key])
             if "tapestop" in s:
@@ -725,9 +750,12 @@ class Episode:
                 put(hits, t, sfx.lighter(), g)
             elif k == "bubbles":
                 put(hits, t, sfx.bubbles(e.get("dur", 1.8)), g)
-            elif k in ("street", "waves", "breath", "steps_run"):
+            elif k in ("street", "waves", "breath", "steps_run", "crowd", "crickets", "taxi", "steps_echo"):
                 d = until - t
                 x = {"street": lambda: sfx.street(d), "waves": lambda: sfx.waves(d),
+                     "crowd": lambda: sfx.crowd(d, muffled=bool(e.get("muffled"))),
+                     "crickets": lambda: sfx.crickets(d), "taxi": lambda: sfx.taxi(d),
+                     "steps_echo": lambda: sfx.steps_echo(d, float(e.get("rate", 2.8))),
                      "breath": lambda: sfx.breath(d, float(e.get("rate", 1.7))),
                      "steps_run": lambda: sfx.footsteps(d, float(e.get("rate", 3.2)), seed=7, pan=0.05)}[k]()
                 x = sound.stereo(np.asarray(x, float))[: int(d * SR)]
@@ -736,8 +764,10 @@ class Episode:
                     x[:fi] *= np.linspace(0, 1, fi)[:, None]
                 if fo:
                     x[-fo:] *= np.linspace(1, 0, fo)[:, None]
-                put(amb if k in ("street", "waves") else hits, t, x, g)
-            elif k in ("scooter_start", "register", "clank", "keys"):
+                put(amb if k in ("street", "waves", "crowd", "crickets", "taxi") else hits, t, x, g)
+            elif k == "ringtone":
+                put(hits, t, sfx.ringtone(int(e.get("reps", 2))), g)
+            elif k in ("scooter_start", "register", "clank", "keys", "step_stop"):
                 put(hits, t, getattr(sfx, k)(), g)
             elif k == "clink":
                 put(hits, t, sfx.clink(), g)
@@ -837,12 +867,13 @@ def write_timing(ep, path):
     data = {
         "episode": ep.code, "total": round(ep.total, 3), "blackout": round(ep.blackout, 3), "endcard": round(ep.end_t, 3),
         "outro_logo": round(ep.logo["t"], 3) if ep.logo else None,
-        "shots": [{"id": s.id, "image": s.cfg["image"], "start": round(s.start, 3), "end": round(s.end, 3),
+        "shots": [{"id": s.id, "image": s.cfg.get("image", "(black)"), "start": round(s.start, 3), "end": round(s.end, 3),
                    "transition": s.trans} for s in ep.shots],
         "words": [{"line": w["line"] + 1, "word": w["word"], "start": round(w["t0"], 3), "end": round(w["t1"], 3)}
                   for w in ep.nar.words],
         "captions": [{"start": round(g.t0, 3), "end": round(g.t1, 3), "text": " ".join(g.text_lines()),
                       "emphasis": g.words[g.emph]["display"] if g.emph is not None else None} for g in ep.groups],
+        "placeholder_lines": ep.placeholders,
         "phrase_splits": {ln.id: [round(s, 3) for s in ln.splits] for ln in ep.nar.lines},
     }
     with open(path, "w", encoding="utf-8") as fh:
@@ -917,7 +948,7 @@ def main():
     shutil.copy(base + ".srt", os.path.join(ep.dir, ep.code + ".srt"))
     shutil.copy(base + "_timing.json", os.path.join(ep.dir, ep.code + "_timing.json"))
     for s in ep.shots:
-        print(f"  {s.id}  {s.start:6.2f} → {s.end:6.2f}  {s.cfg['image']}")
+        print(f"  {s.id}  {s.start:6.2f} → {s.end:6.2f}  {s.cfg.get('image', '(black)')}")
     if args.timing_only:
         for g in ep.groups:
             print(f"  [{g.t0:6.2f}-{g.t1:6.2f}] {' / '.join(g.text_lines())}")
