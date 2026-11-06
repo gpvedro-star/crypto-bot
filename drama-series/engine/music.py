@@ -61,6 +61,21 @@ def pluck(m, dur, gain=1.0):
     return gain * x * _env(n, 0.004, 0.35, 0.0, 0.05)
 
 
+def sub_pulse(m, dur, gain=1.0):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    f = MIDI(m)
+    x = np.sin(2 * np.pi * f * t) + 0.35 * np.sin(4 * np.pi * f * t) + 0.15 * _saw(f, t, 6)
+    return gain * fft_filter(x, hi=170) * _env(n, 0.005, 0.16, 0.25, 0.03)
+
+
+def tick(rng, gain=1.0):
+    n = int(0.03 * SR)
+    t = np.arange(n) / SR
+    x = np.sin(2 * np.pi * 2600 * t) * np.exp(-t / 0.004) + 0.3 * rng.standard_normal(n) * np.exp(-t / 0.002)
+    return gain * x
+
+
 def pad(notes, dur, gain=1.0, bright=900):
     n = int(dur * SR)
     t = np.arange(n) / SR
@@ -120,6 +135,28 @@ def section(style, t0, t1, grid0, bpm, seed=0):
                     _add(L, i + int(s * beat / 4 * SR), bass_note(root, beat * 0.22, 0.5))
             if eighth == 0:
                 _add(L, i, pad(chord, bar, 0.12 if style == "groove" else 0.16, 800))
+    elif style == "pulse":  # dark driving undercurrent: sub pulse, ticks, a drone that slowly opens
+        roots = [33, 33, 29, 31]  # A1 A1 F1 G1
+        k0 = int(np.floor((t0 - grid0) / (beat / 2))) - 1
+        k1 = int(np.ceil((t1 - grid0) / (beat / 2))) + 1
+        span = max(t1 - t0, 1e-3)
+        for k in range(k0, k1):
+            tb = grid0 + k * beat / 2
+            i = int((tb - t0) * SR)
+            if i < -SR or tb >= t1:
+                continue
+            eighth = k % 8
+            bar_i = int(np.floor((tb - grid0) / bar)) % len(roots)
+            root = roots[bar_i]
+            prog = min(max((tb - t0) / span, 0.0), 1.0)
+            _add(L, i, sub_pulse(root, beat * 0.45, 0.6 if eighth % 2 == 0 else 0.35))
+            if eighth % 2 == 1:
+                _add(L, i, tick(rng, 0.08 + 0.08 * prog))
+            if eighth == 0:
+                _add(L, i, kick(0.45))
+                _add(L, i, pad([root + 12, root + 19], bar, 0.10 + 0.06 * prog, 220 + 900 * prog))
+                if bar_i % 2 == 1:
+                    _add(L, i, pad([root + 25, root + 26], bar, 0.025 + 0.04 * prog, 1800))
     elif style in ("intro", "warm", "freeze", "dark"):
         chord_len = bar * (2 if style == "warm" else 4)
         k = 0

@@ -39,9 +39,9 @@ python3 engine/reel.py episodes/s01e02 --remix         # רק סאונד חדש 
 `cool` מונטה קרלו, קריר ומלוטש · `warm` ילדות בנתניה, חם ומאובק (עם `haze`) · `warm_clean` הווה חמים · `green` הבית הנטוש, כהה וירקרק · `exposure` להבהרת תמונה כהה.
 
 ### אפקטים
-- **שוט:** `handheld` (מצלמת יד) · `freeze` (פריים קפוא עם חץ ותווית בכתב יד).
-- **סאונד:** `engine` · `freewheel` · `rustle` · `crinkle` · `creak` · `steps_light` / `steps_heavy` · `boom` · `shutter` · `room_tone` · `drips` · `lighter` · `bubbles` · `whoosh` · `tick`.
-- **מוזיקה:** `intro` · `groove` · `tension` · `freeze` · `warm` · `dark`, ובנוסף `stop` (הקפאה) ו-`tapestop` (האטה עד עצירה).
+- **שוט:** `handheld` (מצלמת יד) · `drift` (מצלמה "נושמת" לאט, לרגעי מתח) · `freeze` (פריים קפוא עם חץ ותווית בכתב יד) · `note` (כיתוב בכתב יד, כמו "ככה דמיינתי") · `r` בתנועת המצלמה (הטיית פריים) · מעבר `flash`.
+- **סאונד:** `engine` · `freewheel` · `rustle` · `crinkle` · `creak` · `steps_light` / `steps_heavy` · `boom` · `shutter` · `room_tone` · `drips` · `lighter` · `bubbles` · `whoosh` · `tick` · `riser` (נבנה ונגמר בדיוק על רגע) · `hit` / `braam` (בומים; `through_black` = נשמע גם על השחור) · `heartbeat` · `street` · `waves` · `breath` · `clink` · `clock_click` · `handle` · `scooter_start` · `register` · `clank` · `keys`.
+- **מוזיקה:** `intro` · `groove` · `tension` · `freeze` · `warm` · `dark` · `pulse` (זרם מתח אפל שנבנה), ובנוסף `stop` (הקפאה) ו-`tapestop` (האטה עד עצירה).
 
 כל הסאונד והמוזיקה מסונתזים בקוד, מקוריים ובלי בעיות זכויות.
 
@@ -50,6 +50,7 @@ python3 engine/reel.py episodes/s01e02 --remix         # רק סאונד חדש 
 
 ## קריינות
 הקול של דין: **Orion** ב-ElevenLabs v4 דרך Higgsfield (`voice_id` בקובץ הפרק). כל שורה מוקלטת כקובץ נפרד.
+אפשר להוסיף בתחילת הטקסט שנשלח להקלטה הנחיית הגשה באנגלית בסוגריים מרובעים, למשל `[low, serious, tense voice]`. היא לא נקראת בקול, ומשנה את ההגשה (נבדק בפרק 3). כדאי לשלב אותה עם `stability: 0.35`.
 כשהמילה דו-משמעית, מוסיפים ניקוד רק בטקסט שנשלח להקלטה, למשל `שָׁלֵו` או `חוּם`. הכתוביות נשארות בכתיב הרגיל.
 רוצים להחליף קול, או להקליט בקול אמיתי? שמים קבצים חדשים ב-`voice_raw/` עם אותם שמות ומרנדרים שוב. הקאטים והכתוביות יזוזו לבד.
 

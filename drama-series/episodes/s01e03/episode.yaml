@@ -7,10 +7,16 @@ episode: 3
 title: "בלי עתיד"
 output_name: "episode-03"
 
+style:
+  punch: 0.35                 # יותר דרמה: קונטרסט חזק, צללים עמוקים, פחות צבע
+  vignette: 1.35              # שוליים כהים יותר
+
 # ------------------------------------------------------------------ קריינות (אותו קול של דין)
 # כתוביות: *מילה* = הדגשה (הראשונה "קופצת"), ^מילה^ = ירוק הסדרה רק במופע הזה
 narration:
-  voice: {provider: "Higgsfield · ElevenLabs v4", name: "Orion", voice_id: "ed69c516-92d2-4b30-a967-617737a342e5"}
+  voice: {provider: "Higgsfield · ElevenLabs v4", name: "Orion", voice_id: "ed69c516-92d2-4b30-a967-617737a342e5", stability: 0.35}
+  # גרסה 2: הקלטה דרמטית יותר, עם הנחיית הגשה לכל שורה (בסוגריים המרובעים, לא נקראת בקול).
+  # גרסה 1 שמורה ב-voice_raw/v1/
   start: 0.35                 # פותחים ישר בסיפור
   gap: 0.55
   lines:
@@ -18,43 +24,51 @@ narration:
       audio: voice_raw/line1.mp3
       text: "אחרי שהבנתי שאני פשוט אוהב לעשן, / החלטתי שבא לי כל היום רק לעשן. / וזה מה שקרה. / בית ספר לא בא בחשבון."
       captions: "אחרי שהבנתי שאני | פשוט אוהב *לעשן,* | החלטתי שבא לי | כל היום רק *לעשן.* | וזה מה *שקרה.* | בית ספר | לא בא *בחשבון.*"
-      pause_before: {"בית": 0.35}         # לתת ל"וזה מה שקרה" לנחות
+      pause_before: {"בית": 0.15}         # לתת ל"וזה מה שקרה" לנחות
+      direction: "[low, serious voice, slow and deliberate]"
 
     - id: L2
       audio: voice_raw/line2.mp3
-      text: "הייתי עובד בשתי עבודות, / מהבוקר עד הערב. / שליח פיצה ומוכר במכולת. / כסף? / לא הייתה בעיה. / היה לי המון כסף."
+      text: "הייתי עובד בשתי עבודות, / מהבוקר עד הערב. / שליח פיצה / ומוכר במכולת. / כסף? / לא הייתה בעיה. / היה לי המון כסף."
+      splits: [1.895, 3.545, 4.81, 6.24, 7.245, 8.47]
+      direction: "[low, tense voice, measured]"
       captions: "הייתי עובד | בשתי *עבודות,* | מהבוקר עד *הערב.* | *שליח* פיצה | ומוכר *במכולת.* | *כסף?* | לא הייתה *בעיה.* | היה לי *המון* כסף."
       gap: 0.6
-      pause_before: {"כסף?": 0.2, "לא": 0.33}   # חצי פעימה אחרי "כסף?"
+      pause_before: {"לא": 0.2}           # חצי פעימה אחרי "כסף?"
 
     - id: L3
       audio: voice_raw/line3.mp3
       text: "בגלל שעזבתי את בית הספר, / הייתי כל היום מסתובב עם אנשים מפוקפקים. / מהמרים כל היום, / עושים שודים קטנים. / אז זה לא נראה לי כזה סיפור."
       captions: "בגלל שעזבתי | את בית *הספר,* | הייתי כל היום מסתובב | עם אנשים *מפוקפקים.* | *מהמרים* כל היום, | עושים *שודים* קטנים. | אז זה לא נראה לי | כזה *סיפור.*"
-      splits: [1.975, 4.685, 6.21, 7.66]   # נבדק: הפסיק אחרי "כל היום," קצר מדי לזיהוי אוטומטי
-      pause_before: {"אז": 0.3}
+      pause_before: {"אז": 0.1}
+      direction: "[low, ominous voice]"
 
     - id: L4
       audio: voice_raw/line4.mp3
-      text: "ואז חבר הכיר לי חבר׳ה שלו מצפון תל אביב. / הם שינו לי את החיים לגמרי."
+      text: "ואז חבר הכיר לי / חבר׳ה שלו / מצפון תל אביב. / הם שינו לי את החיים לגמרי."
+      tts: "ואז חבר הכיר לי, חֶבְרֶ'ה שלו, מצפון תל אביב. הם שינו לי את החיים לגמרי."   # פסיקים קצרים סביב "חבר׳ה" כדי שיישמע ברור
+      direction: "[in a low, serious, tense voice]"
       captions: "ואז חבר | הכיר לי חבר׳ה שלו | *מצפון* *תל* *אביב.* | הם שינו לי | את החיים *לגמרי.*"
       gap: 0.7
 
     - id: L5
       audio: voice_raw/line5.mp3
       gap: 1.2                             # פעימה על המבט של דין לפני חשיפת האוטו
-      text: "בדיוק באותה תקופה / הוצאתי רישיון וקניתי לי ב.מ.וו יפהפייה. / לא חדשה כל כך, / אבל עשתה את העבודה."
+      text: "בדיוק באותה תקופה הוצאתי רישיון וקניתי לי ב.מ.וו יפהפייה. / לא חדשה כל כך, / אבל עשתה את העבודה."
+      direction: "[low voice, with quiet pride]"
       captions: "בדיוק באותה תקופה | הוצאתי *רישיון* | וקניתי לי | *ב.מ.וו* יפהפייה. | לא חדשה כל כך, | אבל עשתה את *העבודה.*"
 
     - id: L6
       audio: voice_raw/line6.mp3
       gap: 1.0                             # רגע של גאווה
+      direction: "[low, tense voice, dry and almost amused at the very end]"
       text: "והתחלתי להסתובב עם החבר׳ה האלה מצפון תל אביב. / הייתי מעביר להם כמויות של גראס. / הם היו מתים על עישונים. / והסחורה, / בהשוואה להיום, / הייתה זבל שבזבל."
       captions: "והתחלתי להסתובב | עם החבר׳ה האלה | *מצפון* *תל* *אביב.* | הייתי *מעביר* להם | כמויות של *גראס.* | הם היו *מתים* | על עישונים. | והסחורה, בהשוואה להיום, | הייתה *זבל* שבזבל."
 
     - id: L7
       audio: voice_raw/line7.mp3
       gap: 0.6
+      direction: "[quiet, nostalgic voice]"
       text: "אני זוכר, / היינו מוציאים ממנה זרעים שעות. / אבל זאת הייתה תקופה יפה. / היינו כל היום מושכים באנגים, / מעושנים."
       captions: "אני *זוכר,* | היינו מוציאים ממנה | *זרעים* שעות. | אבל זאת הייתה | תקופה *יפה.* | היינו כל היום | מושכים *באנגים,* | מעושנים."
 
@@ -63,7 +77,10 @@ narration:
       gap: 1.4                             # רגע שקט בחדר לפני השמש בחוץ
       text: "מטיילים בנתניה עם משקפי שמש. / בלי צרות. / בלי דאגות. / בלי עתיד."
       captions: "מטיילים *בנתניה* | עם משקפי שמש. | בלי *צרות.* | בלי *דאגות.* | ^בלי^ ^*עתיד.*^"
-      pause_before: {"בלי#2": 0.3, "בלי#3": 0.7}   # כל "בלי" על פעימה משלו; לפני "בלי עתיד" המוזיקה נעצרת
+      splits: [2.9, 4.36, 5.86]           # נבדק ידנית: בהקלטה יש נשימות בין המשפטים
+      gain_db: 2
+      pause_before: {"בלי#3": 0.35}       # לפני "בלי עתיד" המוזיקה נעצרת
+      direction: "[quiet and slow, the last words heavy with regret]"
 
 marks:
   nofuture: "L8:בלי#3-0.4"       # כאן נעצרת המוזיקה: הקול של דין לבד
@@ -81,6 +98,7 @@ shots:
     at: 0
     grade: warm
     haze: 0.15
+    effects: [drift]
     cam:
       - {t: 0, c: [0.50, 0.55], z: 1.02}
       - {t: S02, c: [0.47, 0.58], z: 1.24}
@@ -112,6 +130,7 @@ shots:
     at: "L3:start-0.1"
     grade: warm_clean
     exposure: 0.85
+    effects: [drift]
     cam:
       - {t: S04, c: [0.53, 0.35], z: 1.55}
       - {t: S04B, c: [0.53, 0.37], z: 1.6}
@@ -121,6 +140,7 @@ shots:
     at: "L3:מהמרים"
     grade: warm_clean
     exposure: 0.85
+    effects: [drift]
     cam:
       - {t: S04B, c: [0.42, 0.66], z: 1.9}
       - {t: S04C, c: [0.44, 0.66], z: 2.0}
@@ -130,6 +150,7 @@ shots:
     at: "L3:שודים"
     grade: warm_clean
     exposure: 0.85
+    effects: [drift]
     cam:
       - {t: S04C, c: [0.75, 0.30], z: 1.8}
       - {t: "L3:אז", c: [0.72, 0.32], z: 1.75}
@@ -138,6 +159,7 @@ shots:
   - id: S05                      # צפון תל אביב: לחיצת היד והפנים בפריים אחד, ואז פעימה על המבט של דין
     image: images/05-north-tlv-meeting.png
     at: "L4:start-0.1"
+    transition: "flash:0.35"
     grade: warm
     cam:
       - {t: S05, c: [0.48, 0.42], z: 1.06}
@@ -161,6 +183,7 @@ shots:
     at: "L6:start-0.1"
     grade: cool
     exposure: 1.05
+    effects: [drift]
     cam:
       - {t: S07, c: [0.50, 0.42], z: 1.08}
       - {t: "L6:מעביר-0.1", c: [0.50, 0.44], z: 1.10}
@@ -189,6 +212,7 @@ shots:
     at: "L7:אבל"
     grade: amber
     exposure: 0.95
+    effects: [drift]
     cam:
       - {t: S09, c: [0.55, 0.45], z: 1.05}
       - {t: S10, c: [0.60, 0.40], z: 1.13}
@@ -205,35 +229,43 @@ shots:
 # ------------------------------------------------------------------ סאונד
 music:
   bpm: 92
-  gain: 0.42
+  gain: 0.3
   sections:
-    - {style: warm,    from: 0,              to: S02, gain: 0.6}
-    - {style: groove,  from: S02,            to: S04, grid: S02}                  # העבודות והכסף
-    - {style: tension, from: S04,            to: S05, grid: S04, gain: 0.7}       # אנשים מפוקפקים
-    - {style: warm,    from: S05,            to: "L5:ב.מ.וו", gain: 0.6}           # ההיכרות
-    - {style: groove,  from: "L5:ב.מ.וו",    to: S09, grid: "L5:ב.מ.וו"}          # הב.מ.וו והתקופה
+    - {style: dark,    from: 0,              to: S02, gain: 0.8}                  # פתיחה כבדה
+    - {style: pulse,   from: S02,            to: S04, grid: S02}                  # העבודות והכסף, עם זרם מתח מתחת
+    - {style: tension, from: S04,            to: S05, grid: S04, gain: 0.75}      # אנשים מפוקפקים
+    - {style: pulse,   from: S05,            to: S09, grid: S05}                  # צפון תל אביב, הב.מ.וו, העסקה: המתח נבנה
     - {style: warm,    from: S09,            to: S10, gain: 0.4}                  # רגע שקט בחדר
-    - {style: groove,  from: S10,            to: nofuture, grid: S10}             # השמש בחוץ, ואז עצירה
+    - {style: pulse,   from: S10,            to: nofuture, grid: S10}             # השמש בחוץ, ואז עצירה מוחלטת
   events:
-    - {kind: stop, at: "L2:לא-0.36", until: "L2:לא-0.02"}                        # חצי פעימה אחרי "כסף?"
+    - {kind: stop, at: "L2:לא-0.25", until: "L2:לא-0.02"}                        # חצי פעימה אחרי "כסף?"
 
 sfx:
   - {kind: street,        at: 0,                 until: S02, gain: 0.1, fade_in: 0.3}
-  - {kind: scooter_start, at: "S02-0.05",        gain: 0.4}
-  - {kind: street,        at: S02,               until: S03, gain: 0.2, fade_out: 0.1}
+  - {kind: scooter_start, at: "S02-0.05",        gain: 0.28}
+  - {kind: street,        at: S02,               until: S03, gain: 0.13, fade_out: 0.1}
   - {kind: room_tone,     at: S03,               until: S04, gain: 0.15}
   - {kind: register,      at: "L2:לא+0.12",      gain: 0.4}
   - {kind: room_tone,     at: S04,               until: S05, gain: 0.18}
   - {kind: clank,         at: "L3:שודים+0.05",   gain: 0.35}
+  - {kind: hit,           at: "L3:שודים",        pitch: 0.9, gain: 0.26}
+  - {kind: riser,         at: S05,               dur: 2.2, gain: 0.2}        # נבנה אל ההיכרות
+  - {kind: hit,           at: S05,               gain: 0.32}
   - {kind: street,        at: S05,               until: S06, gain: 0.22, fade_out: 0.2}
   - {kind: keys,          at: "L5:ב.מ.וו",       gain: 0.35}
+  - {kind: riser,         at: "L5:ב.מ.וו",       dur: 2.0, gain: 0.17}       # נבנה אל חשיפת הב.מ.וו
+  - {kind: hit,           at: "L5:ב.מ.וו",       gain: 0.28}
   - {kind: street,        at: S06,               until: S07, gain: 0.14, fade_in: 0.4}
   - {kind: room_tone,     at: S07,               until: S08, gain: 0.12}
   - {kind: crinkle,       at: "L6:מעביר+0.25",   gain: 0.25}
+  - {kind: heartbeat,     at: S07,               until: "L6:end", bpm: 78, gain: 0.2}   # דופק מתחת לעסקה
+  - {kind: hit,           at: S08,               pitch: 0.8, gain: 0.26}
   - {kind: room_tone,     at: S08,               until: S10, gain: 0.12}
   - {kind: bubbles,       at: "L7:באנגים",       dur: 1.5, gain: 0.12}
   - {kind: street,        at: S10,               until: nofuture, gain: 0.2, fade_in: 0.3, fade_out: 0.05}
   - {kind: steps_run,     at: "S10+0.2",         until: nofuture, rate: 1.9, gain: 0.2, fade_out: 0.05}
+  - {kind: riser,         at: nofuture,          dur: 2.6, gain: 0.22}        # המתח נבנה... ונקטע לשקט
+  - {kind: braam,         at: blackout,          gain: 0.55, through_black: true}   # בום כבד בקאט לשחור
 
 duck:
   - {from: "L1:וזה-0.05", to: "L1:שקרה.end+0.1", level: 0.3}    # המוזיקה יורדת לרגע על "וזה מה שקרה"

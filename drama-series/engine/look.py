@@ -146,7 +146,7 @@ def grade_variant(a, kind="noir"):
     return np.clip(a, 0, 1).astype(np.float32)
 
 
-def load_source(path, scale=1.5, kind="noir", haze=0.0, exposure=1.0):
+def load_source(path, scale=1.5, kind="noir", haze=0.0, exposure=1.0, punch=0.0):
     """Cover-fit to (W, H) * scale, graded with a per-world look. Returns PIL RGB."""
     im = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
     tw, th = int(W * scale), int(H * scale)
@@ -161,4 +161,10 @@ def load_source(path, scale=1.5, kind="noir", haze=0.0, exposure=1.0):
         bl = np.asarray(im.filter(ImageFilter.GaussianBlur(28)), np.float32) / 255.0
         arr = arr * (1 - haze) + np.maximum(arr, bl) * haze
     arr = grade_variant(arr, kind)
-    return Image.fromarray((arr * 255 + 0.5).astype(np.uint8))
+    if punch > 0:  # more drama: harder contrast, deeper shadows, a little less colour
+        sc = arr * arr * (3 - 2 * arr)
+        arr = arr * (1 - punch) + sc * punch
+        lum = (arr @ LUMA)[..., None]
+        arr = lum + (arr - lum) * (1 - 0.25 * punch)
+        arr = np.clip(arr, 0, 1) ** (1 + 0.3 * punch)
+    return Image.fromarray((np.clip(arr, 0, 1) * 255 + 0.5).astype(np.uint8))

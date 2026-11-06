@@ -121,9 +121,10 @@ class Shot:
     def __init__(self, ep, cfg, A):
         self.cfg, self.id = cfg, cfg["id"]
         self.start = A(cfg["at"])
-        key = (ep.path(cfg["image"]), cfg.get("grade", "noir"), cfg.get("haze", 0.0), cfg.get("exposure", 1.0))
+        key = (ep.path(cfg["image"]), cfg.get("grade", "noir"), cfg.get("haze", 0.0), cfg.get("exposure", 1.0),
+               float(cfg.get("punch", getattr(ep, "punch", 0.0))))
         if key not in _SRC_CACHE:
-            _SRC_CACHE[key] = look.load_source(key[0], SCALE, key[1], key[2], key[3])
+            _SRC_CACHE[key] = look.load_source(key[0], SCALE, key[1], key[2], key[3], punch=key[4])
         self.src = _SRC_CACHE[key]
         self.trans = cfg.get("transition", "cut")  # cut | fade:0.25 | dip:0.3
         self.fx = set(cfg.get("effects", []) or [])
@@ -189,6 +190,10 @@ class Shot:
             z *= 1.04
             dx = 7 * SCALE * (math.sin(2 * math.pi * 1.9 * Th) + 0.6 * math.sin(2 * math.pi * 4.7 * Th + 1.3))
             dy = 6 * SCALE * (math.sin(2 * math.pi * 2.3 * Th + 0.7) + 0.5 * math.sin(2 * math.pi * 5.3 * Th + 2.1))
+        if "drift" in self.fx:  # slow "breathing" camera for tense moments
+            z *= 1.025
+            dx += 4 * SCALE * (math.sin(2 * math.pi * 0.21 * T + 0.4) + 0.5 * math.sin(2 * math.pi * 0.43 * T + 1.9))
+            dy += 3 * SCALE * (math.sin(2 * math.pi * 0.17 * T + 1.1) + 0.5 * math.sin(2 * math.pi * 0.37 * T + 0.3))
         z *= zmul
         ww, wh = W * SCALE / z, H * SCALE / z
         x = min(max(cx * sw + dx, ww / 2), sw - ww / 2)
@@ -347,6 +352,8 @@ class Episode:
         self.cream = hexcol(st.get("text", "#F3E9D2"))
         self.white = np.array([1.0, 0.99, 0.96], np.float32)
         self.colors = {clean_word(k): hexcol(v) for k, v in (st.get("word_colors") or {}).items()}
+        self.style = st
+        self.punch = float(st.get("punch", 0.0))
         self.cap = {"size": st.get("caption_size", 66), "weight": st.get("caption_weight", 800),
                     "max_w": st.get("caption_max_w", 830), "cx": st.get("caption_cx", 525),
                     "cy": st.get("caption_y", 1470)}
@@ -387,7 +394,7 @@ class Episode:
                          "fade": float(lg.get("fade_out", 0.6))}
             self.total += self.logo["dur"]
         self.n_frames = int(math.ceil(self.total * FPS))
-        self.vignette = look.make_vignette()
+        self.vignette = look.make_vignette() ** float(self.style.get("vignette", 1.0))
         self.grain = look.make_grain()
         self._build_captions()
         self._build_overlays(ec)
@@ -610,6 +617,8 @@ class Episode:
             d = float(d.split(":")[0])
             if kind == "dip" and T < s.start + d / 2:
                 f = f * ease_in_out((T - s.start) / (d / 2))
+            if kind == "flash" and T < s.start + d:
+                f = f + (1 - f) * (0.7 * (1 - (T - s.start) / d) ** 2)
             if s is self.shots[0]:
                 self.draw_title(f, T)
             g = self.group_at(T)
@@ -659,6 +668,7 @@ class Episode:
         # --- ambience + one-shots
         amb = np.zeros((n, 2))
         hits = np.zeros((n, 2))
+        post = np.zeros((n, 2))   # one-shots that ring through the black (e.g. the final boom)
 
         def put(buf, t, x, g):
             x = sound.stereo(np.asarray(x, float))
@@ -689,6 +699,14 @@ class Episode:
                 put(hits, t, sfx.footsteps(until - t, 6.5, seed=3, pan=0.1), g)
             elif k == "steps_heavy":
                 put(hits, t, sfx.footsteps(until - t, 2.6, heavy=True, grow=True, seed=4), g)
+            elif k == "riser":   # ends exactly at "at"
+                d = float(e.get("dur", 2.4))
+                put(hits, t - d, sound.riser(d), g)
+            elif k in ("hit", "braam"):
+                x = sound.hit(pitch=float(e.get("pitch", 1.0))) if k == "hit" else sound.braam()
+                put(post if e.get("through_black") else hits, t, x, g)
+            elif k == "heartbeat":
+                put(hits, t, sound.heartbeat(until - t, bpm=float(e.get("bpm", 72))), g)
             elif k == "boom":
                 put(hits, t, sfx.low_boom(), g)
             elif k == "shutter":
@@ -765,7 +783,7 @@ class Episode:
         put(bed, self.end_t, pad, 0.09)
         if self.logo:  # low musical hit as the logo lands
             put(hits, self.logo["t"] + 0.02, sfx.logo_hit(), self.logo["hit"])
-        mix = vo_st + bed + hits * duck_h[:, None]
+        mix = vo_st + bed + hits * duck_h[:, None] + post
         if self.logo:  # fade the tail with the picture
             fo = int(self.logo["fade"] * SR)
             mix[n - fo:] *= np.linspace(1, 0, fo)[:, None] ** 1.5
