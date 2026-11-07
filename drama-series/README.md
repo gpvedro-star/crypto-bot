@@ -41,7 +41,7 @@ python3 engine/reel.py episodes/s01e02 --remix         # רק סאונד חדש 
 
 ### אפקטים
 - **שוט:** `handheld` (מצלמת יד) · `drift` (מצלמה "נושמת" לאט, לרגעי מתח) · `freeze` (פריים קפוא עם חץ ותווית בכתב יד) · `note` (כיתוב בכתב יד, כמו "ככה דמיינתי") · `r` בתנועת המצלמה (הטיית פריים) · מעבר `flash`.
-- **סאונד:** `engine` · `freewheel` · `rustle` · `crinkle` · `creak` · `steps_light` / `steps_heavy` · `boom` · `shutter` · `room_tone` · `drips` · `lighter` · `bubbles` · `whoosh` · `tick` · `riser` (נבנה ונגמר בדיוק על רגע) · `hit` / `braam` (בומים; `through_black` = נשמע גם על השחור) · `heartbeat` · `street` · `waves` · `breath` · `clink` · `clock_click` · `handle` · `scooter_start` · `register` · `clank` · `keys`.
+- **סאונד:** `engine` · `freewheel` · `rustle` · `crinkle` · `creak` · `steps_light` / `steps_heavy` · `boom` · `shutter` · `room_tone` · `drips` · `lighter` · `bubbles` · `whoosh` · `tick` · `riser` (נבנה ונגמר בדיוק על רגע) · `hit` / `braam` (בומים; `through_black` = נשמע גם על השחור) · `heartbeat` · `street` · `waves` · `breath` · `clink` · `clock_click` · `handle` · `scooter_start` · `register` · `clank` · `keys` · `hum` (זמזום של נורת ניאון, לחדר חקירות) · `ticking` (שעון קיר מתקתק, `every` שניות).
 - **מוזיקה:** `intro` · `groove` · `tension` · `freeze` · `warm` · `dark` · `pulse` (זרם מתח אפל שנבנה), ובנוסף `stop` (הקפאה) ו-`tapestop` (האטה עד עצירה).
 
 כל הסאונד והמוזיקה מסונתזים בקוד, מקוריים ובלי בעיות זכויות.

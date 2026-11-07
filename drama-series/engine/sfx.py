@@ -433,3 +433,29 @@ def steps_echo(d, rate=2.8, seed=64):
 def step_stop():
     """A last step, then standing still."""
     return stereo(norm(reverb(step(False, 3), decay=0.6, wet=0.25), 1.0))
+
+
+def hum(d, seed=71):
+    """Fluorescent tube hum for an interrogation room: 100 Hz buzz + harmonics, faint and steady."""
+    rng = _rng(seed)
+    t = _t(d)
+    y = np.zeros(len(t))
+    for k, a in ((1, 1.0), (2, 0.55), (3, 0.3), (4, 0.18), (6, 0.08)):
+        y += a * np.sin(2 * np.pi * 100 * k * t + rng.uniform(0, 6.28))
+    y *= 1 + 0.12 * np.sin(2 * np.pi * 0.23 * t)
+    y += 0.25 * fft_filter(rng.standard_normal(len(t)), lo=2000, hi=6000) * 0.2
+    return stereo(norm(fft_filter(y, lo=60, hi=1400), 1.0))
+
+
+def ticking(d, every=1.0):
+    """A wall clock: one quiet tick a second, alternating tick/tock."""
+    n = int(d * SR)
+    y = np.zeros((n + SR, 2))
+    c = clock_click()
+    k = 0
+    while k * every < d:
+        i = int(k * every * SR)
+        g = 1.0 if k % 2 == 0 else 0.72
+        y[i:i + len(c)] += c[: len(y) - i] * g
+        k += 1
+    return y[:n]

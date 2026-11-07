@@ -777,6 +777,14 @@ class Episode:
                 put(hits, t, sfx.handle(), g)
             elif k == "tick":
                 put(hits, t, sfx.soft_tick(), g)
+            elif k == "hum":
+                x = sfx.hum(until - t)
+                fi, fo = int(float(e.get("fade_in", 0.3)) * SR), int(float(e.get("fade_out", 0.3)) * SR)
+                x[:fi] *= np.linspace(0, 1, fi)[:, None]
+                x[-fo:] *= np.linspace(1, 0, fo)[:, None]
+                put(amb, t, x, g)
+            elif k == "ticking":
+                put(hits, t, sfx.ticking(until - t, float(e.get("every", 1.0))), g)
         # typewriter ticks for stamps + end-card ticks
         for s in self.shots:
             if s.stamp:
