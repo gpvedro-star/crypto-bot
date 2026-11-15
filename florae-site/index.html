@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Floraè Boutique Flowers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Floraè Boutique Flowers – בוטיק פרחים באשדוד. זרים בעבודת יד, זרי כלה, סידורים בכלי ומנויי פרחים.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Bellefair&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+<style>
+/* Layout: editorial boutique — arched photo frames (like a shop window), gold hairlines, generous ivory space, one dark espresso band for the bridal story */
+:root{
+  --bg:#F8F4EF;          /* ivory, the boutique wall */
+  --surface:#EFE6DC;     /* champagne */
+  --card:#FFFDFB;
+  --ink:#2A221D;         /* espresso */
+  --muted:#76685D;
+  --gold:#9C7A3F;        /* text-safe gold leaf */
+  --gold-soft:#C8A76B;
+  --line:#E2D6C8;
+  --blush:#EAD6D1;
+  --band:#2A221D;        /* dark band */
+  --band-ink:#F3EBE1;
+  --band-muted:#BFAF9F;
+  --shadow:0 30px 60px -30px rgba(70,48,28,.35);
+
+  --f-display:"Bellefair","Frank Ruhl Libre","David",serif;
+  --f-latin:"Cormorant Garamond","Times New Roman",serif;
+  --f-body:"Assistant","Heebo","Arial Hebrew",system-ui,sans-serif;
+
+  --s-hero:clamp(2.6rem,6.2vw,5.4rem);
+  --s-h2:clamp(2rem,4vw,3.3rem);
+  --s-h3:1.55rem;
+  --s-body:1.075rem;
+  --s-small:.92rem;
+  --wrap:1220px;
+  --gutter-l:max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r:max(20px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15110E; --surface:#201914; --card:#1B1511; --ink:#F2EADF; --muted:#B5A595;
+    --gold:#D6B67A; --gold-soft:#B8975E; --line:#382E26; --blush:#3A2A27;
+    --band:#0E0B09; --band-ink:#F3EBE1; --band-muted:#BFAF9F;
+    --shadow:0 30px 60px -30px rgba(0,0,0,.7); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15110E; --surface:#201914; --card:#1B1511; --ink:#F2EADF; --muted:#B5A595;
+  --gold:#D6B67A; --gold-soft:#B8975E; --line:#382E26; --blush:#3A2A27;
+  --band:#0E0B09; --band-ink:#F3EBE1; --band-muted:#BFAF9F;
+  --shadow:0 30px 60px -30px rgba(0,0,0,.7); color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:var(--s-body);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;line-height:1.12;margin:0;text-wrap:balance;letter-spacing:-.005em}
+p{margin:0}
+.latin{font-family:var(--f-latin)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:var(--wrap);margin-inline:auto;padding-left:var(--gutter-l);padding-right:var(--gutter-r)}
+.section{padding-block:clamp(72px,10vw,140px)}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.eyebrow::before{content:"";width:28px;height:1px;background:currentColor}
+.lede{color:var(--muted);max-width:56ch;font-size:1.12rem}
+.sec-head{display:grid;gap:18px;margin-bottom:clamp(40px,6vw,72px)}
+.sec-head.center{justify-items:center;text-align:center}
+.sec-head h2{font-size:var(--s-h2)}
+
+/* buttons */
+.btn{--b:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;border-radius:999px;border:1px solid var(--b);background:var(--b);color:var(--bg);font:600 1rem/1 var(--f-body);text-decoration:none;cursor:pointer;transition:transform .3s ease, background .3s ease, color .3s ease, border-color .3s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--bg)}
+.btn.gold{--b:var(--gold);color:#fff}
+:root[data-theme="dark"] .btn.gold{color:#1A140F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.gold{color:#1A140F}}
+.btn svg{width:18px;height:18px}
+.link{display:inline-flex;gap:8px;align-items:center;color:var(--gold);font-weight:600;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .3s}
+.link:hover{border-color:currentColor}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:saturate(1.2) blur(14px);-webkit-backdrop-filter:saturate(1.2) blur(14px);border-bottom:1px solid transparent;transition:border-color .3s}
+.top.scrolled{border-color:var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;height:78px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;direction:ltr}
+.brand svg{width:34px;height:34px;color:var(--gold)}
+.brand .wm{display:grid;line-height:1}
+.brand .wm b{font:500 1.55rem/1 var(--f-latin);letter-spacing:.24em;color:var(--ink)}
+.brand .wm small{font:italic 400 .82rem/1 var(--f-latin);letter-spacing:.12em;color:var(--gold);margin-top:5px}
+.nav{display:flex;gap:30px;align-items:center}
+.nav a{text-decoration:none;font-size:.98rem;color:var(--ink);position:relative;padding-block:6px}
+.nav a::after{content:"";position:absolute;inset-inline:0;bottom:0;height:1px;background:var(--gold);transform:scaleX(0);transition:transform .35s ease;transform-origin:center}
+.nav a:hover::after{transform:scaleX(1)}
+.top-cta{display:flex;gap:10px;align-items:center}
+.top-cta .btn{padding:11px 20px;font-size:.92rem}
+.burger{display:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;align-items:center;justify-content:center}
+.burger span,.burger span::before,.burger span::after{display:block;width:18px;height:1.5px;background:currentColor;position:relative;transition:transform .3s}
+.burger span::before,.burger span::after{content:"";position:absolute;inset-inline-start:0}
+.burger span::before{top:-6px}.burger span::after{top:6px}
+.menu-open .burger span{background:transparent}
+.menu-open .burger span::before{transform:translateY(6px) rotate(45deg)}
+.menu-open .burger span::after{transform:translateY(-6px) rotate(-45deg)}
+@media (max-width:960px){
+  .nav{position:fixed;inset:calc(78px + env(safe-area-inset-top,0px)) 0 auto 0;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px var(--gutter-r) 24px var(--gutter-l);transform:translateY(-8px);opacity:0;pointer-events:none;transition:.3s}
+  .nav a{width:100%;padding:16px 0;border-bottom:1px solid var(--line);font-size:1.15rem}
+  .nav a::after{display:none}
+  .menu-open .nav{opacity:1;transform:none;pointer-events:auto}
+  .burger{display:inline-flex}
+  .top-cta .btn.hide-sm{display:none}
+}
+
+/* ---------- hero ---------- */
+.hero{padding-block:clamp(36px,6vw,80px) clamp(60px,8vw,110px)}
+.hero .wrap{display:grid;grid-template-columns:1.02fr 1fr;gap:clamp(32px,6vw,90px);align-items:center}
+.hero-copy{display:grid;gap:28px;min-width:0}
+.hero h1{font-size:var(--s-hero)}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero .lede{font-size:1.2rem}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:12px 32px;padding-top:26px;border-top:1px solid var(--line);color:var(--muted);font-size:var(--s-small)}
+.hero-meta span{display:inline-flex;align-items:center;gap:9px}
+.hero-meta svg{width:17px;height:17px;color:var(--gold);flex:none}
+
+.hero-art{position:relative;min-width:0;padding:0 0 40px 40px}
+.arch{border-radius:999px 999px 18px 18px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.arch img{width:100%;height:100%;object-fit:cover}
+.hero-art .arch.main{aspect-ratio:4/5.2;max-width:470px;margin-inline-start:auto;animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
+.hero-art .orb{position:absolute;left:0;bottom:0;width:44%;aspect-ratio:1;border-radius:50%;overflow:hidden;border:8px solid var(--bg);box-shadow:var(--shadow);animation:rise 1.1s .18s cubic-bezier(.2,.7,.2,1) both}
+.hero-art .orb img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.seal{position:absolute;top:8%;left:6%;width:132px;height:132px;color:var(--gold);animation:spin 28s linear infinite}
+.seal text{font:500 11px var(--f-latin);letter-spacing:2.4px;fill:currentColor;direction:ltr;unicode-bidi:bidi-override}
+.seal .c{fill:var(--bg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{transform:translateY(26px)}to{transform:none}}
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:1fr}
+  .hero-art{order:-1;padding:0 0 30px 26px}
+  .hero-art .arch.main{max-width:none;aspect-ratio:4/4.4}
+  .seal{width:100px;height:100px;top:4%;left:2%}
+}
+
+/* ---------- marquee ---------- */
+.ticker{border-block:1px solid var(--line);overflow:hidden;overflow:clip;padding-block:20px;background:var(--surface)}
+.ticker-track{display:flex;width:max-content;animation:tick 42s linear infinite}
+.ticker ul{display:flex;gap:0;margin:0;padding:0;list-style:none}
+.ticker li{font:400 1.5rem/1 var(--f-display);color:var(--ink);white-space:nowrap;display:flex;align-items:center}
+.ticker li::after{content:"✿";font-size:.8rem;color:var(--gold);margin-inline:34px}
+@keyframes tick{to{transform:translateX(50%)}}
+
+/* ---------- collections ---------- */
+.coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2vw,28px)}
+.coll{display:grid;gap:18px;text-decoration:none;min-width:0}
+.coll:nth-child(even){margin-top:56px}
+.coll .ph{aspect-ratio:3/4.1;border-radius:200px 200px 14px 14px;overflow:hidden;background:var(--surface);position:relative}
+.coll .ph img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.coll:hover .ph img{transform:scale(1.06)}
+.coll h3{font-size:var(--s-h3)}
+.coll p{color:var(--muted);font-size:var(--s-small);margin-top:4px}
+.coll .tag{font:italic 500 1rem var(--f-latin);color:var(--gold);direction:ltr;display:block;margin-bottom:6px;text-align:right}
+@media (max-width:980px){.coll-grid{grid-template-columns:repeat(2,1fr)}.coll:nth-child(even){margin-top:40px}}
+@media (max-width:460px){.coll-grid{gap:14px}.coll h3{font-size:1.25rem}.coll .ph{border-radius:120px 120px 12px 12px}}
+
+/* ---------- studio / about ---------- */
+.studio .wrap{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(36px,7vw,110px);align-items:center}
+.studio-photos{position:relative;min-width:0;padding-bottom:70px}
+.studio-photos .a{aspect-ratio:4/5;border-radius:16px;overflow:hidden;width:82%;box-shadow:var(--shadow)}
+.studio-photos .b{position:absolute;bottom:0;left:0;width:46%;aspect-ratio:3/4;border-radius:999px 999px 14px 14px;overflow:hidden;border:7px solid var(--bg);box-shadow:var(--shadow)}
+.studio-photos img{width:100%;height:100%;object-fit:cover}
+.studio-copy{display:grid;gap:24px;min-width:0}
+.studio-copy h2{font-size:var(--s-h2)}
+.studio-copy p{color:var(--muted)}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:10px;padding-top:28px;border-top:1px solid var(--line)}
+.pillars div{display:grid;gap:6px}
+.pillars b{font:400 1.25rem var(--f-display)}
+.pillars span{font-size:var(--s-small);color:var(--muted);line-height:1.55}
+@media (max-width:860px){.studio .wrap{grid-template-columns:1fr}.pillars{grid-template-columns:1fr}}
+
+/* ---------- bridal band ---------- */
+.bridal{background:var(--band);color:var(--band-ink);position:relative;overflow:hidden}
+.bridal .eyebrow{color:var(--gold-soft)}
+.bridal-head{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:clamp(40px,6vw,70px)}
+.bridal-head h2{font-size:var(--s-h2)}
+.bridal-head p{color:var(--band-muted);max-width:52ch}
+.bridal-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:auto auto;gap:clamp(12px,1.6vw,22px)}
+.bridal-grid figure{margin:0;position:relative;overflow:hidden;border-radius:14px;background:#000;cursor:zoom-in}
+.bridal-grid figure img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1),opacity .4s}
+.bridal-grid figure:hover img{transform:scale(1.05)}
+.bridal-grid figcaption{position:absolute;inset:auto 0 0 0;padding:44px 18px 16px;background:linear-gradient(transparent,rgba(20,14,10,.78));font:400 1.15rem var(--f-display);color:#F7EFE4}
+.bridal-grid .big{grid-row:span 2;border-radius:999px 999px 14px 14px}
+.bridal-grid .sm{aspect-ratio:3/4}
+.bridal-list{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:clamp(36px,5vw,60px);padding-top:32px;border-top:1px solid rgba(255,255,255,.14)}
+.bridal-list div{display:grid;gap:6px}
+.bridal-list b{font:400 1.2rem var(--f-display);color:var(--band-ink)}
+.bridal-list span{color:var(--band-muted);font-size:var(--s-small);line-height:1.55}
+.bridal .btn{--b:var(--band-ink);color:var(--band)}
+.bridal .btn.ghost{background:transparent;color:var(--band-ink)}
+.bridal .btn.ghost:hover{background:var(--band-ink);color:var(--band)}
+@media (max-width:900px){
+  .bridal-head{grid-template-columns:1fr}
+  .bridal-grid{grid-template-columns:1fr 1fr}
+  .bridal-grid .big{grid-column:span 2;grid-row:auto;aspect-ratio:4/4.3}
+  .bridal-list{grid-template-columns:1fr 1fr}
+}
+
+/* ---------- subscriptions ---------- */
+.subs{background:linear-gradient(180deg,var(--bg),var(--surface))}
+.draft-note{display:inline-flex;gap:10px;align-items:center;padding:8px 16px;border:1px dashed var(--gold-soft);border-radius:999px;color:var(--gold);font-size:.86rem;font-weight:600}
+.freq{display:inline-flex;padding:5px;border-radius:999px;background:var(--card);border:1px solid var(--line);gap:4px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.freq button{border:0;background:transparent;color:var(--muted);font:600 .95rem var(--f-body);padding:11px 22px;border-radius:999px;cursor:pointer;transition:.3s}
+.freq button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,26px);align-items:stretch}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;transition:transform .4s ease, box-shadow .4s ease;min-width:0}
+.plan:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+.plan .ph{aspect-ratio:16/11;overflow:hidden;position:relative}
+.plan .ph img{width:100%;height:100%;object-fit:cover}
+.plan .badge{position:absolute;top:16px;right:16px;background:var(--bg);color:var(--gold);font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:7px 14px;border-radius:999px}
+.plan-body{padding:28px 28px 30px;display:flex;flex-direction:column;gap:18px;flex:1}
+.plan-name{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.plan-name h3{font-size:1.75rem}
+.plan-name .latin{font-style:italic;color:var(--gold);font-size:1.05rem;direction:ltr}
+.plan-desc{color:var(--muted);font-size:var(--s-small)}
+.price{display:flex;align-items:baseline;gap:8px;padding-block:14px;border-block:1px solid var(--line)}
+.price b{font:500 2.6rem/1 var(--f-latin);font-variant-numeric:tabular-nums}
+.price small{color:var(--muted);font-size:.9rem}
+.plan ul{list-style:none;margin:0;padding:0;display:grid;gap:11px;flex:1}
+.plan li{display:flex;gap:12px;align-items:flex-start;font-size:.98rem;line-height:1.5}
+.plan li svg{flex:none;width:18px;height:18px;margin-top:3px;color:var(--gold)}
+.plan .btn{width:100%}
+.plan.featured{border-color:var(--gold-soft);background:linear-gradient(180deg,var(--card),color-mix(in srgb,var(--blush) 45%,var(--card)))}
+.plan.featured .plan-body .btn{--b:var(--gold);color:#fff}
+.subs-perks{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:clamp(36px,5vw,56px)}
+.perk{display:flex;gap:14px;align-items:flex-start;padding:20px;border-radius:16px;border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent)}
+.perk svg{width:26px;height:26px;color:var(--gold);flex:none}
+.perk b{display:block;font-weight:600}
+.perk span{color:var(--muted);font-size:.88rem;line-height:1.5}
+@media (max-width:980px){.plans{grid-template-columns:1fr;max-width:520px;margin-inline:auto}.subs-perks{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.subs-perks{grid-template-columns:1fr}.freq button{padding:10px 16px}}
+
+/* ---------- process ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,44px);counter-reset:s}
+.step{display:grid;gap:12px;padding-top:26px;border-top:1px solid var(--ink)}
+.step::before{counter-increment:s;content:"0" counter(s);font:italic 500 2.6rem/1 var(--f-latin);color:var(--gold)}
+.step h3{font-size:1.5rem}
+.step p{color:var(--muted)}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+
+/* ---------- care ---------- */
+.care{background:var(--surface)}
+.care .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(36px,6vw,90px);align-items:center}
+.care-photo{aspect-ratio:4/5;border-radius:999px 999px 16px 16px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.care-photo img{width:100%;height:100%;object-fit:cover}
+.care-list{display:grid;gap:0;margin-top:28px}
+.care-item{display:grid;grid-template-columns:auto 1fr;gap:20px;padding-block:20px;border-bottom:1px solid var(--line)}
+.care-item:first-child{border-top:1px solid var(--line)}
+.care-item .ic{width:46px;height:46px;border-radius:50%;border:1px solid var(--gold-soft);display:grid;place-items:center;color:var(--gold)}
+.care-item .ic svg{width:22px;height:22px}
+.care-item b{font:400 1.25rem var(--f-display);display:block;margin-bottom:2px}
+.care-item span{color:var(--muted);font-size:.98rem}
+@media (max-width:860px){.care .wrap{grid-template-columns:1fr}.care-photo{max-width:440px;aspect-ratio:4/4.2}}
+
+/* ---------- instagram ---------- */
+.ig-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.ig-head h2{font-size:var(--s-h2)}
+.ig-handle{font:italic 500 1.5rem var(--f-latin);color:var(--gold);direction:ltr;text-decoration:none}
+.ig-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.ig-grid button{all:unset;cursor:zoom-in;aspect-ratio:1;overflow:hidden;border-radius:10px;position:relative;background:var(--surface)}
+.ig-grid button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.ig-grid img{width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.ig-grid button::after{content:"";position:absolute;inset:0;background:rgba(42,34,29,.0);transition:background .4s}
+.ig-grid button:hover::after{background:rgba(42,34,29,.18)}
+.ig-grid button:hover img{transform:scale(1.07)}
+@media (max-width:860px){.ig-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---------- order ---------- */
+.order .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(36px,6vw,90px)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:clamp(22px,4vw,44px);min-width:0}
+.field{display:grid;gap:8px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:.9rem;font-weight:600}
+.field input,.field select,.field textarea{width:100%;font:400 1rem var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 16px;transition:border-color .25s, box-shadow .25s}
+.field textarea{min-height:110px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 18%,transparent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{cursor:pointer;position:relative}
+.chips input{position:absolute;opacity:0;pointer-events:none;width:1px!important;height:1px;inset:0}
+.chips span{display:inline-block;padding:9px 16px;border-radius:999px;border:1px solid var(--line);font-size:.92rem;font-weight:500;transition:.25s;background:var(--bg)}
+.chips input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
+.form .btn{grid-column:1/-1;margin-top:6px}
+.form-note{grid-column:1/-1;font-size:.86rem;color:var(--muted);text-align:center}
+.form-out{grid-column:1/-1;display:grid;gap:10px;padding:16px;border-radius:14px;background:var(--surface);font-size:.92rem}
+.form-out pre{margin:0;white-space:pre-wrap;font:inherit;color:var(--ink)}
+.contact{display:grid;gap:28px;align-content:start;min-width:0}
+.contact h2{font-size:var(--s-h2)}
+.contact-list{display:grid;gap:0}
+.contact-row{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:center;padding-block:18px;border-bottom:1px solid var(--line)}
+.contact-row .ic{width:44px;height:44px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:var(--gold)}
+.contact-row .ic svg{width:20px;height:20px}
+.contact-row small{display:block;color:var(--muted);font-size:.84rem}
+.contact-row b{font-weight:600;overflow-wrap:anywhere}
+.todo{color:var(--gold);font-weight:500;font-style:italic}
+@media (max-width:900px){.order .wrap{grid-template-columns:1fr}}
+@media (max-width:520px){.form{grid-template-columns:1fr}}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding-block:56px 40px}
+footer .wrap{display:grid;gap:36px}
+.foot-top{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.foot-nav{display:flex;flex-wrap:wrap;gap:10px 28px}
+.foot-nav a{text-decoration:none;color:var(--muted)}
+.foot-nav a:hover{color:var(--ink)}
+.foot-bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:.86rem;padding-top:24px;border-top:1px solid var(--line)}
+
+/* ---------- floating whatsapp ---------- */
+.wa-float{position:fixed;left:calc(20px + env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;width:58px;height:58px;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(80,55,20,.55);text-decoration:none;transition:transform .3s}
+.wa-float:hover{transform:scale(1.07)}
+.wa-float svg{width:28px;height:28px}
+
+/* ---------- lightbox ---------- */
+.lb{border:0;padding:0;background:transparent;max-width:min(92vw,620px);max-height:92vh}
+.lb::backdrop{background:rgba(20,15,11,.86);backdrop-filter:blur(4px)}
+.lb img{max-height:86vh;width:auto;margin-inline:auto;border-radius:14px}
+.lb p{color:#F3EBE1;text-align:center;margin-top:12px;font:400 1.2rem var(--f-display)}
+.lb button{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));left:calc(18px + env(safe-area-inset-left,0px));width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:1.4rem;cursor:pointer}
+
+/* gentle reveal: content is visible at rest; only nudges up when scrolled into view */
+.rv{transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.rv.pre{transform:translateY(24px)}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="Floraè Boutique Flowers – לדף הבית">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+        <path d="M24 9c4 5 5 11 0 20-5-9-4-15 0-20Z"/>
+        <path d="M24 29c-3-7-8-11-15-12 1 7 6 12 15 12Z"/>
+        <path d="M24 29c3-7 8-11 15-12-1 7-6 12-15 12Z"/>
+        <path d="M24 29c-6-2-12-1-17 3 5 3 12 3 17-3Z"/>
+        <path d="M24 29c6-2 12-1 17 3-5 3-12 3-17-3Z"/>
+        <path d="M14 37h20"/>
+      </svg>
+      <span class="wm"><b>FLORAÈ</b><small>Boutique Flowers</small></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="ניווט ראשי">
+      <a href="#collections">הקולקציה</a>
+      <a href="#bridal">כלות ואירועים</a>
+      <a href="#subscriptions">מנויים</a>
+      <a href="#studio">הבוטיק</a>
+      <a href="#care">טיפול בזר</a>
+      <a href="#order">הזמנה</a>
+    </nav>
+    <div class="top-cta">
+      <a class="btn hide-sm" href="#order">להזמנת זר</a>
+      <button class="burger" id="burger" aria-label="פתיחת תפריט" aria-expanded="false" aria-controls="nav"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main id="home">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow">בוטיק פרחים · אשדוד</span>
+      <h1>זרים בעבודת יד, <em>לרגעים</em> שרוצים לזכור</h1>
+      <p class="lede">כל זר ב־Floraè נבנה ביד, פרח אחרי פרח, לפי הרגע שלכם: זר כלה לבן ומדויק, זר יום הולדת מלא צבע, או סידור מרשים לבית ולאירוע.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#order">להזמנת זר</a>
+        <a class="btn ghost" href="#subscriptions">מנויי פרחים</a>
+      </div>
+      <div class="hero-meta">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.4"/></svg>אשדוד</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3c2 2.6 2.5 5.6 0 10-2.5-4.4-2-7.4 0-10Z"/><path d="M12 13c-1.5-3.6-4-5.6-7.5-6 .5 3.6 3 6 7.5 6Zm0 0c1.5-3.6 4-5.6 7.5-6-.5 3.6-3 6-7.5 6Z"/><path d="M12 13v8"/></svg>פרחים טריים מדי בוקר</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="13" height="10" rx="1.5"/><path d="M16 10h3l2 3v4h-5"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>איסוף מהבוטיק או משלוח</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="arch main"><img src="images/bridal-white-roses.jpg" alt="זר ורדים לבנים עם גיבסנית מול השלט המואר של Floraè" fetchpriority="high"></div>
+      <div class="orb"><img src="images/bridal-calla.jpg" alt="זר כלה מקאלות לבנות עם סרט סאטן"></div>
+      <svg class="seal" viewBox="0 0 140 140" aria-hidden="true" direction="ltr" style="direction:ltr">
+        <circle class="c" cx="70" cy="70" r="69"/>
+        <defs><path id="circ" d="M70,70 m-52,0 a52,52 0 1,1 104,0 a52,52 0 1,1 -104,0"/></defs>
+        <text><textPath href="#circ">FLORAÈ · BOUTIQUE FLOWERS · ASHDOD ·</textPath></text>
+        <g transform="translate(58 56) scale(.5)" fill="none" stroke="currentColor" stroke-width="2"><path d="M24 9c4 5 5 11 0 20-5-9-4-15 0-20Z"/><path d="M24 29c-3-7-8-11-15-12 1 7 6 12 15 12Z"/><path d="M24 29c3-7 8-11 15-12-1 7-6 12-15 12Z"/></g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-label="לאילו רגעים">
+  <div class="ticker-track">
+    <ul><li>זר כלה</li><li>יום הולדת</li><li>יום נישואין</li><li>לידה</li><li>קישוט רכב חתנים</li><li>תודה</li><li>סתם כי בא לי</li><li>סידור לאירוע</li></ul>
+    <ul aria-hidden="true"><li>זר כלה</li><li>יום הולדת</li><li>יום נישואין</li><li>לידה</li><li>קישוט רכב חתנים</li><li>תודה</li><li>סתם כי בא לי</li><li>סידור לאירוע</li></ul>
+  </div>
+</div>
+
+<!-- COLLECTIONS -->
+<section class="section" id="collections">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">הקולקציה</span>
+      <h2>ארבעה סגנונות, אותה הקפדה</h2>
+      <p class="lede">כל זר נבנה מהפרחים הטובים ביותר שהגיעו באותו שבוע. אפשר לבחור סגנון ולתת לנו להרכיב, או לספר לנו בדיוק מה אתם מדמיינים.</p>
+    </div>
+    <div class="coll-grid">
+      <a class="coll rv" href="#order" data-occasion="זר עונתי">
+        <div class="ph"><img src="images/bouquet-fuchsia.jpg" alt="זר צבעוני של חרציות פוקסיה וליזיאנטוס ורוד" loading="lazy"></div>
+        <div><span class="tag">Seasonal</span><h3>זרי עונה</h3><p>צבעוניים, שופעים, משתנים לפי מה שפורח עכשיו</p></div>
+      </a>
+      <a class="coll rv" href="#bridal">
+        <div class="ph"><img src="images/bridal-hydrangea.jpg" alt="זר כלה הרצוגית מהידרנגאה לבנה" loading="lazy"></div>
+        <div><span class="tag">Bridal</span><h3>זרי כלה</h3><p>לבן, שמנת וקאלות, בהתאמה אישית לשמלה</p></div>
+      </a>
+      <a class="coll rv" href="#order" data-occasion="סידור בכלי">
+        <div class="ph"><img src="images/vase-arrangement.jpg" alt="סידור פרחים גבוה באגרטל לבן בבוטיק" loading="lazy"></div>
+        <div><span class="tag">Arrangements</span><h3>סידורים בכלי</h3><p>לבית, למשרד, לשולחן החג ולאירוע</p></div>
+      </a>
+      <a class="coll rv" href="#order" data-occasion="זר פרימיום">
+        <div class="ph"><img src="images/premium-white-roses.jpg" alt="זר ענק של ורדים לבנים עטוף בנייר סאטן" loading="lazy"></div>
+        <div><span class="tag">Signature</span><h3>זרי פרימיום</h3><p>עשרות ורדים בעטיפת הסאטן שלנו, למחווה גדולה</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- STUDIO -->
+<section class="section studio" id="studio" style="padding-top:0">
+  <div class="wrap">
+    <div class="studio-photos rv">
+      <div class="a"><img src="images/bouquet-white-sea.jpg" alt="זר ורדים לבנים מול הים" loading="lazy"></div>
+      <div class="b"><img src="images/bridal-white-mix.jpg" alt="זר כלה לבן עם ליזיאנטוס, קאלות ולוע ארי" loading="lazy"></div>
+    </div>
+    <div class="studio-copy">
+      <span class="eyebrow">הבוטיק</span>
+      <h2>Floraè נולד מאהבה לפרחים ולפרטים הקטנים</h2>
+      <p>אנחנו בוטיק פרחים באשדוד שמאמין שזר טוב מתחיל בהקשבה. מה האירוע, מי מקבל, אילו צבעים הוא אוהב. משם אנחנו בוחרים פרח פרח, עוטפים בנייר וסאטן ומוסיפים כרטיס ברכה בכתב יד.</p>
+      <p>אפשר להגיע לבוטיק, לבחור יחד איתנו ולצאת עם זר ביד, או להזמין מראש ולקבל אותו עד הדלת.</p>
+      <div class="pillars">
+        <div><b>טריות</b><span>פרחים שנבחרים מדי בוקר, לזר שמחזיק</span></div>
+        <div><b>עבודת יד</b><span>כל זר נבנה במקום, אין שני זרים זהים</span></div>
+        <div><b>אריזה</b><span>נייר, סאטן וכרטיס ברכה אישי</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRIDAL -->
+<section class="section bridal" id="bridal">
+  <div class="wrap">
+    <div class="bridal-head">
+      <div style="display:grid;gap:18px">
+        <span class="eyebrow">כלות ואירועים</span>
+        <h2>זר הכלה שלך, כמו שדמיינת אותו</h2>
+      </div>
+      <p>נפגשים, מסתכלים על השמלה ועל הצבעים של האירוע, ובונים יחד זר כלה שמתאים רק לך. מזר הרצוגית עגול ועד קאלות ארוכות ומינימליסטיות. אנחנו גם מקשטים את רכב החתנים, כדי שהכל ייראה שלם ביום הגדול.</p>
+    </div>
+    <div class="bridal-grid">
+      <figure class="big rv" data-cap="זר כלה קאלות"><img src="images/bridal-calla-tall.jpg" alt="זר כלה של קאלות לבנות ארוכות קשור בסרט" loading="lazy"><figcaption>זר כלה קאלות</figcaption></figure>
+      <figure class="sm rv" data-cap="זר כלה הרצוגית"><img src="images/bridal-hydrangea.jpg" alt="זר כלה הרצוגית לבן" loading="lazy"><figcaption>זר כלה הרצוגית</figcaption></figure>
+      <figure class="sm rv" data-cap="זר כלה לבן"><img src="images/bridal-white-mix.jpg" alt="זר כלה לבן מעורב" loading="lazy"><figcaption>זר כלה לבן</figcaption></figure>
+      <figure class="sm rv" data-cap="זר כלה מקאלות"><img src="images/bridal-calla.jpg" alt="זר כלה עגול מקאלות" loading="lazy"><figcaption>קאלות לבנות</figcaption></figure>
+      <figure class="sm rv" data-cap="קישוט רכב לחתנים"><img src="images/wedding-car.jpg" alt="רכב חתנים לבן מקושט בפרחים ובסרטים" loading="lazy" style="object-position:30% 50%"><figcaption>קישוט רכב חתנים</figcaption></figure>
+    </div>
+    <div class="bridal-list">
+      <div><b>פגישת התאמה</b><span>בוחרים יחד פרחים, צבעים וגודל</span></div>
+      <div><b>זר כלה</b><span>בעיצוב אישי, מותאם לשמלה ולסגנון</span></div>
+      <div><b>קישוט רכב</b><span>פרחים וסרטים בתיאום עם הזר</span></div>
+      <div><b>פרחים לאירוע</b><span>סידורים לשולחנות ולפינות צילום</span></div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:40px">
+      <a class="btn" href="#order" data-occasion="זר כלה">לתיאום פגישת כלה</a>
+    </div>
+  </div>
+</section>
+
+<!-- SUBSCRIPTIONS -->
+<section class="section subs" id="subscriptions">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">מנויי פרחים</span>
+      <h2>פרחים טריים בבית, בלי לחשוב על זה</h2>
+      <p class="lede">בוחרים גודל ותדירות, ואנחנו דואגים שזר חדש בהרכב עונתי יגיע אליכם באופן קבוע. מתאים לבית, למשרד, לקליניקה או כמתנה מתמשכת למישהו שאוהבים.</p>
+      <span class="draft-note">✎ תבנית לתצוגה: שמות המסלולים, המחירים והתכולה יעודכנו</span>
+      <div class="freq" role="group" aria-label="תדירות משלוח">
+        <button type="button" data-freq="weekly" aria-pressed="false">כל שבוע</button>
+        <button type="button" data-freq="biweekly" aria-pressed="true">כל שבועיים</button>
+        <button type="button" data-freq="monthly" aria-pressed="false">פעם בחודש</button>
+      </div>
+    </div>
+
+    <div class="plans" id="plans"><!-- rendered from SUBSCRIPTIONS config below --></div>
+
+    <div class="subs-perks">
+      <div class="perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3c2 2.6 2.5 5.6 0 10-2.5-4.4-2-7.4 0-10Z"/><path d="M12 13c-1.5-3.6-4-5.6-7.5-6 .5 3.6 3 6 7.5 6Zm0 0c1.5-3.6 4-5.6 7.5-6-.5 3.6-3 6-7.5 6Z"/><path d="M12 13v8"/></svg><div><b>הרכב עונתי</b><span>כל משלוח שונה, לפי מה שהכי יפה באותו שבוע</span></div></div>
+      <div class="perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="13" height="10" rx="1.5"/><path d="M16 10h3l2 3v4h-5"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg><div><b>משלוח קבוע</b><span>ביום ובשעה שנוחים לכם</span></div></div>
+      <div class="perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 4v3M17 4v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/><path d="m9.5 14.5 2 2 3.5-4"/></svg><div><b>גמישות</b><span>אפשר לדלג על משלוח כשאתם בחופש</span></div></div>
+      <div class="perk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 9h16v11H4z"/><path d="M12 9v11M4 13h16"/><path d="M12 9c-1.5-3-5-4-5-1.5S10 9 12 9Zm0 0c1.5-3 5-4 5-1.5S14 9 12 9Z"/></svg><div><b>מנוי במתנה</b><span>לשלוח למישהו אחר עם כרטיס ברכה</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" id="process">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">איך מזמינים</span>
+      <h2>שלושה צעדים ויש זר</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><h3>בוחרים או מספרים</h3><p>בוחרים סגנון מהקולקציה, או מספרים לנו מה האירוע, למי הזר ואיזה צבעים אוהבים.</p></div>
+      <div class="step rv"><h3>מתאמים את הפרטים</h3><p>קובעים יום ושעה, גודל ותקציב, ומה ייכתב בכרטיס הברכה.</p></div>
+      <div class="step rv"><h3>הזר מגיע</h3><p>אוספים מהבוטיק באשדוד או מקבלים במשלוח, עטוף ומוכן להגשה.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CARE -->
+<section class="section care" id="care">
+  <div class="wrap">
+    <div class="care-photo rv"><img src="images/bouquet-garden.jpg" alt="זר גן צבעוני עם אלסטרומריה, גרברות ואקליפטוס" loading="lazy"></div>
+    <div>
+      <span class="eyebrow">טיפול בזר</span>
+      <h2 style="font-size:var(--s-h2);margin-top:18px">כך הזר שלכם יחזיק עוד כמה ימים</h2>
+      <div class="care-list">
+        <div class="care-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 19 19 5"/><path d="M14 5h5v5"/></svg></span><div><b>חותכים באלכסון</b><span>לפני שמכניסים לאגרטל, חותכים 2 ס"מ מכל גבעול בזווית חדה בעזרת סכין נקייה.</span></div></div>
+        <div class="care-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></svg></span><div><b>מים נקיים כל יומיים</b><span>מחליפים את המים ושוטפים את האגרטל. מורידים עלים שנמצאים מתחת לקו המים.</span></div></div>
+        <div class="care-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><path d="M3 21 21 3"/></svg></span><div><b>רחוק מהשמש</b><span>מקום מואר אבל לא בשמש ישירה, רחוק ממזגן, מתנור ומקערת פירות.</span></div></div>
+        <div class="care-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 4h10l-1 16H8L7 4Z"/><path d="M7.5 9h9"/></svg></span><div><b>אבקת הזנה</b><span>השקית שמצורפת לזר מתמוססת במים הראשונים ונותנת לפרחים אנרגיה להיפתח.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTAGRAM -->
+<section class="section" id="instagram">
+  <div class="wrap">
+    <div class="ig-head">
+      <div style="display:grid;gap:16px">
+        <span class="eyebrow">מהאינסטגרם</span>
+        <h2>הזרים האחרונים שיצאו מהבוטיק</h2>
+      </div>
+      <a class="ig-handle" href="https://www.instagram.com/florae_boutiqueflowers_/" target="_blank" rel="noopener">@florae_boutiqueflowers_</a>
+    </div>
+    <div class="ig-grid" id="ig">
+      <button type="button" data-cap="זר ליום הולדת"><img src="images/bouquet-birthday.jpg" alt="זר יום הולדת עם בלון ורוד" loading="lazy"></button>
+      <button type="button" data-cap="ורודים וגרברות"><img src="images/bouquet-pink.jpg" alt="זר ורוד של ורדים וגרברות" loading="lazy"></button>
+      <button type="button" data-cap="ורדים לבנים מול הים"><img src="images/bouquet-white-sea.jpg" alt="זר ורדים לבנים מול הים" loading="lazy"></button>
+      <button type="button" data-cap="גרברות ואלסטרומריה"><img src="images/bouquet-gerbera.jpg" alt="זר גרברות אדומות ואלסטרומריה" loading="lazy"></button>
+      <button type="button" data-cap="לילך וליזיאנטוס"><img src="images/bouquet-lilac.jpg" alt="זר סגול של גיבסנית צבועה וליזיאנטוס" loading="lazy"></button>
+      <button type="button" data-cap="סידור בכלי בבוטיק"><img src="images/vase-arrangement.jpg" alt="סידור פרחים באגרטל לבן" loading="lazy"></button>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section class="section order" id="order" style="background:var(--surface)">
+  <div class="wrap">
+    <form class="form" id="orderForm" novalidate>
+      <div class="field full">
+        <label>למה הזר?</label>
+        <div class="chips" id="occasions">
+          <label><input type="radio" name="occasion" value="יום הולדת" checked><span>יום הולדת</span></label>
+          <label><input type="radio" name="occasion" value="זר כלה"><span>זר כלה</span></label>
+          <label><input type="radio" name="occasion" value="יום נישואין"><span>יום נישואין</span></label>
+          <label><input type="radio" name="occasion" value="לידה"><span>לידה</span></label>
+          <label><input type="radio" name="occasion" value="מנוי פרחים"><span>מנוי פרחים</span></label>
+          <label><input type="radio" name="occasion" value="סתם כי בא לי"><span>סתם כי בא לי</span></label>
+        </div>
+      </div>
+      <div class="field"><label for="f-name">שם מלא</label><input id="f-name" name="name" autocomplete="name" required placeholder="איך קוראים לך?"></div>
+      <div class="field"><label for="f-phone">טלפון</label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="05X-XXXXXXX" dir="ltr" style="text-align:right"></div>
+      <div class="field"><label for="f-date">תאריך</label><input id="f-date" name="date" type="date"></div>
+      <div class="field"><label for="f-delivery">איסוף או משלוח</label>
+        <select id="f-delivery" name="delivery"><option>איסוף מהבוטיק</option><option>משלוח</option></select></div>
+      <div class="field full"><label for="f-msg">מה מדמיינים? (צבעים, תקציב, ברכה)</label><textarea id="f-msg" name="msg" placeholder="למשל: זר בגוונים של לבן ושמנת, עד 300 ₪, עם כרטיס ״מזל טוב אהובה״"></textarea></div>
+      <button class="btn gold" type="submit">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+        שליחת ההזמנה בוואטסאפ
+      </button>
+      <p class="form-note">ההודעה נפתחת בוואטסאפ עם כל הפרטים, ואנחנו חוזרים אליכם לאישור ותשלום.</p>
+      <div class="form-out" id="formOut" hidden></div>
+    </form>
+
+    <div class="contact">
+      <span class="eyebrow">הזמנות ויצירת קשר</span>
+      <h2>בואו נבנה לכם זר</h2>
+      <p class="lede">אפשר להזמין דרך הטופס, לכתוב לנו בוואטסאפ או לקפוץ לבוטיק.</p>
+      <div class="contact-list">
+        <div class="contact-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.4"/></svg></span><div><small>כתובת הבוטיק</small><b data-cfg="address"></b></div></div>
+        <div class="contact-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></span><div><small>טלפון ו־WhatsApp</small><b data-cfg="phone" dir="ltr"></b></div></div>
+        <div class="contact-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><small>שעות פתיחה</small><b data-cfg="hours"></b></div></div>
+        <div class="contact-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".8" fill="currentColor"/></svg></span><div><small>אינסטגרם</small><b><a href="https://www.instagram.com/florae_boutiqueflowers_/" target="_blank" rel="noopener" style="text-decoration:none" dir="ltr">@florae_boutiqueflowers_</a></b></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <a class="brand" href="#home" aria-label="Floraè – חזרה למעלה">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M24 9c4 5 5 11 0 20-5-9-4-15 0-20Z"/><path d="M24 29c-3-7-8-11-15-12 1 7 6 12 15 12Z"/><path d="M24 29c3-7 8-11 15-12-1 7-6 12-15 12Z"/><path d="M24 29c-6-2-12-1-17 3 5 3 12 3 17-3Z"/><path d="M24 29c6-2 12-1 17 3-5 3-12 3-17-3Z"/><path d="M14 37h20"/></svg>
+        <span class="wm"><b>FLORAÈ</b><small>Boutique Flowers</small></span>
+      </a>
+      <nav class="foot-nav" aria-label="ניווט תחתון">
+        <a href="#collections">הקולקציה</a><a href="#bridal">כלות</a><a href="#subscriptions">מנויים</a><a href="#care">טיפול בזר</a><a href="#order">הזמנה</a>
+      </nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="yr">2026</span> Floraè Boutique Flowers · אשדוד</span>
+      <span>זרים בעבודת יד</span>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" id="waFloat" href="#order" aria-label="הזמנה בוואטסאפ">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+</a>
+
+<dialog class="lb" id="lb" aria-label="תמונה מוגדלת">
+  <button type="button" id="lbClose" aria-label="סגירה">×</button>
+  <img id="lbImg" alt="">
+  <p id="lbCap"></p>
+</dialog>
+
+<script>
+/* =========================================================
+   הגדרות העסק – לעדכן כאן בלבד
+   ========================================================= */
+const BUSINESS = {
+  whatsapp: "",                 // מספר בפורמט בינלאומי בלי + ובלי מקפים, למשל 972501234567
+  phone:    "",                 // לתצוגה, למשל 050-123-4567
+  address:  "",                 // למשל: רחוב ..., אשדוד
+  hours:    ""                  // למשל: א׳–ה׳ 09:00–20:00 · ו׳ 08:00–15:00
+};
+
+/* =========================================================
+   מסלולי מנוי – תבנית. לשנות שמות, מחירים ותכולה כאן.
+   price: מחיר לכל משלוח לפי תדירות
+   ========================================================= */
+const SUBSCRIPTIONS = [
+  {
+    id:"petite", name:"מסלול פטיט", latin:"Petite", img:"images/bouquet-lilac.jpg",
+    desc:"זר עונתי קטן ומעודן, מושלם לשולחן הסלון או לפינת העבודה.",
+    price:{weekly:0, biweekly:0, monthly:0},
+    features:["זר עונתי בגודל קטן","עטיפה בנייר הבוטיק","כרטיס עם שמות הפרחים"],
+  },
+  {
+    id:"classic", name:"מסלול קלאסי", latin:"Classic", img:"images/bouquet-pink.jpg", badge:"מומלץ",
+    desc:"הזר הקלאסי שלנו, שופע וצבעוני, בהרכב שמתחלף כל משלוח.",
+    price:{weekly:0, biweekly:0, monthly:0},
+    features:["זר עונתי בגודל בינוני","עטיפת סאטן","אפשרות לבחור גוון מועדף","גמישות לדלג על משלוח"],
+  },
+  {
+    id:"prestige", name:"מסלול פרסטיז׳", latin:"Prestige", img:"images/vase-arrangement.jpg",
+    desc:"סידור גדול ומרשים, כולל כלי בפעם הראשונה. לבית, ללובי או לקליניקה.",
+    price:{weekly:0, biweekly:0, monthly:0},
+    features:["סידור גדול בכלי","כלי מעוצב במשלוח הראשון","פרחי פרימיום עונתיים","עדיפות בתיאום משלוחים"],
+  },
+];
+const FREQ_LABEL = {weekly:"למשלוח · כל שבוע", biweekly:"למשלוח · כל שבועיים", monthly:"למשלוח · פעם בחודש"};
+
+/* ---------- render plans ---------- */
+const check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c2 2.6 2.5 5.6 0 10-2.5-4.4-2-7.4 0-10Z"/><path d="M12 13c-1.5-3.6-4-5.6-7.5-6 .5 3.6 3 6 7.5 6Zm0 0c1.5-3.6 4-5.6 7.5-6-.5 3.6-3 6-7.5 6Z"/></svg>';
+const plansEl = document.getElementById('plans');
+let freq = 'biweekly';
+function renderPlans(){
+  plansEl.innerHTML = SUBSCRIPTIONS.map((p,i)=>{
+    const v = p.price[freq];
+    const priceHtml = v ? `<b>₪${v}</b><small>${FREQ_LABEL[freq]}</small>` : `<b>₪ ‒‒</b><small>${FREQ_LABEL[freq]} · מחיר יעודכן</small>`;
+    return `<article class="plan${i===1?' featured':''}">
+      <div class="ph"><img src="${p.img}" alt="" loading="lazy">${p.badge?`<span class="badge">${p.badge}</span>`:''}</div>
+      <div class="plan-body">
+        <div class="plan-name"><h3>${p.name}</h3><span class="latin">${p.latin}</span></div>
+        <p class="plan-desc">${p.desc}</p>
+        <div class="price">${priceHtml}</div>
+        <ul>${p.features.map(f=>`<li>${check}<span>${f}</span></li>`).join('')}</ul>
+        <a class="btn ${i===1?'':'ghost'}" href="#order" data-plan="${p.name}">להצטרפות ל${p.name}</a>
+      </div>
+    </article>`;
+  }).join('');
+}
+renderPlans();
+document.querySelectorAll('.freq button').forEach(b=>b.addEventListener('click',()=>{
+  freq=b.dataset.freq;
+  document.querySelectorAll('.freq button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  renderPlans();
+}));
+
+/* ---------- business info ---------- */
+const TODO = {address:"אשדוד · כתובת מלאה תעודכן", phone:"מספר יעודכן", hours:"שעות פתיחה יעודכנו"};
+document.querySelectorAll('[data-cfg]').forEach(el=>{
+  const k=el.dataset.cfg; const v=BUSINESS[k];
+  if(v){el.textContent=v}else{el.textContent=TODO[k];el.classList.add('todo');el.removeAttribute('dir')}
+});
+const waLink = t => BUSINESS.whatsapp ? `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(t)}` : null;
+if(BUSINESS.whatsapp){const f=document.getElementById('waFloat');f.href=waLink('היי Floraè, אשמח להזמין זר 🌸');f.target='_blank';f.rel='noopener'}
+
+/* ---------- preselect occasion from links ---------- */
+function setOccasion(v){
+  const inp=[...document.querySelectorAll('#occasions input')].find(i=>i.value===v);
+  if(inp){inp.checked=true}
+  else{const m=document.getElementById('f-msg'); if(!m.value) m.value=v+': '}
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-occasion],[data-plan]'); if(!a) return;
+  if(a.dataset.plan){setOccasion('מנוי פרחים');const m=document.getElementById('f-msg');m.value=`מעוניין/ת ב${a.dataset.plan}, תדירות: ${FREQ_LABEL[freq].replace('למשלוח · ','')}`}
+  else setOccasion(a.dataset.occasion);
+});
+
+/* ---------- order form -> WhatsApp ---------- */
+document.getElementById('orderForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const f=e.target, name=f.name.value.trim(), phone=f.phone.value.trim();
+  if(!name||!phone){(name?f.phone:f.name).focus();(name?f.phone:f.name).reportValidity?.();return}
+  const occ=f.querySelector('input[name=occasion]:checked')?.value||'';
+  const text=`היי Floraè 🌸\nשם: ${name}\nטלפון: ${phone}\nסוג הזמנה: ${occ}\n${f.date.value?'תאריך: '+f.date.value.split('-').reverse().join('/')+'\n':''}${f.delivery.value}\n${f.msg.value.trim()?'פרטים: '+f.msg.value.trim():''}`;
+  const out=document.getElementById('formOut'); const url=waLink(text);
+  if(url){window.location.href=url;out.hidden=false;out.innerHTML='<b>פותחים את וואטסאפ…</b><span>אם הוא לא נפתח, אפשר להעתיק את ההודעה:</span><pre></pre>';}
+  else{out.hidden=false;out.innerHTML='<b>מספר הוואטסאפ של הבוטיק עוד לא הוגדר באתר.</b><span>זו ההודעה שתישלח ברגע שיוגדר:</span><pre></pre>';}
+  out.querySelector('pre').textContent=text;
+});
+
+/* ---------- header / menu ---------- */
+const top_=document.getElementById('top'), burger=document.getElementById('burger');
+addEventListener('scroll',()=>top_.classList.toggle('scrolled',scrollY>10),{passive:true});
+burger.addEventListener('click',()=>{const o=document.body.classList.toggle('menu-open');burger.setAttribute('aria-expanded',o)});
+document.querySelectorAll('#nav a').forEach(a=>a.addEventListener('click',()=>{document.body.classList.remove('menu-open');burger.setAttribute('aria-expanded',false)}));
+
+/* ---------- lightbox ---------- */
+const lb=document.getElementById('lb'), lbImg=document.getElementById('lbImg'), lbCap=document.getElementById('lbCap');
+document.querySelectorAll('#ig button, .bridal-grid figure').forEach(el=>el.addEventListener('click',()=>{
+  const img=el.querySelector('img'); lbImg.src=img.src; lbImg.alt=img.alt; lbCap.textContent=el.dataset.cap||'';
+  if(lb.showModal) lb.showModal();
+}));
+document.getElementById('lbClose').addEventListener('click',()=>lb.close());
+lb.addEventListener('click',e=>{if(e.target===lb) lb.close()});
+
+/* ---------- gentle reveal (content stays visible without JS / before scroll) ---------- */
+if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+  const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.remove('pre');io.unobserve(en.target)}}),{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach((el,i)=>{
+    const r=el.getBoundingClientRect(); if(r.top>innerHeight){el.classList.add('pre');el.style.transitionDelay=(i%4)*80+'ms';io.observe(el)}
+  });
+}
+document.getElementById('yr').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
