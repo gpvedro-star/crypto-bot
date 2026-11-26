@@ -3,6 +3,7 @@ import { guides } from "@/content/guides";
 import type { Article, CategorySlug } from "@/content/types";
 import { getAllArticles, type ArticleWithMeta } from "./content";
 import { readingTimeMinutes } from "./reading-time";
+import { editorialFailureIsFatal, resolveBlobScope } from "./editorial/blob-scope";
 import { getEditorialStore } from "./editorial/store";
 import type { EditorialRecord } from "./editorial/contract";
 import { isRenderable, recordToArticle } from "./editorial/publish-map";
@@ -35,16 +36,31 @@ function decorate(article: Article): ArticleWithMeta {
 const byDateDesc = (a: Article, b: Article) =>
   new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
 
-/** Published records only. Never throws: Blobs being unavailable degrades to file content. */
+/**
+ * Published records only.
+ *
+ * On Netlify a missing store or a failed read throws. Sitemap, feed, `/latest`
+ * and article pages all render through here; an empty list would be cached
+ * (404 for a slug, zero items in the feed). Next.js keeps the last good page
+ * when regeneration throws. Local dev has no Blobs store and degrades to the
+ * file-based articles.
+ */
 async function publishedRecords(): Promise<EditorialRecord[]> {
+  const scope = resolveBlobScope();
   const store = getEditorialStore();
-  if (!store) return [];
+  if (!store) {
+    if (!editorialFailureIsFatal(scope)) return [];
+    const message = `[live-content] editorial store unavailable (scope: ${scope}); refusing to render empty content`;
+    console.error(message);
+    throw new Error(message);
+  }
   try {
     const all = await store.listPublished();
     return all.filter(isRenderable);
   } catch (error) {
     console.error("[live-content] could not read editorial store", error);
-    return [];
+    if (!editorialFailureIsFatal(scope)) return [];
+    throw error;
   }
 }
 

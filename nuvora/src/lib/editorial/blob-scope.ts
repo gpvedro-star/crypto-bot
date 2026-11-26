@@ -16,6 +16,14 @@ import { getDeployStore, getStore, type Store } from "@netlify/blobs";
  * is a build variable: Netlify does not set it in the function runtime, which
  * is exactly how every production request used to fall through to a
  * per-deploy store and every new deploy started with an empty site.
+ *
+ * Background ISR is the other runtime with no request context, and it also
+ * has no CONTEXT. Netlify still injects `NETLIFY_BLOBS_CONTEXT` into the
+ * function. That used to resolve to `unavailable`, the render published an
+ * empty article list, and Next.js cached the 404. A function runtime with
+ * that blobs context reads the site-wide store. `NUVORA_BLOB_SCOPE` can pin
+ * the no-request path (`global` or `deploy`); set it in the Netlify UI for
+ * the Functions scope — values in netlify.toml never reach functions.
  */
 export type BlobScope = "global" | "deploy" | "local" | "unavailable";
 
@@ -33,18 +41,75 @@ function requestDeployContext(): string | undefined {
   }
 }
 
-const onNetlify = () => Boolean(process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT);
+function blobsContextValue(): string | undefined {
+  const fromEnv = process.env.NETLIFY_BLOBS_CONTEXT;
+  if (typeof fromEnv === "string" && fromEnv.trim()) return fromEnv.trim();
+  try {
+    const fromGlobal = (globalThis as { netlifyBlobsContext?: unknown }).netlifyBlobsContext;
+    if (typeof fromGlobal === "string" && fromGlobal.trim()) return fromGlobal.trim();
+  } catch {
+    // A locked global is the same as "not set": the caller fails closed.
+  }
+  return undefined;
+}
+
+const onNetlify = () => Boolean(process.env.NETLIFY || blobsContextValue());
+
+/**
+ * Pin for the no-request path only. An empty value means "not pinned".
+ * Anything other than `global` or `deploy` fails closed so a typo cannot
+ * select the production store.
+ */
+function pinnedScope(): BlobScope | undefined {
+  const value = process.env.NUVORA_BLOB_SCOPE?.trim();
+  if (!value) return undefined;
+  if (value === "global" || value === "deploy") return value;
+  return "unavailable";
+}
+
+let notedRuntimeStore = false;
 
 export function resolveBlobScope(): BlobScope {
   const context = requestDeployContext();
   if (context === "production") return "global";
   if (context) return "deploy";
 
-  // No request context. On Netlify that means the build step (prerendering),
-  // where CONTEXT genuinely is set and only reads happen: a production build
-  // reads the production store so its first snapshot is not empty.
-  if (onNetlify()) return process.env.CONTEXT === "production" ? "global" : "unavailable";
-  return "local";
+  // Off Netlify there is no Blobs store. Plain `next dev` uses the filesystem.
+  if (!onNetlify()) return "local";
+
+  // No request context. The build step sets CONTEXT. The function runtime,
+  // including ISR background revalidation, does not.
+  const pinned = pinnedScope();
+  if (pinned) return pinned;
+
+  if (process.env.CONTEXT === "production") return "global";
+  // deploy-preview, branch-deploy, `netlify dev`: the scope is known and it
+  // is not production. Fail closed rather than open the site-wide store.
+  if (process.env.CONTEXT) return "unavailable";
+
+  // Function runtime. NETLIFY_BLOBS_CONTEXT is injected for the whole
+  // process; it carries site credentials, not the deploy context. This
+  // site's published functions are production, so background revalidation
+  // reads the site-wide store instead of caching an empty page.
+  if (blobsContextValue()) {
+    if (!notedRuntimeStore) {
+      notedRuntimeStore = true;
+      console.info(
+        "[blob-scope] no request context and no CONTEXT; reading the site-wide store (NETLIFY_BLOBS_CONTEXT)",
+      );
+    }
+    return "global";
+  }
+  return "unavailable";
+}
+
+/**
+ * Local dev may degrade to file-based articles. On Netlify a missing store
+ * or a failed read must fail the render: an empty list is a successful
+ * response, and ISR would cache it as a 404 or an empty sitemap/feed.
+ */
+export function editorialFailureIsFatal(scope: BlobScope): boolean {
+  return scope !== "local";
 }
 
 const opened = new Map<string, Store>();
