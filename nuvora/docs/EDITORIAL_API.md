@@ -29,16 +29,23 @@ Netlify Blobs, via platform context. No site ID or token is in the repository.
 | `production` | `nuvora-editorial`, `nuvora-editorial-images` (site-wide, strong consistency) | Survives deploys |
 | deploy preview / branch | `…-preview` (per-deploy) | Scoped to that deploy |
 
-The scope is decided per request from `Netlify.context.deploy.context`
-(`src/lib/editorial/blob-scope.ts`), never from `process.env.CONTEXT`, which
-Netlify sets only at build time. Every read and write — API, fact-check,
-auto-publish, pages, sitemap, RSS, media — goes through that one resolver, and
-it fails closed rather than falling back to another store.
+The scope is decided in `src/lib/editorial/blob-scope.ts`. A request uses
+`Netlify.context.deploy.context`: production reads the site-wide store, and
+any other deploy context stays on the per-deploy store. `process.env.CONTEXT`
+is set only during the build. Background revalidation has neither a request
+context nor `CONTEXT`; the function runtime's `NETLIFY_BLOBS_CONTEXT` selects
+the site-wide store. If that store cannot be opened or read on Netlify, page,
+sitemap, feed and `/latest` rendering throws, so ISR keeps the last good
+response instead of caching an empty one.
 
-Preview submissions therefore cannot read or overwrite production editorial
-data. Outside Netlify (`next dev`) there is no Blobs context, so the API falls
-back to a filesystem store under `.netlify/editorial-dev/` purely so the
-endpoints can be exercised locally. That branch is never reached on Netlify.
+Preview requests still cannot read or overwrite production editorial data.
+Set `NUVORA_BLOB_SCOPE=deploy` in the Netlify UI (Functions scope, Deploy
+Previews and Branch deploys only) so a preview's background revalidation stays
+off the production store. Do not set `deploy` on Production. Values in
+`netlify.toml` are not available to functions. Outside Netlify (`next dev`)
+there is no Blobs context, so the API falls back to a filesystem store under
+`.netlify/editorial-dev/` purely so the endpoints can be exercised locally.
+That branch is never reached on Netlify.
 
 Keys:
 
@@ -324,8 +331,9 @@ live once published.
 |---|---|---|
 | `NUVORA_EDITORIAL_API_KEY` | server-side | Bearer token. Unset ⇒ API disabled |
 | `NEXT_PUBLIC_SITE_URL` | build | Origin used in `draft_url` / `published_url` |
+| `NUVORA_BLOB_SCOPE` | Functions, optional | Pin for background revalidation when there is no request context. `global` or `deploy`. Not required in production. Never set `deploy` on the Production context. Set in the Netlify UI — `netlify.toml` values do not reach functions. |
 
-Netlify supplies Blobs credentials and `CONTEXT` automatically.
+Netlify injects Blobs credentials (`NETLIFY_BLOBS_CONTEXT`) into the function runtime. `CONTEXT` is build-only and is not set there.
 
 ## From record to website
 
